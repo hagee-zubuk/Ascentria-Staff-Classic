@@ -3411,16 +3411,20 @@ ElseIf tmpReport(0) = 26 Then 'mileage report
 		"<td class='tblgrn'>Receipts Amount</td>" & vbCrlf & _
 		"<td class='tblgrn'>Total</td>" & vbCrlf 
 	CSVHead = "File Number,Last Name,First Name,Miles,Miles Amount,Receipts Amount,Total"
+	strFY = Year(tmpReport(1))
 	Set rsRep = Server.CreateObject("ADODB.RecordSet")
 	sqlRep = "SELECT FileNum, actmil, overmile, appDate, Interpreter_T.[index] as myIntrIndex, Toll, mileageproc " & _
 		" FROM Request_T, Interpreter_T WHERE request_T.[instID] <> 479 AND IntrID = Interpreter_T.[index] AND Month(appDate) = " & Month(tmpReport(1)) & " AND Year(appDate) = " & _
-		Year(tmpReport(1)) & " "
+		strFY & " "
 	If Z_CZero(tmpReport(4)) > 0 Then
 		sqlRep = sqlRep & "AND IntrID = " & tmpReport(4) & " "
 		strMSG = strMSG & " for " & GetIntr(tmpReport(4)) & "."
 	End If
 	sqlRep = sqlRep & "AND LbconfirmToll = 1 AND mileageproc IS NULL ORDER BY [last name], [first name], appDate"
+
 	rsRep.Open sqlRep, g_strCONN, 1, 3
+	strPySrc = "383000"
+	If Len(strFY) = 4 Then strFY = Right(strFY, 2)
 	If Not rsRep.EOF Then
 		x = 0
 		Do Until rsRep.EOF
@@ -3500,8 +3504,8 @@ ElseIf tmpReport(0) = 26 Then 'mileage report
 					"<td align='center' style='border: 1px solid;'>880</td>" & vbCrLf & _	
 					"<td align='center' style='border: 1px solid;'>8100</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>65010</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>14</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strFY & "</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strPySrc & "</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>99999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>1</td>" & vbCrLf & _		
@@ -3516,8 +3520,8 @@ ElseIf tmpReport(0) = 26 Then 'mileage report
 					"<td align='center' style='border: 1px solid;'>880</td>" & vbCrLf & _	
 					"<td align='center' style='border: 1px solid;'>8100</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>65020</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>14</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strFY & "</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strPySrc & "</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>99999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>1</td>" & vbCrLf & _		
@@ -3532,8 +3536,8 @@ ElseIf tmpReport(0) = 26 Then 'mileage report
 					"<td align='center' style='border: 1px solid;'>880</td>" & vbCrLf & _	
 					"<td align='center' style='border: 1px solid;'>8100</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>65000</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>14</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strFY & "</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strPySrc & "</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>99999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>1</td>" & vbCrLf & _		
@@ -3548,8 +3552,8 @@ ElseIf tmpReport(0) = 26 Then 'mileage report
 					"<td align='center' style='border: 1px solid;'>880</td>" & vbCrLf & _	
 					"<td align='center' style='border: 1px solid;'>8100</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>65020</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>14</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strFY & "</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strPySrc & "</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>99999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>1</td>" & vbCrLf & _		
@@ -3564,8 +3568,8 @@ ElseIf tmpReport(0) = 26 Then 'mileage report
 					"<td align='center' style='border: 1px solid;'>880</td>" & vbCrLf & _	
 					"<td align='center' style='border: 1px solid;'>8100</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>63190</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>14</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strFY & "</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strPySrc & "</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>99999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>1</td>" & vbCrLf & _		
@@ -3580,8 +3584,8 @@ ElseIf tmpReport(0) = 26 Then 'mileage report
 					"<td align='center' style='border: 1px solid;'>880</td>" & vbCrLf & _	
 					"<td align='center' style='border: 1px solid;'>8100</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>63210</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>14</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strFY & "</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strPySrc & "</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>99999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>1</td>" & vbCrLf & _		
@@ -3596,8 +3600,8 @@ ElseIf tmpReport(0) = 26 Then 'mileage report
 					"<td align='center' style='border: 1px solid;'>880</td>" & vbCrLf & _	
 					"<td align='center' style='border: 1px solid;'>8100</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>63220</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>14</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strFY & "</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strPySrc & "</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>99999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>1</td>" & vbCrLf & _		
@@ -3612,8 +3616,8 @@ ElseIf tmpReport(0) = 26 Then 'mileage report
 					"<td align='center' style='border: 1px solid;'>880</td>" & vbCrLf & _	
 					"<td align='center' style='border: 1px solid;'>8100</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>60350</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>14</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strFY & "</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strPySrc & "</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>99999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>1</td>" & vbCrLf & _		
@@ -3628,8 +3632,8 @@ ElseIf tmpReport(0) = 26 Then 'mileage report
 					"<td align='center' style='border: 1px solid;'>880</td>" & vbCrLf & _	
 					"<td align='center' style='border: 1px solid;'>8100</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>63170</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>14</td>" & vbCrLf & _
-					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strFY & "</td>" & vbCrLf & _
+					"<td align='center' style='border: 1px solid;'>" & strPySrc & "</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>99999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>999999</td>" & vbCrLf & _
 					"<td align='center' style='border: 1px solid;'>1</td>" & vbCrLf & _		
@@ -7394,10 +7398,10 @@ ElseIf tmpReport(0) = 71 Then 'New Total Hours
 			If TotHours > 0 Or myBhrs > 0 Then
 				strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & GetIntr(tmpIntr(y)) & "</td>" & vbCrLf & _
 					"<td class='tblgrn2'><nobr>" & GetFileNum(tmpIntr(y)) & "</td>" & vbCrLf & _
-					"<td class='tblgrn2'><nobr>" & Z_FormatNumber(myHrs + myhrsHP, 2) & "</td>" & vbCrLf & _ 	' regular
-					"<td class='tblgrn2'><nobr>" & Z_FormatNumber(myHHrs, 2) & "</td>" & vbCrLf & _ 			' holiday
-					"<td class='tblgrn2'><nobr>" & Z_FormatNumber(myOTHrs, 2) & "</td>" & vbCrLf & _ 			' overtime
-					"<td class='tblgrn2'><nobr>" & Z_FormatNumber(myBhrs, 2) & "</td></tr>" & vbCrLf 			' back hours
+					"<td class='tblgrn2'><nobr>" & Z_FormatNumber(myHrs + myhrsHP, 2) & "</td>" & vbCrLf & _ 
+					"<td class='tblgrn2'><nobr>" & Z_FormatNumber(myHHrs, 2) & "</td>" & vbCrLf & _ 		
+					"<td class='tblgrn2'><nobr>" & Z_FormatNumber(myOTHrs, 2) & "</td>" & vbCrLf & _ 		
+					"<td class='tblgrn2'><nobr>" & Z_FormatNumber(myBhrs, 2) & "</td></tr>" & vbCrLf 		
 				If myHrs > 0 Or myOTHrs > 0 Or myBhrs > 0 Then 
 					cleanOTHrs = myOTHrs
 					If myOTHrs = 0 Then cleanOTHrs = ""
@@ -7746,20 +7750,24 @@ End If
 				<p align="center">
 					<input class='btn' type='button' value='Print' onmouseover="this.className='hovbtn'" onmouseout="this.className='btn'" onclick='print({bShrinkToFit: true});'>
 				</p>
-				<% If tmpReport(0) = 26 Then %>
-					<% 
+<%
+					If tmpReport(0) = 26 Then ' i guess this means ' * Mileage Report '
 						arrCtr = 0
-						Do Until arrCtr = UBound(arrBody) + 1
-					%>
-					<%=arrBody(arrCtr)%>
-					<%			
-							arrCtr = arrCtr + 1
-						Loop
-					%>
-				<% Else %>
-					<%=strBody%>
-				<% End If %>
-			<% End If %>
+						If IsArray(arrBody) And y > 0 Then
+							'Response.Write "Limit: " & LBound(arrBody) & "<br />" & vbCrLf
+							Do Until arrCtr = UBound(arrBody) + 1
+								Response.Write arrBody(arrCtr)
+								arrCtr = arrCtr + 1
+							Loop
+						'Else
+						'	Response.Write strBody
+						'	should output 'nothing found' here sometime.
+						End If
+					Else 
+						Response.Write strBody
+					End If 	' tmpReport(0) = 26
+			End If 			' tmpReport(0) <> 43 And tmpReport(0) <> 26 And tmpReport(0) <> 48
+%>
 		</form>
 	</body>
 </html>
