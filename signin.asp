@@ -7,7 +7,8 @@ ValidAko = False
 ChangePass = False
 
 Set rsUser = Server.CreateObject("ADODB.RecordSet")
-sqlUser = "SELECT * FROM User_t WHERE upper(Username) = '" & ucase(Request("txtUN")) & "' "
+strUName = UCase(Z_CleanName(Request("txtUN")))	' avoid sql injection
+sqlUser = "SELECT * FROM User_t WHERE upper(Username) = '" & strUName & "' "
 rsUser.Open sqlUser, g_strCONN, 3, 1
 If Not rsUser.EOF Then
 	Response.Cookies("LBUSER") = Request("txtUN")
