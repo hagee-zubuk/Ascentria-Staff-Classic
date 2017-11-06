@@ -3412,9 +3412,10 @@ ElseIf tmpReport(0) = 26 Then 'mileage report
 		"<td class='tblgrn'>Total</td>" & vbCrlf 
 	CSVHead = "File Number,Last Name,First Name,Miles,Miles Amount,Receipts Amount,Total"
 	strFY = Year(tmpReport(1))
+	strMo =  Month(tmpReport(1))
 	Set rsRep = Server.CreateObject("ADODB.RecordSet")
 	sqlRep = "SELECT FileNum, actmil, overmile, appDate, Interpreter_T.[index] as myIntrIndex, Toll, mileageproc " & _
-		" FROM Request_T, Interpreter_T WHERE request_T.[instID] <> 479 AND IntrID = Interpreter_T.[index] AND Month(appDate) = " & Month(tmpReport(1)) & " AND Year(appDate) = " & _
+		" FROM Request_T, Interpreter_T WHERE request_T.[instID] <> 479 AND IntrID = Interpreter_T.[index] AND Month(appDate) = " & strMo & " AND Year(appDate) = " & _
 		strFY & " "
 	If Z_CZero(tmpReport(4)) > 0 Then
 		sqlRep = sqlRep & "AND IntrID = " & tmpReport(4) & " "
@@ -3425,6 +3426,8 @@ ElseIf tmpReport(0) = 26 Then 'mileage report
 	rsRep.Open sqlRep, g_strCONN, 1, 3
 	strPySrc = "383000"
 	If Len(strFY) = 4 Then strFY = Right(strFY, 2)
+	strFY = Z_CLng(strFY)
+	If strMo > 6 Then strFY = strFY + 1
 	If Not rsRep.EOF Then
 		x = 0
 		Do Until rsRep.EOF
