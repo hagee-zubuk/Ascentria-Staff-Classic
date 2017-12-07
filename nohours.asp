@@ -22,18 +22,19 @@ rsIntr.Close
 Set rsIntr = Nothing
 'GET DEPT INFO
 Set rsDept = Server.CreateObject("ADODB.RecordSet")
-sqlDept = "SELECT * FROM dept_T WHERE Active = 1 AND InstID = 479 ORDER BY dept"
+sqlDept = "SELECT [index], [dept] FROM dept_T WHERE Active = 1 AND InstID = 479 ORDER BY dept"
 rsDept.Open sqlDept, g_strCONN, 3, 1
 Do Until rsDept.EOF
-			DeptName = rsDept("Dept")
+		DeptName = rsDept("Dept")
 		strDept2 = strDept2	& "<option " & tmpDpt & " value='" & rsDept("Index") & "'>" &  DeptName & "</option>" & vbCrlf
 		strRP = strRP & "if (deptID == " & rsDept("index") & ") {" & vbCrlf
 		Set rsRP = Server.CreateObject("ADODB.RecordSet")
-		sqlRP = "SELECT requester_T.[index] as RPID, lname, fname FROM requester_T, reqdept_T WHERE deptID = " & rsDept("index") & " AND reqID = requester_T.[index] ORDER BY lname, fname"
+		sqlRP = "SELECT requester_T.[index] as RPID, lname, fname FROM requester_T, reqdept_T WHERE deptID = " & _
+				rsDept("index") & " AND reqID = requester_T.[index] ORDER BY lname, fname"
 		rsRP.Open sqlRP, g_strCONN, 3, 1
 		Do Until rsRP.EOF
-				tmpRPname = rsRP("lname") & ", " & rsRP("fname")
-				strRP = strRP & "{var ChoiceRP = document.createElement('option');" & vbCrLf & _
+			tmpRPname = rsRP("lname") & ", " & rsRP("fname")
+			strRP = strRP & "{var ChoiceRP = document.createElement('option');" & vbCrLf & _
 					"ChoiceRP.value = " & rsRP("RPID") & ";" & vbCrLf & _
 					"ChoiceRP.appendChild(document.createTextNode(""" & tmpRPname & """));" & vbCrLf & _
 					"document.frmnohours.selRP.appendChild(ChoiceRP);}" & vbCrLf
@@ -53,119 +54,91 @@ Set rsDept = Nothing
 		<link href="CalendarControl.css" type="text/css" rel="stylesheet">
 		<script src="CalendarControl.js" language="javascript"></script>
 		<link href='style.css' type='text/css' rel='stylesheet'>
-		<script language='JavaScript'>
-			<!--
-			function CalendarView(strDate)
-		{
-			document.frmnohours.action = 'calendarview2.asp?appDate=' + strDate;
+<script language='JavaScript'><!--
+	function CalendarView(strDate) {
+		document.frmnohours.action = 'calendarview2.asp?appDate=' + strDate;
+		document.frmnohours.submit();
+	}
+	function RPList(deptID) {
+		document.frmnohours.selRP.options.length = 0;
+		<%=strRP%>
+	}
+	function maskMe(str,textbox,loc,delim) {
+		var locs = loc.split(',');
+		for (var i = 0; i <= locs.length; i++) {
+			for (var k = 0; k <= str.length; k++) {
+				if (k == locs[i]) {
+					if (str.substring(k, k+1) != delim) {
+					 	str = str.substring(0,k) + delim + str.substring(k,str.length);
+		     		}
+				}
+			}
+		}
+		textbox.value = str
+	}
+	function RTrim(str) {
+		var whitespace = new String(" \t\n\r");
+		var s = new String(str);
+		if (whitespace.indexOf(s.charAt(s.length-1)) != -1) {
+        	var i = s.length - 1;       
+            while (i >= 0 && whitespace.indexOf(s.charAt(i)) != -1)
+					i--;
+			s = s.substring(0, i+1);
+		}
+		return s;
+    }
+    function LTrim(str) {
+		var whitespace = new String(" \t\n\r");
+		var s = new String(str);
+		if (whitespace.indexOf(s.charAt(0)) != -1) {
+			var j=0, i = s.length;
+			while (j < i && whitespace.indexOf(s.charAt(j)) != -1)
+					j++;
+			s = s.substring(j, i);
+		}
+		return s;
+    }
+    function Trim(str) {
+		return RTrim(LTrim(str));
+    }
+	function SaveNoHours() {
+		if (document.frmnohours.selDept.value == 0) {
+			alert("ERROR: Department is Required.");
+			return;
+		}
+		if (document.frmnohours.selRP.value == 0) {
+			alert("ERROR: Requesting Person is Required.");
+			return;
+		}
+		if (document.frmnohours.txtAppDate.value == '') {
+			alert("ERROR: Date is Required.");
+			return;
+		}
+		if (Trim(document.frmnohours.txtAppTFrom.value) == "") {
+			alert("ERROR: Appointment Time (From:) is Required."); 
+			return;
+		}
+		if (document.frmnohours.txtAppTFrom.value == "24:00") {
+			alert("ERROR: Appointment Time (From:) is invalid (24:00 not accepted)."); 
+			return;
+		}
+		if (Trim(document.frmnohours.txtAppTTo.value) == "") {
+			alert("ERROR: Appointment Time (To:) is Required."); 
+			return;
+		}
+		if (document.frmnohours.txtAppTTo.value == "24:00") {
+			alert("ERROR: Appointment Time (To:) is invalid (24:00 not accepted)."); 
+			return;
+		}
+		var ans = window.confirm("Submit Appointment to Database?");
+		if (ans) {
+			//alert(document.frmnohours.selIntr.value);
+			document.frmnohours.action = "nohours_proc.asp"; // action.asp?ctrl=25";
 			document.frmnohours.submit();
 		}
-			function RPList(deptID) {
-				document.frmnohours.selRP.options.length = 0;
-				<%=strRP%>
-			}
-		function maskMe(str,textbox,loc,delim)
-		{
-			var locs = loc.split(',');
-			for (var i = 0; i <= locs.length; i++)
-			{
-				for (var k = 0; k <= str.length; k++)
-				{
-					 if (k == locs[i])
-					 {
-						if (str.substring(k, k+1) != delim)
-					 	{
-					 		str = str.substring(0,k) + delim + str.substring(k,str.length);
-		     			}
-					}
-				}
-		 	}
-			textbox.value = str
-		}
-		function RTrim(str)
-    {
-            var whitespace = new String(" \t\n\r");
-
-            var s = new String(str);
-
-            if (whitespace.indexOf(s.charAt(s.length-1)) != -1) {
-               
-
-                var i = s.length - 1;       
-                while (i >= 0 && whitespace.indexOf(s.charAt(i)) != -1)
-                    i--;
-
-
-              
-                s = s.substring(0, i+1);
-            }
-
-            return s;
-    }
-    function LTrim(str)
-    {
-            var whitespace = new String(" \t\n\r");
-
-            var s = new String(str);
-
-            if (whitespace.indexOf(s.charAt(0)) != -1) {
-                
-                var j=0, i = s.length;
-
-                while (j < i && whitespace.indexOf(s.charAt(j)) != -1)
-                    j++;
-
-                s = s.substring(j, i);
-            }
-
-            return s;
-    }
-    function Trim(str)
-    {
-            return RTrim(LTrim(str));
-    }
-		function SaveNoHours() {
-			if (document.frmnohours.selDept.value == 0) {
-				alert("ERROR: Department is Required.");
-				return;
-			}
-			if (document.frmnohours.selRP.value == 0) {
-				alert("ERROR: Requesting Person is Required.");
-				return;
-			}
-			if (document.frmnohours.txtAppDate.value == '') {
-				alert("ERROR: Date is Required.");
-				return;
-			}
-			if (Trim(document.frmnohours.txtAppTFrom.value) == "")
-			{
-				alert("ERROR: Appointment Time (From:) is Required."); 
-				return;
-			}
-			if (document.frmnohours.txtAppTFrom.value == "24:00")
-			{
-				alert("ERROR: Appointment Time (From:) is invalid (24:00 not accepted)."); 
-				return;
-			}
-			if (Trim(document.frmnohours.txtAppTTo.value) == "")
-			{
-				alert("ERROR: Appointment Time (To:) is Required."); 
-				return;
-			}
-			if (document.frmnohours.txtAppTTo.value == "24:00")
-			{
-				alert("ERROR: Appointment Time (To:) is invalid (24:00 not accepted)."); 
-				return;
-			}
-			var ans = window.confirm("Submit Appointment to Database?");
-			if (ans){
-				//alert(document.frmnohours.selIntr.value);
-				document.frmnohours.action = "action.asp?ctrl=25";
-				document.frmnohours.submit();
-			}
-		}
-			-->
-			</script>
+	}
+// 
+--></script>
 	</head>
 	<body>
 		<form method='post' name='frmnohours'>
@@ -179,35 +152,26 @@ Set rsDept = Nothing
 					<td valign='top'>
 						<table cellSpacing='2' cellPadding='0' width="100%" border='0' align='center' >
 							<!-- #include file="_greetme.asp" -->
-							<tr><td>&nbsp;</td></tr>
-					<tr>
-										<td class='title' colspan='10' align='center'><nobr> No Appointment Hours</td>
-									</tr>
-				<tr>
-					<td align='center' colspan='10'><span class='error'><%=Session("MSG")%></span></td>
-				</tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td class='title' colspan='10' align='center'><nobr> No Appointment Hours</td></tr>
+<tr><td align='center' colspan='10'><span class='error'><%=Session("MSG")%></span></td></tr>
 				<tr><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td></tr>
-				<tr>
-					<td align='right'>Type:</td>
-					<td>
-						<select name='selTrain' class='seltxt' style='width:150px;'>
-							<option value='0' <%=train0%>>Regular</option>
-							<option value='1' <%=train1%>>Training</option>
-							<option value='2' <%=train2%>>In house Training</option>
+<tr><td align='right'>Type:</td><td><select name='selTrain' class='seltxt' style='width:150px;'>
+
+							<option value='0'>Regular</option>
+							<option value='1'>Training</option>
+							<option value='2'>In house Training</option>
+							<option value='3'>Interpreter Training Hours</option>
+
 						</select>
 					</td>
 				</tr>
-				<tr><td>&nbsp;</td></tr>
-				<tr>
-					<td align='right'>*Institution:</td>
-					<td class='confirm'>No Appointments Hours (other hours)</td>
-					</td>
-				</tr>
-				<tr>
-					<td align='right'>*Department:</td>
-					<td>	
-						<select class='seltxt' name='selDept'  style='width:250px;' onfocus='RPList(this.value); '  onchange='RPList(this.value);'>
+<tr><td>&nbsp;</td></tr>
+<tr><td align='right'>*Institution:</td>
+		<td class='confirm'>No Appointments Hours (other hours)</td>
+		<td>&nbsp;</td></tr>
+<tr><td align='right'>*Department:</td>
+					<td><select class='seltxt' name='selDept'  style='width:250px;' onfocus='RPList(this.value); '  onchange='RPList(this.value);'>
 							<option value='0'>&nbsp;</option>
 							<%=strDept2%>
 						</select>

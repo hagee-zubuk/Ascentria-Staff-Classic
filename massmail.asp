@@ -40,12 +40,6 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
 		reqEmail = Z_FixNull(rsEmail("email"))
 		reqFax = Z_FixNull(rsEmail("fax"))
 		If reqEmail <> "" Or reqFax <> "" Then
-			
-			'Set mlMail = CreateObject("CDO.Message")
-			'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing") = 2
-			'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "localhost"
-			'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 26
-			'mlMail.Configuration.Fields.Update
 			myEmailAdr = reqEmail
 			If myEmailAdr = "" Then myEmailAdr = CleanFax(reqFax) & "@emailfaxservice.com" 
 				
@@ -58,15 +52,6 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
 				x = x + 1
 			End If
 			
-			'mlMail.To = myEmailAdr
-			'mlMail.To = "phutrek@yahoo.com"
-			'mlMail.Cc = "language.services@thelanguagebank.org"
-			'mlMail.From = "language.services@thelanguagebank.org"
-			'mlMail.Subject = Request("txtSub")
-			'mlMail.Body = Request("txtMSG")
-			'mlMail.Send
-			'response.write myEmailAdr & "<br>"
-			'Set mlMail = Nothing
 		End If
 		rsEmail.MoveNext
 	Loop

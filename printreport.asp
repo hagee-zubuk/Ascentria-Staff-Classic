@@ -2040,6 +2040,7 @@ ElseIf tmpReport(0) = 17 Then 'KPI
 	strHead = "<td class='tblgrn'>Classification</td>" & vbCrlf & _
 		"<td class='tblgrn'>Status</td>" & vbCrlf & _
 		"<td class='tblgrn'>" & tmpReport(1) & " - " & tmpReport(2) & "</td>" & vbCrlf
+	'strHead = strHead & "</tr><tr><td colspan=""3"">BWIIIIIIIIIIIIIIISEEEEEEEEEEEEEEETTTTT</td>"
 	CSVHead = "Classification,Status," & tmpReport(1) & " - " & tmpReport(2)
 	tmpRef = 0
 	tmpCan = 0
@@ -2049,602 +2050,163 @@ ElseIf tmpReport(0) = 17 Then 'KPI
 	tmpPen = 0
 	tmpCom = 0
 	tmpEmer = 0
-	'''''''''''COURT'''''''''''''''
-	strBody = "<tr  bgcolor='#F5F5F5'><td class='tblgrn2'><nobr>Court</td>" & vbCrLf
-	CSVBody = "Court,"
-	'REFERRALS
-	strBody = strBody & "<td class='tblgrn3'><nobr># of Referrals</td>" & vbCrLf
-	CSVBody = CSVBody & "# of Referrals,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 3"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
+
+	DIM strClasses(3), strSeq(3)
+	strSeq(0) = " AND Class = 3 "
+	strClasses(0) = "Court"
+	strSeq(1) = " AND Class = 5 "
+	strClasses(1) = "Legal"
+	strSeq(2) = " AND Class = 4 "
+	strClasses(2) = "Medical"
+	strSeq(3) = " AND (Class = 1 OR Class = 2) "
+	strClasses(3) = "Other"
+	strBody = ""
+	CSVBody = ""	
+	' date clause
+	sqlDT = " AND [request_T].[DeptID]=[dept_T].[index] "
+	If tmpReport(1) <> "" Then sqlDT = sqlDT & " AND appDate >= '" & tmpReport(1) & "'"
+	If tmpReport(2) <> "" Then sqlDT = sqlDT & " AND appDate <= '" & tmpReport(2) & "'"
+	sqlDT = sqlDT & " "
+
+	For lngI = 0 To 3
+		strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn2'><nobr>" & strClasses(lngI) & "</nobr></td>" & vbCrLf
+		CSVBody = CSVBody & strClasses(lngI) & ","
+		'REFERRALS
+		strBody = strBody & "<td class='tblgrn3'><nobr># of Referrals</td>" & vbCrLf
+		CSVBody = CSVBody & "# of Referrals,"
+		Set rsRef = Server.CreateObject("ADODB.RecordSet")
+		sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 " & _
+				sqlDT & _
+				strSeq(lngI)
+		rsRef.Open sqlRef, g_strCONN, 1, 3
 		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
 		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
 		tmpRef = tmpRef + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'CANCELLED
-	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Canceled Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 3 AND Status = 3"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
+		rsRef.Close
+		Set rsRef = Nothing
+	
+		'CANCELLED
+		strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments</td>" & vbCrLf
+		CSVBody = CSVBody &  ",# of Canceled Appointments,"
+		Set rsRef = Server.CreateObject("ADODB.RecordSet")
+		sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 " & _
+				sqlDT & _
+				"AND Status = 3 " & _
+				strSeq(lngI)
+		rsRef.Open sqlRef, g_strCONN, 1, 3
 		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
 		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
 		tmpCan = tmpCan + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'CANCELLED BILLABLE
-	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments (Billable)</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Canceled Appointments (Billable),"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 3 AND Status = 4"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
+		rsRef.Close
+		Set rsRef = Nothing
+
+		'CANCELLED BILLABLE
+		strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments (Billable)</td>" & vbCrLf
+		CSVBody = CSVBody &  ",# of Canceled Appointments (Billable),"
+		Set rsRef = Server.CreateObject("ADODB.RecordSet")
+		sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 " & _
+				sqlDT & _
+				"AND Status = 4 " & _
+				strSeq(lngI)
+		rsRef.Open sqlRef, g_strCONN, 1, 3
 		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
 		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
 		tmpCanB = tmpCanB + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'MISSED
-	strBody = strBody & "<tr><td class='tblgrn2'>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments Missed by Interpreter</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Appointments Missed by Interpreters,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 3 AND Status = 2 AND Missed <> 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
+		rsRef.Close
+		Set rsRef = Nothing
+
+		'MISSED
+		strBody = strBody & "<tr><td class='tblgrn2'>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments Missed by Interpreter</td>" & vbCrLf
+		CSVBody = CSVBody &  ",# of Appointments Missed by Interpreters,"
+		Set rsRef = Server.CreateObject("ADODB.RecordSet")
+		sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 " & _
+				sqlDT & _
+				"AND Status = 2 " & _
+				"AND Missed <> 1 " & _
+				strSeq(lngI)
+		rsRef.Open sqlRef, g_strCONN, 1, 3
 		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
 		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
 		tmpMis = tmpMis + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'MISSED 2
-	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn2'>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments LB Unable to Send Interpreter</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Appointments LB Unable to Send Interpreter,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 3 AND Status = 2 AND Missed = 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
+		rsRef.Close
+		Set rsRef = Nothing
+	
+		'MISSED 2
+		strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn2'>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments LB Unable to Send Interpreter</td>" & vbCrLf
+		CSVBody = CSVBody &  ",# of Appointments LB Unable to Send Interpreter,"
+		Set rsRef = Server.CreateObject("ADODB.RecordSet")
+		sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 " & _
+				sqlDT & _
+				"AND Status = 2 " & _
+				"AND Missed = 1 " & _
+				strSeq(lngI)
+		rsRef.Open sqlRef, g_strCONN, 1, 3
 		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
 		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
 		tmpMis2 = tmpMis2 + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'PENDING
-	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Pending Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Pending Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 3 AND Status = 0"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
+		rsRef.Close
+		Set rsRef = Nothing
+	
+		'PENDING
+		strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Pending Appointments</td>" & vbCrLf
+		CSVBody = CSVBody &  ",# of Pending Appointments,"
+		Set rsRef = Server.CreateObject("ADODB.RecordSet")
+		sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 " & _
+				sqlDT & _
+				"AND Status = 0 " & _
+				strSeq(lngI)
+		rsRef.Open sqlRef, g_strCONN, 1, 3
 		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
 		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
 		tmpPen = tmpPen + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'EMERGENCY
-	strBody = strBody & "<tr bgcolor='#F5F5F5'><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Emergency Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Emergency Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 3 AND [Emergency] = 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-	strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-	CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-	tmpEmer = tmpEmer + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'COMLPETED
-	strBody = strBody & "<tr'><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Completed Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Completed Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 3 AND Status = 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpCom = tmpCom + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	strBody = strBody & "<tr><td>&nbsp;</td></tr>"
-	CSVBody = CSVBody &  vbCrLf
-	'''''''''''LEGAL'''''''''''''''
-	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn2'><nobr>Legal</td>" & vbCrLf
-	CSVBody = CSVBody & "Legal,"
-	'REFERRALS
-	strBody = strBody & "<td class='tblgrn3'><nobr># of Referrals</td>" & vbCrLf
-	CSVBody = CSVBody & "# of Referrals,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 5"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpRef = tmpRef + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'CANCELLED
-	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Canceled Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 5 AND Status = 3"'"AND Month(appDate) = " & Month(tmpReport(1)) & "AND Year(appDate) = " & Year(tmpReport(1)) & _
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpCan = tmpCan + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'CANCELLED BILLABLE
-	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments (Billable)</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Canceled Appointments (Billable),"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 5 AND Status = 4"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpCanB = tmpCanB + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'MISSED
-	strBody = strBody & "<tr><td class='tblgrn2'>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments Missed by Interpreter</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Appointments Missed by Interpreters,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 5 AND Status = 2 AND Missed <> 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpMis = tmpMis + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'MISSED 2
-	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn2'>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments LB Unable to Send Interpreter</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Appointments LB Unable to Send Interpreter,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 5 AND Status = 2 AND Missed = 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpMis2 = tmpMis2 + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'PENDING
-	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Pending Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Pending Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 5 AND Status = 0"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpPen = tmpPen + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'EMERGENCY
-	strBody = strBody & "<tr bgcolor='#F5F5F5'><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Emergency Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Emergency Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 5 AND [Emergency] = 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-	strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-	CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-	tmpEmer = tmpEmer + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'COMLPETED
-	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Completed Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Completed Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 5 AND Status = 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpCom = tmpCom + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	strBody = strBody & "<tr><td>&nbsp;</td></tr>"
-	CSVBody = CSVBody &  vbCrLf
-	'''''''''''MEDICAL'''''''''''''''
-	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn2'><nobr>Medical</td>" & vbCrLf
-	CSVBody = CSVBody &  "Medical,"
-	'REFERRALS
-	strBody = strBody & "<td class='tblgrn3'><nobr># of Referrals</td>" & vbCrLf
-	CSVBody = CSVBody &  "# of Referrals,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 4"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpRef = tmpRef + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'CANCELLED
-	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Canceled Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 4 AND Status = 3"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpCan = tmpCan + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'CANCELLED BILLABLE
-	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments (Billable)</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Canceled Appointments (Billable),"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		" AND Class = 4 AND Status = 4"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpCanB = tmpCanB + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'MISSED
-	strBody = strBody & "<tr><td class='tblgrn2'>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments Missed by Interpreter</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Appointments Missed by Interpreters,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		" AND Class = 4 AND Status = 2 AND Missed <> 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpMis = tmpMis + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'MISSED2
-	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn2'>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments LB Unable to Send Interpreter</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Appointments LB Unable to Send Interpreter,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 4 AND Status = 2 AND Missed = 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpMis2 = tmpMis2 + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'PENDING
-	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Pending Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Pending Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 4 AND Status = 0"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpPen = tmpPen + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'EMERGENCY
-	strBody = strBody & "<tr bgcolor='#F5F5F5'><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Emergency Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Emergency Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 4 AND [Emergency] = 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
+		rsRef.Close
+		Set rsRef = Nothing
+	
+		'EMERGENCY
+		strBody = strBody & "<tr bgcolor='#F5F5F5'><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Emergency Appointments</td>" & vbCrLf
+		CSVBody = CSVBody &  ",# of Emergency Appointments,"
+		Set rsRef = Server.CreateObject("ADODB.RecordSet")
+		sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 " & _
+				sqlDT & _
+				"AND [Emergency] = 1 " & _
+				strSeq(lngI)
+		rsRef.Open sqlRef, g_strCONN, 1, 3
 		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
 		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
 		tmpEmer = tmpEmer + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'COMPLETED
-	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Completed Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Completed Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND Class = 4 AND Status = 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
+		rsRef.Close
+		Set rsRef = Nothing
+	
+		'COMLPETED
+		strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Completed Appointments</td>" & vbCrLf
+		CSVBody = CSVBody &  ",# of Completed Appointments,"
+		Set rsRef = Server.CreateObject("ADODB.RecordSet")
+		sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 " & _
+				sqlDT & _
+				"AND Status = 1 " & _
+				strSeq(lngI)
+		rsRef.Open sqlRef, g_strCONN, 1, 3
 		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
 		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
 		tmpCom = tmpCom + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	strBody = strBody & "<tr><td>&nbsp;</td></tr>"
-	CSVBody = CSVBody &  vbCrLf
-	'''''''''''OTHERS'''''''''''''''
-	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn2'><nobr>Other</td>" & vbCrLf
-	CSVBody = CSVBody &  "Other,"
-	'REFERRALS
-	strBody = strBody & "<td class='tblgrn3'><nobr># of Referrals</td>" & vbCrLf
-	CSVBody = CSVBody &  "# of Referrals,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND (Class = 1 OR Class = 2)"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpRef = tmpRef + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'CANCELLED
-	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Canceled Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND (Class = 1 OR Class = 2) AND Status = 3"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpCan = tmpCan + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'CANCELLED BILLABLE
-	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments (Billable)</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Canceled Appointments (Billable),"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND (Class = 1 OR Class = 2) AND Status = 4"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpCanB = tmpCanB + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'MISSED
-	strBody = strBody & "<tr><td class='tblgrn2'>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments Missed by Interpreter</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Appointments Missed by Interpreters,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND (Class = 1 OR Class = 2) AND Status = 2 AND Missed <> 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpMis = tmpMis + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'MISSED2
-	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn2'>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments LB Unable to Send Interpreter</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Appointments LB Unable to Send Interpreter,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND (Class = 1 OR Class = 2) AND Status = 2 AND Missed = 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpMis2 = tmpMis2 + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'PENDING
-	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Pending Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Pending Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND (Class = 1 OR Class = 2) AND Status = 0"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpPen = tmpPen + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'EMERGENCY
-	strBody = strBody & "<tr bgcolor='#F5F5F5'><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Emergency Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Emergency Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND (Class = 1 OR Class = 2) AND [Emergency] = 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpEmer = tmpEmer + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	'COMPLETED
-	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Completed Appointments</td>" & vbCrLf
-	CSVBody = CSVBody &  ",# of Completed Appointments,"
-	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(appDate) AS CTR FROM request_T, dept_T WHERE request_T.[instID] <> 479 AND DeptID = dept_T.[index] " & _
-		"AND (Class = 1 OR Class = 2) AND Status = 1"
-	If tmpReport(1) <> "" Then
-		sqlRef = sqlRef & " AND appDate >= '" & tmpReport(1) & "'"
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRef = sqlRef & " AND appDate <= '" & tmpReport(2) & "'"
-	End If
-	rsRef.Open sqlRef, g_strCONN, 1, 3
-		strBody = strBody & "<td class='tblgrn4'>" & rsRef("CTR") & "</td></tr>" & vbCrLf
-		CSVBody = CSVBody &  rsRef("CTR") & "," & vbCrLf
-		tmpCom = tmpCom + rsRef("CTR")
-	rsRef.Close
-	Set rsRef = Nothing
-	strBody = strBody & "<tr><td>&nbsp;</td></tr>"
-	CSVBody = CSVBody &  vbCrLf
+		rsRef.Close
+		Set rsRef = Nothing
+
+		' NEW ROW! 171204: Facilities Clients requesting appointments'
+		strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Facilities Clients</td>" & vbCrLf
+		CSVBody = CSVBody &  ",# of Facilities Clients,"
+		Set rsRef = Server.CreateObject("ADODB.RecordSet")
+		sqlRef = "SELECT COUNT(DISTINCT([request_T].[InstID])) AS instcnt FROM [request_T], [dept_T] WHERE [request_T].[InstID]<>479 " & _
+				sqlDT & _
+				strSeq(lngI)
+		rsRef.Open sqlRef, g_strCONN, 1, 3
+		strBody = strBody & "<td class='tblgrn4'>" & rsRef("instcnt") & "</td></tr>" & vbCrLf
+		CSVBody = CSVBody &  rsRef("instcnt") & "," & vbCrLf
+		rsRef.Close
+		Set rsRef = Nothing
+		strBody = strBody & "<tr><td>&nbsp;</td></tr>"
+		CSVBody = CSVBody &  vbCrLf
+	Next
 	'''''''''''TOTALS'''''''''''''''
 	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn2'><nobr>TOTALS</td>" & vbCrLf
 	CSVBody = CSVBody &  "TOTALS,"
@@ -2672,6 +2234,20 @@ ElseIf tmpReport(0) = 17 Then 'KPI
 	'COMLPETED
 	strBody = strBody & "<tr bgcolor='#F5F5F5'><td>&nbsp;</td><td class='tblgrn3'><nobr># of Completed Appointments</td><td class='tblgrn4'>" & tmpCom & "</td></tr>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Completed Appointments," & tmpCom & vbCrLf
+	' NEW ROW! 171204: Facilities Clients requesting appointments'
+	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Facilities Clients</td>" & vbCrLf
+	CSVBody = CSVBody &  ",# of Facilities Clients,"
+	Set rsRef = Server.CreateObject("ADODB.RecordSet")
+	sqlRef = "SELECT COUNT(DISTINCT([request_T].[InstID])) AS instcnt FROM [request_T], [dept_T] WHERE [request_T].[InstID]<>479 " & _
+			sqlDT
+	rsRef.Open sqlRef, g_strCONN, 1, 3
+	strBody = strBody & "<td class='tblgrn4'>" & rsRef("instcnt") & "</td></tr>" & vbCrLf
+	CSVBody = CSVBody &  rsRef("instcnt") & "," & vbCrLf
+	tmpCom = tmpCom + rsRef("instcnt")
+	rsRef.Close
+	Set rsRef = Nothing
+	strBody = strBody & "<tr><td>&nbsp;</td></tr>"
+	CSVBody = CSVBody &  vbCrLf
 ElseIf tmpReport(0) = 18 Then 'court request 30 days
 	ctr = 8
 	RepCSV =  "CourtReq" & tmpdate & ".csv" 
