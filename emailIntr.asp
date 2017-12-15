@@ -4,172 +4,140 @@
 <!-- #include file="_Utils.asp" -->
 <!-- #include file="_Security.asp" -->
 <!-- #include file="_UtilsReport.asp" -->
+<!-- #include file="_zEmail.asp" -->
 <%
 Function Avail(myID, myTime)
 	Avail = False
 	Set rsAvail = Server.CreateObject("ADODB.RecordSet")
-	sqlAvail = "SELECT * FROM Avail_T WHERE intrID = " & myID & " AND Avail = '" & myTime & "'"
+	sqlAvail = "SELECT [index] FROM Avail_T WHERE intrID = " & myID & " AND Avail = '" & myTime & "'"
 	rsAvail.Open sqlAvail, g_strCONN, 3, 1
 	If Not rsAvail.EOF Then Avail = True
 	rsAvail.Close
 	set rsAvail = Nothing
 	If Avail Then Exit Function
 	Set rsAvail2 = Server.CreateObject("ADODB.RecordSet")
-	sqlAvail2 = "SELECT * FROM Avail_T WHERE IntrID = " & myID
+	sqlAvail2 = "SELECT [index] FROM Avail_T WHERE IntrID = " & myID
 	rsAvail2.Open sqlAvail2, g_strCONN, 3, 1
 	If rsAvail2.EOF Then Avail = True
 	rsAvail2.Close
 	set rsAvail2 = Nothing
 End Function
-Function GetEmail(xxx)
-	GetEmail = ""
-	Set rsEm = Server.CreateObject("ADODB.RecordSet")
-	sqlEm = "SELECT [e-mail] FROM interpreter_T WHERE [index] = " & xxx
-	rsEm.Open sqlEm, g_strCONN, 1, 3
-	If Not rsEm.EOF Then
-		GetEmail = rsEm("e-mail")
-	End If
-	rsEm.Close
-	Set rsEm = Nothing
-End Function
+
+Set rsReq = Server.CreateObject("ADODB.REcordSet")
+sqlReq = "SELECT [appDate], [apptimefrom], [apptimeto], [ccity], [CliAdd]" & _
+		", r.[InstID], [DeptID], d.[city], l.[language] " & _
+		"FROM [request_T] AS r " & _
+		"INNER JOIN [dept_T] AS d ON r.[DeptID]=d.[index] " & _
+		"INNER JOIN [language_T] AS l ON r.[langid]=l.[index] " & _
+		"WHERE r.[index]=" & Request("ID")
+rsReq.Open sqlReq, g_strCONN, 1, 3
+If Not rsReq.EOF Then
+	appDate = rsReq("appdate")
+	appTime = rsReq("apptimefrom") & " - " & rsReq("apptimeto")
+	tmpAppTFrom = rsReq("apptimefrom")
+	tmpAppTTo = rsReq("apptimeto")
+	appCity = rsReq("city")
+	If rsReq("cliadd") Then appCity = rsReq("Ccity")
+	IntrLang = Ucase(rsReq("language"))
+	tmpAvail = Weekday(appdate) & "," & Hour(tmpAppTFrom)
+	tmpInst = rsReq("instID")
+	tmpDept = rsReq("deptID")
+End If
+rsReq.Close
+Set rsReq = Nothing
+
 If Request("mail") = 1 Then 'Request.ServerVariables("REQUEST_METHOD") = "POST" Then
-	'GET EMAIL INFO
-	Set rsReq = Server.CreateObject("ADODB.REcordSet")
-	sqlReq = "SELECT * FROM request_T WHERE [index]= " & Request("ID")
-	rsReq.Open sqlReq, g_strCONN, 1, 3
-	If Not rsReq.EOF Then
-		appdate = rsReq("appdate")
-		apptime = CTime(rsReq("apptimefrom")) & " - " & CTime(rsReq("apptimeto"))
-		appCity = GetCity(rsReq("DeptID"))
-		If rsReq("cliadd") Then appCity = rsReq("Ccity")
-		IntrLang = Ucase(GetLang(rsReq("langID")))
-		tmpInst = rsReq("instID")
-		tmpDept = rsReq("deptID")
-	End If
-	rsReq.Close
-	Set rsReq = Nothing
-	'SEND EMAIL
-	'on error resume next
-	Set mlMail = CreateObject("CDO.Message")
-	'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing") = 2
-	'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "localhost"
-	'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 26
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing")= 2
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "smtp.socketlabs.com"
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 2525
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1 'basic (clear-text) authentication
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusername") = "server3874"
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendpassword") = "UO2CUSxat9ZmzYD7jkTB"
-	mlMail.Configuration.Fields.Update
-	mlMail.To = GetEmail(Request("selIntr"))
-	mlMail.Bcc = "sysdump1@ascentria.org"
-	mlMail.From = "language.services@thelanguagebank.org"
-	mlMail.Subject= "Appointment on " & appDate & " at " & apptime & " in " & appCity
-	strMSG = "Are you available to do this appointment?<br><br>"& _
-		"If you accept this appointment this is the amount you will be reimbursed for mileage and travel time. " & _
-		"Payable travel time is " & Z_Czero(Request("txtTravel")) & " hrs. " & _
-		"and payable mileage is " & Z_Czero(Request("txtMile")) & "  miles.<br><br>"& _
-		"Please reply to this email or contact " & Request.Cookies("LBUsrName") & " of LanguageBank.<br><br>"& _
-		"Thank you.<BR><BR><BR>" & _
-		"<font color='#FFFFFF'>" & Request("adr1") & "|" & Request("adr2") & "|" & Request("zip1") & "|" & Request("zip2") & "</font>"
-	mlMail.HTMLBody = "<html><body>" & vbCrLf & strMSG & vbCrLf & "</body></html>"
-	mlMail.Send
-	set mlMail=nothing
-	'save to notes
+	'SEND THE MESSAGE
+	' -- get email info
+	strTo = zGetInterpreterEmailByID(Request("selIntr"))
+	strBcc = "sysdump1@ascentria.org"
+	strSubject = "Appointment on " & appDate & " at " & appTime & " in " & appCity
+	strMSG = "<p>Are you available to do this appointment?</p>"& _
+			"<p>If you accept this appointment this is the amount you will be reimbursed " & _
+			"for mileage and travel time.</p>" & _
+			"Payable travel time is: " & Z_Czero(Request("txtTravel")) & " hrs.<br /> " & _
+			"Payable mileage is: " & Z_Czero(Request("txtMile")) & "  miles.<br /><br />"& _
+			"<p>Please reply to this email or contact " & Request.Cookies("LBUsrName") & _
+			" of LanguageBank.</p><p>Thank you.</p>" & _
+			"<div style=""color:#FFFFFF"">" & Request("adr1") & "|" & Request("adr2") & "|" & _
+			Request("zip1") & "|" & Request("zip2") & "</div>"
+
+	' -- try to send the message out
+	lngMesgErr = zSendMessage(strTo, strBCC, strSubject, strMSG)
+	
 	IntrName = GetIntr2(Request("selIntr"))
+	If lngMesgErr<>0 Then
+		' -- got an error
+		strErrMsg = "[" & Now & "]: Availability Email sent to " & IntrName & "<" & strTo & "> with result=" & lngMesgErr & ". Message may have to be resent."
+		Session("MSG") = "Email process returned: " & lngMesgErr & ". Contact Tech Support."
+	Else
+		strErrMsg = "[" & Now & "]: Availability Email sent to " & IntrName
+		Session("MSG") = "Email Sent."
+	End If
+
+	' Save lngMesgErr to notes
 	Set rsNotes = Server.CreateObject("ADODB.RecordSet")
-	sqlNotes = "SELECT LBComment FROM request_T WHERE [index] = " & Request("ReqID")
+	sqlNotes = "SELECT [LBComment] FROM request_T WHERE [index] = " & Request("ReqID")
 	rsNotes.Open sqlNotes, g_StrCONN, 1, 3
 	If Not rsNotes.EOF Then
-		rsNotes("LBComment") = rsNotes("LBComment") & vbCrlF & "Email sent to " & IntrName & " on " & now & " for availability"
+		rsNotes("LBComment") = rsNotes("LBComment") & vbCrlF & strErrMsg
 		rsNotes.Update
 	End If
 	rsNotes.CLose
 	Set rsNotes = Nothing
 	If SaveHist(Request("ReqID"), "emailIntr.asp") Then
-		 'Session("MSG") = "HIST SAVED"
-		End If
-	Session("MSG") = "Email Sent."
-End If
-	'PREPARE EMAIL	
-	strAvail = 0
-	Set rsReq = Server.CreateObject("ADODB.REcordSet")
-	sqlReq = "SELECT * FROM request_T WHERE [index] = " & Request("ID")
-	rsReq.Open sqlReq, g_strCONN, 1, 3
-	If Not rsReq.EOF Then
-		appdate = rsReq("appdate")
-		apptime = rsReq("apptimefrom") & " - " & rsReq("apptimeto")
-		tmpAppTFrom = rsReq("apptimefrom")
-		tmpAppTTo = rsReq("apptimeto")
-		appCity = GetCity(rsReq("DeptID"))
-		If rsReq("cliadd") Then appCity = rsReq("Ccity")
-		IntrLang = Ucase(GetLang(rsReq("langID")))
-		tmpAvail = Weekday(appdate) & "," & Hour(tmpAppTFrom)
-		tmpInst = rsReq("instID")
-		tmpDept = rsReq("deptID")
+		'Session("MSG") = "HIST SAVED"
 	End If
-	rsReq.Close
-	Set rsReq = Nothing
-	strSubj = "Appointment on " & appDate & " at " & apptime & " in " & appCity
-	strMSG = "Are you available to do this appointment?" & vbCrlf & vbCrlf & _
-		"Please reply to this email or contact " & Request.Cookies("LBUsrName") & " of LanguageBank." & vbCrlf & vbCrlf & _
-		"If you accept this appointment this is the amount you will be reimbursed for mileage and travel time." & vbCrlf & _
-		"Payable travel time is " & Z_Czero(Request("txtTravel")) & " hrs. and payable mileage is " & Z_Czero(Request("txtMile")) & " miles." & vbCrlf & vbCrlf & _
-		"Thank you."
-	'INTERPRETER LIST
-	Set rsIntr = Server.CreateObject("ADODB.RecordSet")
-	sqlIntr = "SELECT * FROM interpreter_T WHERE (Upper(Language1) = '" & IntrLang & "' OR Upper(Language2) = '" & IntrLang & "' OR Upper(Language3) = '" & IntrLang & _
-		"' OR Upper(Language4) = '" & IntrLang & "' OR Upper(Language5) = '" & IntrLang & "') AND Active = 1 AND [e-mail] <> '' ORDER BY [Last Name], [First Name]"
-	rsIntr.Open sqlIntr, g_strCONN, 1, 3
-	Do Until rsIntr.EOF
-		'include vacation
-		myIntr = ""
-		mark = 0
-		If cint(Request("selIntr")) = rsIntr("index") Then myIntr = "selected"
-		tmpIntr = cint(Request("selIntr"))
-		tmpIntrName = rsIntr("Last Name") & ", " & rsIntr("First Name")
-		'If OnVacation(rsIntr("index"), appdate) = False Then 'If isNull(rsIntrLang("vacfrom")) Then
-			If tmpIntr = rsIntr("index") Or (Avail(rsIntr("index"), tmpAvail) And NotRestrict(rsIntr("index"), tmpInst, tmpDept)) Then
-				mark = 1
-				rest = ""
-				If NotRestrict(rsIntr("index"), tmpInst, tmpDept) = false Then rest = " (restricted)"
-				strIntr = strIntr	& "<option " & myIntr & " value='" & rsIntr("Index") & "'>" & rsIntr("last name") & ", " & rsIntr("first name") & rest & "</option>" & vbCrlf
-				tmpIntrName = CleanMe(rsIntr("last name")) & ", " & CleanMe(rsIntr("first name"))
-				strAvail = SkedCheck(rsIntr("Index"), Request("ID"), appdate, tmpAppTFrom, tmpAppTTo)
-			End If
-		'End If
-		If mark = 0 And NotRestrict(rsIntr("index"), tmpInst, tmpDept) Then 'And OnVacation(rsIntr("index"), appdate) = False Then
-			strIntr2 = strIntr2 & "<option value='" & rsIntr("index") & "' " & IntrSel & ">" & tmpIntrName & "</option>" & vbCrlf
-			strAvail = SkedCheck(rsIntr("Index"), Request("ID"), appdate, tmpAppTFrom, tmpAppTTo)
-		End If
-		''''OLD
-		'If isNull(rsIntr("vacfrom")) Then
-		'	If Avail(rsIntr("index"), tmpAvail) Then
-		'		mark = 1
-		'		strIntr = strIntr & "<option value='" & rsIntr("index") & "' " & myIntr & ">" & IntrName & "</option>" & vbCrlf
-		'		'strAvail = SkedCheck(rsIntr("Index"), Request("ID"), appdate, tmpAppTFrom, tmpAppTTo)
-		'	End If
-		'Else
-		'	If Not (appdate >= rsIntr("vacfrom") And appdate <= rsIntr("vacto")) Then
-		'		If Avail(rsIntr("index"), tmpAvail) Then
-		'			mark = 1
-		'			strIntr = strIntr & "<option value='" & rsIntr("index") & "' " & myIntr & ">" & IntrName & "</option>" & vbCrlf
-		'			'strAvail = SkedCheck(rsIntr("Index"), Request("ID"), appdate, tmpAppTFrom, tmpAppTTo)
-		'		End If
-		'	End If
-		'End If
-		'If mark = 0 Then
-		'	strIntr2 = strIntr2 & "<option value='" & rsIntr("index") & "' " & myIntr & ">" & IntrName & "</option>" & vbCrlf
-			'strAvail = SkedCheck(rsIntr("Index"), Request("ID"), appdate, tmpAppTFrom, tmpAppTTo)
-		'End If
-		strJScript2 = strJScript2 & "if (Intr == " & rsIntr("Index") & ") {" & vbCrLf & _
-			"document.frmEmail.chkAvail.value = " & SkedCheck(rsIntr("Index"), Request("ID"), appdate, tmpAppTFrom, tmpAppTTo) &"}; " & vbCrLf & _
-		rsIntr.MoveNext
-	Loop
-	rsIntr.Close
-	Set rsIntr = Nothing
-	If strIntr2 <> "" Then strIntr = strIntr & "<option value='0'>-----</option>" & vbCrlf & strIntr2
+	'Session("MSG") = "Email Sent."
+End If
 	
+
+'PREPARE EMAIL	
+strAvail = 0
+strSubj = "Appointment on " & appDate & " at " & apptime & " in " & appCity
+strMSG = "Are you available to do this appointment?" & vbCrlf & vbCrlf & _
+	"Please reply to this email or contact " & Request.Cookies("LBUsrName") & " of LanguageBank." & vbCrlf & vbCrlf & _
+	"If you accept this appointment this is the amount you will be reimbursed for mileage and travel time." & vbCrlf & vbCrlf & _
+	"Payable travel time is " & Z_Czero(Request("txtTravel")) & " hrs. and payable mileage is " & Z_Czero(Request("txtMile")) & " miles." & vbCrlf & vbCrlf & _
+	"Thank you."
+'INTERPRETER LIST
+Set rsIntr = Server.CreateObject("ADODB.RecordSet")
+sqlIntr = "SELECT * FROM interpreter_T WHERE  Active = 1 " & _
+		"AND [e-mail] <> '' " & _
+		"AND (Upper(Language1) = '" & IntrLang & "' OR Upper(Language2) = '" & IntrLang & _
+				"' OR Upper(Language3) = '" & IntrLang & "' OR Upper(Language4) = '" & IntrLang & _
+				"' OR Upper(Language5) = '" & IntrLang & "') " & _
+		"ORDER BY [Last Name], [First Name]"
+rsIntr.Open sqlIntr, g_strCONN, 1, 3
+Do Until rsIntr.EOF
+	'include vacation
+	myIntr = ""
+	mark = 0
+	If cint(Request("selIntr")) = rsIntr("index") Then myIntr = "selected"
+	tmpIntr = cint(Request("selIntr"))
+	tmpIntrName = rsIntr("Last Name") & ", " & rsIntr("First Name")
+	'If OnVacation(rsIntr("index"), appdate) = False Then 'If isNull(rsIntrLang("vacfrom")) Then
+	If tmpIntr = rsIntr("index") Or (Avail(rsIntr("index"), tmpAvail) And NotRestrict(rsIntr("index"), tmpInst, tmpDept)) Then
+		mark = 1
+		rest = ""
+		If NotRestrict(rsIntr("index"), tmpInst, tmpDept) = false Then rest = " (restricted)"
+		strIntr = strIntr	& "<option " & myIntr & " value='" & rsIntr("Index") & "'>" & rsIntr("last name") & ", " & rsIntr("first name") & rest & "</option>" & vbCrlf
+		tmpIntrName = CleanMe(rsIntr("last name")) & ", " & CleanMe(rsIntr("first name"))
+		strAvail = SkedCheck(rsIntr("Index"), Request("ID"), appdate, tmpAppTFrom, tmpAppTTo)
+	End If
+	'End If
+	If mark = 0 And NotRestrict(rsIntr("index"), tmpInst, tmpDept) Then 'And OnVacation(rsIntr("index"), appdate) = False Then
+		strIntr2 = strIntr2 & "<option value='" & rsIntr("index") & "' " & IntrSel & ">" & tmpIntrName & "</option>" & vbCrlf
+		strAvail = SkedCheck(rsIntr("Index"), Request("ID"), appdate, tmpAppTFrom, tmpAppTTo)
+	End If
+
+	strJScript2 = strJScript2 & "if (Intr == " & rsIntr("Index") & ") {" & vbCrLf & _
+		"document.frmEmail.chkAvail.value = " & SkedCheck(rsIntr("Index"), Request("ID"), appdate, tmpAppTFrom, tmpAppTTo) &"}; " & vbCrLf & _
+	rsIntr.MoveNext
+Loop
+rsIntr.Close
+Set rsIntr = Nothing
+If strIntr2 <> "" Then strIntr = strIntr & "<option value='0'>-----</option>" & vbCrlf & strIntr2
 'End If
 %>
 <!-- #include file="_closeSQL.asp" -->
@@ -243,8 +211,7 @@ End If
 				<tr>
 					<td align='right' valign='top'>Message:</td>
 					<td align='left'>&nbsp;
-						<textarea name='txtMSG' readonly cols='48' rows='10'>
-							<%=strMSG%>
+<textarea name='txtMSG' readonly cols='56' rows='15' style="border: 2px solid #aaa;"><%=strMSG%>
 						</textarea>
 					</td>
 				</tr>
