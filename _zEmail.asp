@@ -19,9 +19,9 @@ Function zSendMessage(strTo, strBCC, strSubject, strMSG)
 	lngIdx = 0
 	blnOK = False
 	Set mlMail = CreateObject("CDO.Message")
-	' mlMail.To = strTo
-	mlMail.To = "hagee@zubuk.com"
-	mlMail.Bcc = "" ' strBCC
+	mlMail.To = strTo
+	'mlMail.To = "hagee@zubuk.com"
+	mlMail.Bcc = strBCC
 	mlMail.From = z_SMTP_From
 	mlMail.Subject= strSubject
 	If (InStr(strMSG, "<html>")>0) Then
