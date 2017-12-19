@@ -4,7 +4,6 @@
 <!-- #include file="_Utils.asp" -->
 <!-- #include file="_Security.asp" -->
 <!-- #include file="_UtilsReport.asp" -->
-<!-- #include file="_zEmail.asp" -->
 <%
 Function Avail(myID, myTime)
 	Avail = False
@@ -88,7 +87,7 @@ If Request("mail") = 1 Then 'Request.ServerVariables("REQUEST_METHOD") = "POST" 
 	If SaveHist(Request("ReqID"), "emailIntr.asp") Then
 		'Session("MSG") = "HIST SAVED"
 	End If
-	'Session("MSG") = "Email Sent."
+	 ' Session("MSG") = "Email Sent."
 End If
 	
 

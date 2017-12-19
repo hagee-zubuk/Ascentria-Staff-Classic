@@ -372,22 +372,9 @@ Function Z_EmailInst(pcon, appid)
 		rsHP.CLose
 		Set rsHP = Nothing
 	End If
-	Set mlMail = CreateObject("CDO.Message")
-	'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing") = 2
-	'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "localhost"
-	'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 26
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing")= 2
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "smtp.socketlabs.com"
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 2525
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1 'basic (clear-text) authentication
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusername") = "server3874"
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendpassword") = "UO2CUSxat9ZmzYD7jkTB"
-	mlMail.Configuration.Fields.Update
-	mlMail.To = FixEmail(pcon)
-	mlMail.Cc = "language.services@thelanguagebank.org"
-	mlMail.Bcc = "sysdump1@ascentria.org"
-	mlMail.From = "language.services@thelanguagebank.org"
-	mlMail.Subject= "Interpreter Confirmation - The Language Bank"
+	strTo = FixEmail(pcon)
+	strBCC = "language.services@thelanguagebank.org"
+	strSubject= "Interpreter Confirmation - The Language Bank"
 	strBody = "<table cellpadding='0' cellspacing='0' border='0' align='center'>" & vbCrLf & _
 			"<tr><td align='center'>" & vbCrLf & _
 				"<img src='http://languagebank.lssne.org/lsslbis/images/LBISLOGOBandW.jpg'>" & vbCrLf & _
@@ -563,9 +550,7 @@ Function Z_EmailInst(pcon, appid)
 				"<font size='1' face='trebuchet MS'>* Please do not reply to this email. This is a computer generated email. Use the information above for questions.</font>" & vbCrLf & _
 			"</td></tr>" & vbCrLf & _
 		"</table>"
-	mlMail.HTMLBody = "<html><body>" & vbCrLf & strBody & vbCrLf & "</body></html>"
-	mlMail.Send
-	set mlMail=nothing
+	retErr = zSendMessage(strTo, strBCC, strSubject, strBody)
 	Call SaveHist(appID, "email.asp") 
 	'CREATE LOG
 	Set fso = CreateObject("Scripting.FileSystemObject")
@@ -792,26 +777,14 @@ Function Z_EmailJob(AppID)
 							If Not rsIntr("sendonce") Or Urgent = "URGENT" Then
 								rsIntr("sendonce") = True
 								rsIntr.Update
-								Set mlMail = CreateObject("CDO.Message")
-								mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing")= 2
-								mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "smtp.socketlabs.com"
-								mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 2525
-								mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1 'basic (clear-text) authentication
-								mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusername") = "server3874"
-								mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendpassword") = "UO2CUSxat9ZmzYD7jkTB"
-								mlMail.Configuration.Fields.Update
-								mlMail.To = Trim(rsIntr("e-mail"))
-								mlMail.Cc = "language.services@thelanguagebank.org"
-								mlMail.Bcc = "sysdump1@ascentria.org"
-								mlMail.From = "DO-NOT-REPLY@thelanguagebank.org"
-								mlMail.Subject = "[LBIS] " & Urgent & " New Appointment in the Database"
+
 								strBody = "<p>Language Bank has received new request for your language(s) and skills.<br>" & _
 									"Please log into the <a href='https://interpreter.thelanguagebank.org/interpreter/'>LB database</a> and let us know if you are available.</p>" & _
 									"<font size='1' face='trebuchet MS'>* Please do not reply to this email. This is a computer generated email." & appID & "</font>"
-							'response.write strBody & "<br>"
-								mlMail.HTMLBody = "<html><body>" & vbCrLf & strBody & vbCrLf & "</body></html>"	
-								'mlMail.Send
-								set mlMail = Nothing
+
+							''	zSendMessage(Trim(rsIntr("e-mail")), "sysdump1@ascentria.org" _
+							''		, "[LBIS] " & Urgent & " New Appointment in the Database" _
+							''		, strBody)
 							End If
 						End If
 					End If

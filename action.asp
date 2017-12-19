@@ -168,7 +168,6 @@ Function GetStatus(xxx)
 	Set rsHPI = Nothing
 End Function
 
-
 If Request("ctrl") = 1 Then
 	
 ElseIf Request("ctrl") = 2 Then
@@ -1422,21 +1421,6 @@ ElseIf Request("ctrl") = 10 Then
 			If tmpEntry(1) = 3 or tmpEntry(1) = 4 Then
 				If GetEmailIntr(tmpIntr) <> "" Then
 					Set mlMail = CreateObject("CDO.Message")
-					'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing") = 2
-					'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "localhost"
-					'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 26
-					mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing")= 2
-					mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "smtp.socketlabs.com"
-					mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 2525
-					mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1 'basic (clear-text) authentication
-					mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusername") = "server3874"
-					mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendpassword") = "UO2CUSxat9ZmzYD7jkTB"
-					mlMail.Configuration.Fields.Update
-					mlMail.To = GetEmailIntr(tmpIntr)
-					mlMail.Cc = "language.services@thelanguagebank.org"
-					mlMail.Bcc = "sysdump1@ascentria.org"
-					mlMail.From = "language.services@thelanguagebank.org"
-					mlMail.Subject = "Appointment Cancellation " & tmpDate & "; " & tmpTime & ", " & tmpCity & " - " &  tmpInst
 					strBody = "This is to let you know that appointment on " & _
 						 tmpDate & ", " & tmpTime & ", in " & tmpCity & " at " & tmpInst & " for " & tmpFname & " is CANCELED.<br>" & _
 						 "If you have any questions please contact the LanguageBank office immediately at 410-6183 or email us at " & _
@@ -1444,9 +1428,10 @@ ElseIf Request("ctrl") = 10 Then
 						 "E-mail about this cancelation was initiated by " & Request.Cookies("LBUsrName") & ".<br><br>" & _
 						 "Thanks,<br>" & _
 						 "Language Bank"
-					mlMail.HTMLBody = "<html><body>" & vbCrLf & strBody & vbCrLf & "</body></html>"
-					mlMail.Send
-					Set mlMail = Nothing
+
+					retErr = zSendMessage(GetEmailIntr(tmpIntr), "language.services@thelanguagebank.org" _
+							, "Appointment Cancellation " & tmpDate & "; " & tmpTime & ", " & tmpCity & " - " &  tmpInst _
+							, strBody)
 					'save to notes
 					IntrName = GetIntr2(tmpIntr)
 					Set rsNotes = Server.CreateObject("ADODB.RecordSet")
@@ -1467,31 +1452,8 @@ ElseIf Request("ctrl") = 10 Then
 		If Date = cdate(tmpAppDate) Then
 			If tmpEntry(1) = 2 And tmpstat <> 2 Then
 				'email missed
-				Set mlMail = CreateObject("CDO.Message")
-				'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing") = 2
-				'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "localhost"
-				'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 26
-				mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing")= 2
-				mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "smtp.socketlabs.com"
-				mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 2525
-				mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1 'basic (clear-text) authentication
-				mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusername") = "server3874"
-				mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendpassword") = "UO2CUSxat9ZmzYD7jkTB"
-				mlMail.Configuration.Fields.Update
-				mlMail.To = "language.services@thelanguagebank.org"
-				If Z_CZero(tmpIntr) > 0 Then
-					mlMail.Cc = GetPrime2(tmpIntr)'"language.services@thelanguagebank.org"
-				End If
-				mlMail.Bcc = "sysdump1@ascentria.org"
-				mlMail.From = "language.services@thelanguagebank.org"
-				mlMail.Subject= "Missed appointment " & tmpAppDate
-				strBody = "Language: " & tmpLang & "<br>" & _
-					"Date: " & tmpDate & "<br>" & _
-					"Time: " & tmpTimeTo & "<br>" & _
-					"Reason: " & tmpReas
-				mlMail.HTMLBody = "<html><body><p>" & vbCrLf & strBody & vbCrLf & "</p></body></html>"
-				mlMail.Send
-				set mlMail=nothing
+				retErr = zSendMessage("language.services@thelanguagebank.org", GetPrime2(tmpIntr) _
+						, "Missed appointment " & tmpAppDate, strBody)
 				Session("MSG") = "Email Sent for Missed Appointment."
 			End If
 		End If
@@ -2148,25 +2110,13 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 			'response.write date & " = " & Z_DateNull(tmpEntry(12)) & " = " & cbool(Date = cdate(tmpEntry(12)))
 			If Request("sellate") > 0 And tmpIntrID > 0 Then
 				'email late
-				Set mlMail = CreateObject("CDO.Message")
-				'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing") = 2
-				'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "localhost"
-				'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 26
-				mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing")= 2
-				mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "smtp.socketlabs.com"
-				mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 2525
-				mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1 'basic (clear-text) authentication
-				mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusername") = "server3874"
-				mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendpassword") = "UO2CUSxat9ZmzYD7jkTB"
-				mlMail.Configuration.Fields.Update
-				mlMail.To = "language.services@thelanguagebank.org"
-				mlMail.Cc = GetPrime2(tmpIntrID)'"language.services@thelanguagebank.org"
-				mlMail.Bcc = "sysdump1@ascentria.org"
-				mlMail.From = "language.services@thelanguagebank.org"
-				mlMail.Subject= GetIntr2(tmpIntrID) & " running " & Request("sellate") & " minutes late, " & GetInst(tmpInstID)
-				mlMail.HTMLBody = "<html><body><p>" & vbCrLf & GetIntr2(tmpIntrID) & " running " & Request("sellate") & " minutes late, " & GetInst(tmpInstID) & vbCrLf & "<br>Reason: " & GetReasonTardy(Request("sellateres")) & "</p></body></html>"
-				mlMail.Send
+				strMSG = "<p>" & vbCrLf & GetIntr2(tmpIntrID) & " running " & Request("sellate") & _
+						" minutes late, " & GetInst(tmpInstID) & vbCrLf & "<br>Reason: " & _
+						GetReasonTardy(Request("sellateres")) & "</p>"
 				set mlMail=nothing
+				retErr = zSendMessage("language.services@thelanguagebank.org", GetPrime2(tmpIntrID) _
+						, GetIntr2(tmpIntrID) & " running " & Request("sellate") & " minutes late, " & GetInst(tmpInstID) _
+						, strMSG)
 				Session("MSG") = "Email Sent for tardiness."
 			End If
 		End If
@@ -3010,17 +2960,6 @@ ElseIf Request("ctrl") = 28 Then 'cancel appt
 		Set fso = Nothing
 	End If
 	'SEND EMAIL TO NOTIFY CANCEL TO LB
-	Set mlMail = CreateObject("CDO.Message")
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing")= 2
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "smtp.socketlabs.com"
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 2525
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1 'basic (clear-text) authentication
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusername") = "server3874"
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendpassword") = "UO2CUSxat9ZmzYD7jkTB"
-	mlMail.Configuration.Fields.Update
-	mlMail.To = "language.services@thelanguagebank.org"
-	mlMail.From = "language.services@thelanguagebank.org"
-	mlMail.Subject = "Request Cancellation - Request ID: " & tmpLBID
 	strBody = "<img src='http:https://staff.thelanguagebank.org/lsslbis/images/LBISLOGOBandW.jpg'><br><br>" & vbCrLf & _
 	 "<font size='2' face='trebuchet MS'>Request ID: " & Request("ID") & " has been CANCELED by " & Request.Cookies("LBUsrName") & ".<br>" & vbCrLf & _
 	 "<font size='2' face='trebuchet MS'>Date: " & tmpDate & "<br>" & vbCrLf & _
@@ -3028,34 +2967,20 @@ ElseIf Request("ctrl") = 28 Then 'cancel appt
 	 "<font size='2' face='trebuchet MS'>Department: " & tmpDept & "<br>" & vbCrLf & _
 	 "<font size='2' face='trebuchet MS'>Client: " & tmpName & "<br><br>" & vbCrLf & _ 
 	 "<font size='1' face='trebuchet MS'>* Please do not reply to this email. This is a computer generated email.</font>" & vbCrLf
-	mlMail.HTMLBody = "<html><body>" & vbCrLf & strBody & vbCrLf & "</body></html>"
-	mlMail.Send
-	 set mlMail=nothing
+	
+	retErr = zSendMessage("language.services@thelanguagebank.org", "", "Request Cancellation - Request ID: " & tmpLBID, strBody)	 
 	 If tmpIntr > 0  Then
-	  'SEND EMAIL TO NOTIFY CANCEL TO INTR
-	 	Set mlMail = CreateObject("CDO.Message")
-		mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing")= 2
-		mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "smtp.socketlabs.com"
-		mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 2525
-		mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1 'basic (clear-text) authentication
-		mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusername") = "server3874"
-		mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendpassword") = "UO2CUSxat9ZmzYD7jkTB"
-		mlMail.Configuration.Fields.Update
-		mlMail.To = GetPrime2(tmpIntr)
-		mlMail.Cc = "language.services@thelanguagebank.org"
-		'mlMail.Bcc = "sysdump1@zubuk.com"
-		mlMail.From = "language.services@thelanguagebank.org"
-		mlMail.Subject = "Appointment Cancellation " & tmpDate & "; " & tmpTime & ", " & tmpCity & " - " &  tmpInst
-		strBody = "This is to let you know that appointment on " & _
+	 	' SEND EMAIL TO NOTIFY CANCEL TO INTR
+	 	strBody = "This is to let you know that appointment on " & _
 			 tmpDate & ", " & tmpTime & ", in " & tmpCity & " at " & tmpInst & " for " & tmpFname & " is CANCELED.<br>" & _
 			 "If you have any questions please contact the LanguageBank office immediately at 410-6183 or email us at " & _
 			 "<a href='mailto:info@thelanguagebank.org'>info@thelanguagebank.org</a>.<br>" & _
 			 "E-mail about this cancelation was initiated by " & Request.Cookies("LBUsrName") & ".<br><br>" & _
 			 "Thanks,<br>" & _
 			 "Language Bank"
-		mlMail.HTMLBody = "<html><body>" & vbCrLf & strBody & vbCrLf & "</body></html>"
-		mlMail.Send
-	Set mlMail = Nothing
+		retErr = zSendMessage(GetPrime2(tmpIntr), "language.services@thelanguagebank.org" _
+				, "Appointment Cancellation " & tmpDate & "; " & tmpTime & ", " & tmpCity & " - " &  tmpInst _
+				, strBody)
 	End If
 	Session("MSG") = "NOTICE: Request has been cancelled." 
 	Response.Redirect "reqconfirm.asp?ID=" & Request("ID")

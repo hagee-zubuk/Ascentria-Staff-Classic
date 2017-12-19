@@ -34,22 +34,7 @@
 	'send email to intr
 	tmpEmail = GetPrime2(Z_GetInfoFROMAppID(Request("appID"), "IntrID"))
 	If Z_FixNull(tmpEmail) <> "" Then
-		Set mlMail = CreateObject("CDO.Message")
-		'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing") = 2
-		'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "localhost"
-		'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 26
-		mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing")= 2
-		mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "smtp.socketlabs.com"
-		mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 2525
-		mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1 'basic (clear-text) authentication
-		mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusername") = "server3874"
-		mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendpassword") = "UO2CUSxat9ZmzYD7jkTB"
-		mlMail.Configuration.Fields.Update
-		mlMail.To = Trim(tmpEmail)
-		mlMail.Cc = "language.services@thelanguagebank.org"
-		mlMail.Bcc = "sysdump1@ascentria.org"
-		mlMail.From = "DO-NOT-REPLY@thelanguagebank.org"
-		mlMail.Subject = "[LBIS] Appointment assigned to you"
+		
 		strBody = "<p>Language Bank has assigned you to an appointment:<br><br>" & _
 			"ID: " & Request("appID") & "<br>" & _
 			"Institution: " & inst & "<br>" & _
@@ -59,10 +44,7 @@
 			"Please log into the <a href='https://interpreter.thelanguagebank.org/'>LB database</a> and download the verification form for this appointment.</p>" & _
 			"<font size='1' face='trebuchet MS'>* Please do not reply to this email. This is a computer generated email.</font>"
 	'response.write strBody & "<br>"
-	
-		mlMail.HTMLBody = "<html><body>" & vbCrLf & strBody & vbCrLf & "</body></html>"	
-		mlMail.Send
-		set mlMail = Nothing
+		retVal = zSendMessage(Trim(tmpEmail), "language.services@thelanguagebank.org", "[LBIS] Appointment assigned to you", strBody)
 	End If
 	'send email to unassigned "yes" interpreters
 	Response.Redirect "openappts.asp?reload=1&frmdte=" & Request("frmdte") & "&todte=" & Request("todte")& "&selLang=" & Request("SelLang")

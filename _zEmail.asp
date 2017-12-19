@@ -7,7 +7,7 @@ DIM z_SMTPServer(1), z_SMTP_Port(1), z_SMTP_User(1), z_SMTP_Pass(1)
 z_SMTPServer(0) = "smtp.socketlabs.com"
 z_SMTP_Port(0) = 2525
 z_SMTP_User(0) = "server3874"
-z_SMTP_Pass(0) = "UO2CUSxat9ZmzYD7jkTB"
+z_SMTP_Pass(0) = "c8W4Tmt5R3BaHn2"
 z_SMTPServer(1) = "smtp.mailgun.org"
 z_SMTP_Port(1) = 587
 z_SMTP_User(1) = "postmaster@alt.thelanguagebank.org"
@@ -75,6 +75,7 @@ On Error Resume next
 	Loop Until blnOK
 On Error Goto 0
 	zSendMessage = lngRet
+	Set mlMail = Nothing
 End Function
 
 Function zLogMailMessage(lngerr, strto, subject, smtp, body, cc)

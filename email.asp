@@ -7,13 +7,16 @@
 <%
 'SAVE TIME EMAIL WAS SENT
 If Request("sino") = 0 Then
-	sqlSent = "UPDATE request_T SET SentReq = '" & Now & "' WHERE [index] = " & Request("HID")
+	sqlSent = "UPDATE [request_T] SET SentReq = '" & Now & "' WHERE [index] = " & Request("HID")
 ElseIf Request("sino") = 1 Then 
-	sqlSent = "UPDATE request_T SET SentIntr = '" & Now & "' WHERE [index] = " & Request("HID")
+	sqlSent = "UPDATE [request_T] SET SentIntr = '" & Now & "' WHERE [index] = " & Request("HID")
 End If
-Set rsSent = Server.CreateObject("ADODB.RecordSet")
-rsSent.Open sqlSent, g_strCONN, 1, 3
-Set rsSent = Nothing
+Server.ScriptTimeout = 3000
+If Request("sino") < 2 Then
+	Set rsSent = Server.CreateObject("ADODB.RecordSet")
+	rsSent.Open sqlSent, g_strCONN, 1, 3
+	Set rsSent = Nothing
+End If
 'GET REQUEST INFO
 Set rsReq = Server.CreateObject("ADODB.RecordSet")
 sqlReq = "SELECT * FROM request_T WHERE [index] = " & Request("HID")
@@ -84,11 +87,11 @@ End If
 
 Set mlMail = CreateObject("CDO.Message")
 mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing")= 2
-mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "smtp.socketlabs.com"
-mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 2525
 mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1 'basic (clear-text) authentication
-mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusername") = "server3874"
-mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendpassword") = "UO2CUSxat9ZmzYD7jkTB"
+mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = z_SMTPServer(0)
+mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = z_SMTP_Port(0)
+mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusername") = z_SMTP_User(0)
+mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendpassword") = z_SMTP_Pass(0)
 mlMail.Configuration.Fields.Update
 mlMail.To = FixEmail(Request("emailadd"))
 mlMail.Cc = "language.services@thelanguagebank.org"
@@ -342,7 +345,7 @@ ElseIf Request("sino") = 1 Or Request("sino") = 3 Then 'FOR INTERPRETER
 			"Main Office 978-937-6591"
 		theDoc.AddHtml(theText)
 	ElseIf intInstID = 860 Then
-		Set theDoc2 = Server.CreateObject("ABCpdf9.Doc")
+		Set theDoc2 = Server.CreateObject("ABCpdf6.Doc") 'converts html to pdf
 		theDoc2.Read(DirectionPath & "Instructions for Interpreters at UMass pdf version 10.10.17.pdf")
 		theDoc.Append(theDoc2)
 		Set theDoc2 = Nothing
