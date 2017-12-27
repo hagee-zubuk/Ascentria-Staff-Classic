@@ -40,33 +40,15 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
 		reqEmail = Z_FixNull(rsEmail("email"))
 		reqFax = Z_FixNull(rsEmail("fax"))
 		If reqEmail <> "" Or reqFax <> "" Then
-			
-			'Set mlMail = CreateObject("CDO.Message")
-			'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing") = 2
-			'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "localhost"
-			'mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = 26
-			'mlMail.Configuration.Fields.Update
 			myEmailAdr = reqEmail
 			If myEmailAdr = "" Then myEmailAdr = CleanFax(reqFax) & "@emailfaxservice.com" 
-				
 			xcon = myEmailAdr
-			
 			lngIdx = SearchArraysCon(xcon, strCon)
 			If lngIdx < 0 Then 
 				Redim Preserve strCon(x)
 				strCon(x) = Ucase(trim(xcon))
 				x = x + 1
 			End If
-			
-			'mlMail.To = myEmailAdr
-			'mlMail.To = "phutrek@yahoo.com"
-			'mlMail.Cc = "language.services@thelanguagebank.org"
-			'mlMail.From = "language.services@thelanguagebank.org"
-			'mlMail.Subject = Request("txtSub")
-			'mlMail.Body = Request("txtMSG")
-			'mlMail.Send
-			'response.write myEmailAdr & "<br>"
-			'Set mlMail = Nothing
 		End If
 		rsEmail.MoveNext
 	Loop
@@ -173,34 +155,15 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
 		'	"President and CEO"
 	End If
 	strSUBJ = Trim(Request("txtSub"))
-	Set mlMail = CreateObject("CDO.Message")
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing")= 2
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1 'basic (clear-text) authentication
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = z_SMTPServer(0)
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = z_SMTP_Port(0)
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusername") = z_SMTP_User(0)
-	mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendpassword") = z_SMTP_Pass(0)
-	mlMail.Configuration.Fields.Update
 	y = 0
 	Do until y = ubound(strCon) + 1
-	on error resume next
 		'response.write strCon(y) & "<br>"
-		mlMail.To = strCon(y)
 		'mlMail.To = "patrick@zubuk.com;phutrek@yahoo.com"
 		'mlMail.Cc = "language.services@thelanguagebank.org"
-		mlMail.From = "language.services@thelanguagebank.org"
-		mlMail.Subject = strSUBJ
-		If Request("chkdraft") <> 1 Then 
-			mlMail.HTMLBody = "<html><body><p>" & vbCrLf & strMSG & vbCrLf & "</p></body></html>"
-		ElseIf Request("chkdraft") = 1 Then
-			mlMail.HTMLBody = "<html><body>" & vbCrLf & strMSG & vbCrLf & "</body></html>"
-		End If
-		mlMail.Send
-		'response.write myEmailAdr & "<br>"
 		'response.write "email sent to " & strCon(y) & "<br>"
+		zSendMessage(strCon(y), "", strSubj, strMSG)
 		y = y + 1
 	Loop
-	Set mlMail = Nothing
 	Session("MSG") = "Email Sent. COUNT: " &  ubound(strCon)
 
 	'response.redirect "main.asp"

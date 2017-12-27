@@ -42,7 +42,18 @@ Prt.WriteLine CSVBody
 Prt.Close	
 Set Prt = Nothing
 
-Set dload = Server.CreateObject("SCUpload.Upload")
-	dload.Download HistID
-Set dload = Nothing
+'Set dload = Server.CreateObject("SCUpload.Upload")
+''	dload.Download HistID
+'Set dload = Nothing
+fname = "DHist" & Request("ReqIDq") & ".csv"
+Set objStream = Server.CreateObject("ADODB.Stream")
+objStream.Type = 1 'adTypeBinary
+objStream.Open
+objStream.LoadFromFile(HistID)
+Response.ContentType = "text/csv"
+Response.Addheader "Content-Disposition", "attachment; filename=""" & fname  & """"
+'Response.Addheader "Content-Length", objStream.Size
+Response.BinaryWrite objStream.Read
+objStream.Close
+Set objStream = Nothing
 %>

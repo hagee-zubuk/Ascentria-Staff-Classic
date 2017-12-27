@@ -10,53 +10,6 @@ If Request.Cookies("LBUSERTYPE") <> 1 Then
 	Response.Redirect "default.asp"
 End If
 tmpPage = "document.frmConfirm."
-'tmpDate = date
-'tmpweekday = WeekDay(tmpDate)
-'If tmpweekday = 2 Then
-'	Set rsExpire = Server.CreateObject("ADODB.RecordSet")
-'	sqlExpire = "SELECT * FROM interpreter_T WHERE Active = 1 ORDER BY [last name], [first name]"
-'	rsExpire.Open sqlExpire, g_strCONN, 1, 3
-'	tmpexpire = false
-'	Do Until rsExpire.EOF
-'		If Not IsNull(rsExpire("passexp")) Then 
-'			If DateDiff("d", tmpDate, rsExpire("passexp")) < 15 Then tmpexpire = true
-'		End If
-'		If Not IsNull(rsExpire("driveexp")) Then 
-'			If DateDiff("d", tmpDate, rsExpire("driveexp")) < 15 Then tmpexpire = true
-'		End If
-'		If Not IsNull(rsExpire("greenexp")) Then 
-'			If DateDiff("d", tmpDate, rsExpire("greenexp")) < 15 Then tmpexpire = true
-'		End If
-'		If Not IsNull(rsExpire("employexp")) Then 
-'			If DateDiff("d", tmpDate, rsExpire("employexp")) < 15 Then tmpexpire = true
-'		End If
-'		If Not IsNull(rsExpire("carexp")) Then 
-'			If DateDiff("d", tmpDate, rsExpire("carexp")) < 15 Then tmpexpire = true
-'		End If
-'		If tmpexpire Then 
-'			tmpWarn = "<a href='IntrReports.asp?ctrl=1' target=""_BLANK""><font color='red' size='1'><b><blink>Expiring documents found!</blink></b></font></a>"
-'			exit do
-'		End If
-'		rsExpire.MoveNext
-'	Loop
-'	rsExpire.Close
-'	Set rsExpire = Nothing
-'End If
-'tmphref = "adminIntr.asp?type=0"
-'myType0 = "checked"
-'myType1 = "" 
-'myType2 = ""
-'If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
-'	If Request("RadioType") = 0 Then
-'		tmphref = "adminIntr.asp?type=0"
-'	ElseIf Request("RadioType") = 1 Then
-'		tmphref = "adminIntr.asp?type=1"
-'		myType1 = "checked"
-'	ElseIf Request("RadioType") = 2 Then
-'		tmphref = "adminIntr.asp?type=2"
-'		myType2 = "checked"
-'	End If	
-'End If
 If Request("edits") = 1 Then
 	Set dload = Server.CreateObject("SCUpload.Upload")
 	dload.Download "C:\work\LSS-LBIS\log\editlogs.txt"
@@ -190,6 +143,7 @@ End If
 									<a href='adminreports.asp' class='admin'>[Admin Reports]</a>
 								</td>
 							</tr>
+							<tr><td align="center"><a href="admin_foi.asp" class="admin" target="_BLANK">[Consent Forms]</a></td></tr>
 							<tr><td>&nbsp;</td></tr>
 							<tr><td>&nbsp;</td></tr>
 							<tr>

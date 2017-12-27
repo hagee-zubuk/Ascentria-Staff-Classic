@@ -85,14 +85,7 @@ If Z_CZero(tmpHPID) <> 0 Then
 End If
 'SEND EMAIL
 
-Set mlMail = CreateObject("CDO.Message")
-mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing")= 2
-mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1 'basic (clear-text) authentication
-mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = z_SMTPServer(0)
-mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = z_SMTP_Port(0)
-mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusername") = z_SMTP_User(0)
-mlMail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendpassword") = z_SMTP_Pass(0)
-mlMail.Configuration.Fields.Update
+Set mlMail = zSetEmailConfig()
 mlMail.To = FixEmail(Request("emailadd"))
 mlMail.Cc = "language.services@thelanguagebank.org"
 mlMail.Bcc = "sysdump1@ascentria.org"
@@ -398,7 +391,7 @@ ElseIf Request("sino") = 1 Or Request("sino") = 3 Then 'FOR INTERPRETER
 End If
 
 mlMail.Send
-set mlMail=nothing
+set mlMail = Nothing
 If SaveHist(Request("HID"), "email.asp") Then
 	
 		End If

@@ -1420,7 +1420,6 @@ ElseIf Request("ctrl") = 10 Then
 		If Request("email") = 1 Then
 			If tmpEntry(1) = 3 or tmpEntry(1) = 4 Then
 				If GetEmailIntr(tmpIntr) <> "" Then
-					Set mlMail = CreateObject("CDO.Message")
 					strBody = "This is to let you know that appointment on " & _
 						 tmpDate & ", " & tmpTime & ", in " & tmpCity & " at " & tmpInst & " for " & tmpFname & " is CANCELED.<br>" & _
 						 "If you have any questions please contact the LanguageBank office immediately at 410-6183 or email us at " & _
@@ -1452,6 +1451,10 @@ ElseIf Request("ctrl") = 10 Then
 		If Date = cdate(tmpAppDate) Then
 			If tmpEntry(1) = 2 And tmpstat <> 2 Then
 				'email missed
+				strBody = "Language: " & tmpLang & "<br>" & _
+						"Date: " & tmpDate & "<br>" & _
+						"Time: " & tmpTimeTo & "<br>" & _
+						"Reason: " & tmpReas
 				retErr = zSendMessage("language.services@thelanguagebank.org", GetPrime2(tmpIntr) _
 						, "Missed appointment " & tmpAppDate, strBody)
 				Session("MSG") = "Email Sent for Missed Appointment."
@@ -2113,7 +2116,6 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 				strMSG = "<p>" & vbCrLf & GetIntr2(tmpIntrID) & " running " & Request("sellate") & _
 						" minutes late, " & GetInst(tmpInstID) & vbCrLf & "<br>Reason: " & _
 						GetReasonTardy(Request("sellateres")) & "</p>"
-				set mlMail=nothing
 				retErr = zSendMessage("language.services@thelanguagebank.org", GetPrime2(tmpIntrID) _
 						, GetIntr2(tmpIntrID) & " running " & Request("sellate") & " minutes late, " & GetInst(tmpInstID) _
 						, strMSG)
