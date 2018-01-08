@@ -606,12 +606,14 @@ ElseIf tmpReport(0) = 3 Then
 									If rsRep("custID") = "UMass Community Serv" Or rsRep("custID") = "Seven Hills Found" Or rsRep("custID") = "Saint Vincent Hosp" _
 										Or rsRep("custID") = "Spear Management Grp" Or rsRep("custID") = "BayPath Elder Svc" Then
 										CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""" & _
-											"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " – Interpretation" &  """,""" & date & """,""" & _
-											"langbankma" & """,""" & BillHours & """" & vbCrLf
+												"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & _
+												" " & rsRep("Clname") & " – Interpretation" &  """,""" & date & """,""" & _
+												"langbankma" & """,""" & BillHours & """" & vbCrLf
 									Else
 										CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""" & _
-											"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " – Interpretation" &  """,""" & date & """,""" & _
-											rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
+												"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & _
+												" " & rsRep("Clname") & " – Interpretation" &  """,""" & date & """,""" & _
+												rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 									End If
 								End If
 							End If
@@ -623,8 +625,13 @@ ElseIf tmpReport(0) = 3 Then
 						If rsRep("myinstID") = 757 Or rsRep("myinstID") = 777 Then 'SSA
 							apptadr = Z_GetApptAddr(rsRep("myindex"))
 							CSVBodyBillL = CSVBodyBillL & """" & "DOTC" & """,""" & _
-								"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & docnum & " – Interpretation" & " - " & rsRep("judge") & " - " & rsRep("claimant") & " - " & rsRep("appdate") & " - " & CTime(rsRep("appTimeFrom")) & " - " & CTime(rsRep("appTimeto")) & " - " & GetLang(rsRep("LangID")) & " - " & GetDept(rsRep("deptID")) & " - " & apptadr & " - " & CTime(rsRep("AStarttime")) & " - " & CTime(rsRep("AEndtime")) & """,""" & date & """,""" & _
-								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
+									"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & _
+									" " & rsRep("Clname") & docnum & " – Interpretation" & " - " & rsRep("judge") & _
+									" - " & rsRep("claimant") & " - " & rsRep("appdate") & " - " & CTime(rsRep("appTimeFrom")) & _
+									" - " & CTime(rsRep("appTimeto")) & " - " & GetLang(rsRep("LangID")) & _
+									" - " & GetDept(rsRep("deptID")) & " - " & apptadr & " - " & CTime(rsRep("AStarttime")) & _
+									" - " & CTime(rsRep("AEndtime")) & """,""" & date & """,""" & _
+									rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 						ElseIf rsRep("myinstID") = 126 Then 'NH legal
 							CSVBodyBillL = CSVBodyBillL & """" & "DOTC" & """,""" & _
 								"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & docnum & " – Interpretation (" & strIntrName & ")" & """,""" & date & """,""" & _
@@ -772,10 +779,14 @@ ElseIf tmpReport(0) = 4 Then
 		"<td class='tblgrn'>Total Amount</td>" & vbCrlf & _
 		"<td class='tblgrn'>Travel Time</td>" & vbCrlf & _
 		"<td class='tblgrn'>Mileage</td>" & vbCrlf
-	CSVHead = "Appointment Date,Client's Last Name,Client's First Name,Actual Start Time,Actual End Time,Duration (mins),Instituion,Department," & _
-		"Language,Interpreter's Last Name, Interpreter's First Name,Billed Hours,Total Amount,Travel Time,Mileage"
-	sqlRep = "SELECT * FROM request_T, interpreter_T, institution_T, language_T, dept_T WHERE request_T.[instID] <> 479 AND Dept_T.[index] = [DeptID] AND IntrID = interpreter_T.[index] " & _
-		"AND request_T.InstID = institution_T.[index] AND LangID = language_T.[index] AND (request_T.Status = 1 OR request_T.Status = 4)"
+	CSVHead = "Appointment Date,Client's Last Name,Client's First Name,Actual Start Time," & _
+			"Actual End Time,Duration (mins),Institution,Department," & _
+			"Language,Interpreter's Last Name, Interpreter's First Name," & _
+			"Billed Hours,Total Amount,Travel Time,Mileage"
+	sqlRep = "SELECT * FROM request_T, interpreter_T, institution_T, language_T, dept_T " & _
+			"WHERE request_T.[instID] <> 479 AND Dept_T.[index] = [DeptID] AND IntrID = interpreter_T.[index] " & _
+			"AND request_T.InstID = institution_T.[index] AND LangID = language_T.[index] AND " & _
+			"(request_T.Status = 1 OR request_T.Status = 4)"
 	strMSG = "Per-institution request report"
 	If tmpReport(1) <> "" Then
 		sqlRep = sqlRep & " AND appDate >= '" & tmpReport(1) & "'"
@@ -2429,7 +2440,8 @@ ElseIf tmpReport(0) = 20 Then 'audit report
 				"<td class='tblgrn2'><nobr>" & Z_CZero(rsRep("M_Inst")) & "</td>" & vbCrLf & _
 				"<td class='tblgrn2'><nobr>" & EFee(rsRep("emerFEE"), rsRep("Class"), tmpFeeL, tmpFeeO) & "</td></tr>" & vbCrLf
 			CSVBody = CSVBody & rsRep("myindex") & "," & rsRep("Facility") & "," &  GetDept(rsRep("deptID")) & "," & rsRep("Clname") & "," & rsRep("Cfname") & "," &  rsRep("appDate") & _
-				"," & Z_formatNumber(myhours, 2) & "," & rsRep("instRate") & "," & Z_CZero(rsRep("TT_Inst")) & "," & Z_CZero(rsRep("M_Inst")) & "," & EFee(rsRep("emerFEE"), rsRep("Class"), tmpFeeL, tmpFeeO) & vbCrLf
+				"," & Z_formatNumber(myhours, 2) & "," & rsRep("instRate") & "," & Z_CZero(rsRep("TT_Inst")) & "," & Z_CZero(rsRep("M_Inst")) & "," & _
+				EFee(rsRep("emerFEE"), rsRep("Class"), tmpFeeL, tmpFeeO) & vbCrLf
 			x = x + 1
 			rsRep.MoveNext
 		Loop
@@ -3366,16 +3378,21 @@ ElseIf tmpReport(0) = 28 Then 'Total hours report
 		"<td class='tblgrn'>Back Hours</td>" & vbCrlf 
 	CSVHead = "Co Code,Batch ID,Last Name,First Name,File #,temp dept,temp rate,reg hours,o/t hours,hours 3 code,hours 3 amount,hours 4 code,hours 4 amount,earnings 3 code,earnings 3 amount,earnings 4 code,earnings 4 amount,earnings 5 code,earnings 5 amount,memo code,memo amount"'"Last Name,First Name,File Number,Regular Hours,Holiday Hours,Over Time Hours"
 	Set rsRep = Server.CreateObject("ADODB.RecordSet")
-	sqlRep = "SELECT * FROM request_T, interpreter_T WHERE intrID = interpreter_T.[index] AND (IntrID <> 0 OR intrID = -1) AND STATUS <> 2 AND STATUS <> 3 AND showintr = 1 "
+	sqlRep = "SELECT * FROM [request_T] AS r " & _
+			"INNER JOIN [interpreter_T] AS i ON r.[IntrID] = i.[index] " & _
+			"WHERE (IntrID <> 0 OR intrID = -1) " & _
+					"AND [Status] <> 2 " & _
+					"AND [Status] <> 3 " & _
+					"AND [ShowIntr] = 1 "
 	If tmpReport(1) <> "" Then
-		sqlRep = sqlRep & "AND appDate >= '" & tmpReport(1) & "' "
+		sqlRep = sqlRep & "AND [appDate] >= '" & tmpReport(1) & "' "
 		strMSG = strMSG & " from " & tmpReport(1)
 	End If
 	If tmpReport(2) <> "" Then
-		sqlRep = sqlRep & "AND appDate <= '" & tmpReport(2) & "' "
+		sqlRep = sqlRep & "AND [appDate] <= '" & tmpReport(2) & "' "
 		strMSG = strMSG & " to " & tmpReport(2)
 	End If
-	sqlRep = sqlRep & "ORDER BY [last name], [first name], appdate"
+	sqlRep = sqlRep & "ORDER BY [last name], [first name], [AppDate]"
 	rsRep.Open sqlRep, g_strCONN, 3, 1
 	If Not rsRep.EOF Then 
 		x = 0
@@ -3421,6 +3438,13 @@ ElseIf tmpReport(0) = 28 Then 'Total hours report
 					FPHrsHP = 0
 					thours = Z_Czero(PHrs) + Z_Czero(TT)
 				ElseIf rsRep("training") = 2 Then
+					FPHHrs = 0
+					FPHrs = 0
+					thours = 0
+					FPHrsHP = 0 
+					ihthours = Z_Czero(PHrs) + Z_Czero(TT)
+				ElseIf rsRep("training") = 3 Then
+					' --- Interpreter Training Hours --- added 2017-12-07
 					FPHHrs = 0
 					FPHrs = 0
 					thours = 0
@@ -6549,6 +6573,8 @@ ElseIf tmpReport(0) = 66 Then 'activity State
 	rsRep.Close
 	Set rsRep = Nothing	
 ElseIf tmpReport(0) = 67 Then 'No Total hours report
+	Response.Redirect "rep_nototalhours.asp"
+	Response.End
 	RepCSV =  "NoTotalHours" & tmpdate & ".csv"
 	strMSG = "No Total Hours report"
 	strHead = "<td class='tblgrn'>Interpreter</td>" & vbCrlf & _
@@ -6854,6 +6880,7 @@ ElseIf tmpReport(0) = 70 Then 'Interpreter I
 	rsRep.Close
 	Set rsRep = Nothing
 ElseIf tmpReport(0) = 71 Then 'New Total Hours
+	Response.Redirect "rep_totalhours_new.asp"
 	RepCSV =  "TotalHoursNEW" & tmpdate & ".csv"
 	strMSG = "Total Hours report (NEW)"
 	strHead = "<td class='tblgrn'>Interpreter</td>" & vbCrlf & _

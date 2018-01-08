@@ -39,7 +39,11 @@ tmpPage = "document.frmReport."
 <div class="container">
 	<div class="row" style="text-align: center;">
 		<img src='images/LBISLOGO.jpg' border="0" style="width: 287px; height: 64px;" />
-		<div class="twelve columns"><strong style="font-size: 150%;">RELEASE  OF  INFORMATION FORMS</strong></div>
+	</div>
+	<div class="row align-center">
+		<div class="two columns">&nbsp;</div>
+		<div class="eight columns"><strong style="font-size: 150%;">RELEASE  OF  INFORMATION FORMS</strong></div>
+		<div class="two columns"><a class="u-full-width button button-secondary" href="dl_csv.asp?fn=<%=strFN%>">Get CSV</a></div>
 	</div>
 	<form id="frmROI" name="frmROI" method="post" action="admin_foi_proc.asp">
 	<div class="row">
@@ -60,9 +64,15 @@ tmpPage = "document.frmReport."
 	</thead>
 	<tbody>
 <%
-'GET INTERPRETER
-Set rsIntr = Server.CreateObject("ADODB.RecordSet")
+Set FSO = CreateObject("Scripting.FileSystemObject")
 
+tmpDate = Replace(FormatDateTime(Now, 0), ":", "")
+tmpDate = Replace(tmpDate, "/", "")
+tmpDate = Replace(tmpDate, " ", "-")
+RepCSV =  "ConsentDocs." & tmpdate & ".csv" 
+Set Prt = fso.CreateTextFile(RepPath &  RepCSV, True)
+strFN = Z_DoEncrypt( RepCSV )
+Set rsIntr = Server.CreateObject("ADODB.RecordSet")
 sqlIntr = "SELECT * FROM [interpreter_T] AS i" & _
 		"WHERE Active = 1 ORDER BY [Last Name], [First Name]"
 strSQL = "SELECT i.[index], COALESCE(ir.[userid],-1) AS [userid], ir.[empname], ir.[addr], ir.[cellno]" & _
@@ -74,35 +84,49 @@ strSQL = "SELECT i.[index], COALESCE(ir.[userid],-1) AS [userid], ir.[empname], 
 		"LEFT JOIN [InfoRelease] AS ir ON u.[index]=ir.[userid] " & _
 		"ORDER BY i.[Last Name] ASC"
 rsIntr.Open strSQL, g_strCONN, 3, 1
+Prt.WriteLine "LANGUAGE BANK - CONSENT FORM SUBMISSIONS"
+CSVHead = """Last Name"",""First Name"",""Date"",""e-Mail"",""Last Name"",""Middle Name"",""First Name""" & _
+		",""Suffix"",""Address"",""Cell#"",""IP"",""Useragent"""
+CSVBody = ""
 Do Until rsIntr.EOF
 	If CLng(rsIntr("userid")) > 0 Then
 		Response.Write "<tr class=""gotform"">"
 	Else
 		Response.Write "<tr class=""no_form"">"
 	End If
-	
 	Response.Write "<td>" & rsIntr("Last Name") & ", " & rsIntr("First Name") 
-	
+	CSVBody = CSVBody & """" & rsIntr("Last Name") & """,""" & rsIntr("First Name") & ""","
 	If CLng(rsIntr("userid")) > 0 Then
 		Response.Write "</td><td>" & FormatDateTime(rsIntr("last"), 0)
 		Response.Write "</td><td><a href=""foi_done.asp?fetchid=" & rsIntr("userid") & """>view form</a>"
+		CSVBody = CSVBody & """" & FormatDateTime(rsIntr("last"), 0) & """,""" & _
+				rsIntr("email") & """,""" & rsIntr("lname") & """,""" & rsIntr("mname") & """,""" & rsIntr("fname")
+		CSVBody = CSVBody & """,""" & rsIntr("suffix") & """,""" & rsIntr("addr") & """,""" & rsIntr("cellno")
+		CSVBody = CSVBody & """,""" & rsIntr("ip") & """,""" & rsIntr("useragent") & """"
 	Else
+		CSVBody = CSVBody & ",,,,,,,,,"
 		Response.Write "</td><td>&nbsp;--"
 		Response.Write "</td><td>&nbsp;"
 	End If
 	Response.Write "</td></tr>" & vbCrLf
+	CSVBody = CSVBody & vbCrLf
 	rsIntr.MoveNext
 Loop
 rsIntr.Close
 Set rsInt = Nothing
+Prt.WriteLine strMSG
+Prt.WriteLine CSVHead
+Prt.WriteLine CSVBody
+Prt.Close	
+Set Prt = Nothing
+
 %>
 </table>
 		</div>
 	</div>
 	<div class="row">
-		<div class="three columns">&nbsp;</div>
-		<div class="nine columns">
-		</div>
+		<div class="one column">&nbsp;</div>
+		<div class="ten columns"><a class="button button-secondary" href="dl_csv.asp?fn=<%=strFN%>">download CSV</a></div>
 	</div>
 </form></div>
 </body>
