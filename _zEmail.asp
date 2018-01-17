@@ -22,7 +22,7 @@ Function zSendMessage(strTo, strBCC, strSubject, strMSG)
 	Set mlMail = zSetEmailConfig()
 	mlMail.To = strTo
 	'mlMail.To = "hagee@zubuk.com"
-	mlMail.Bcc = strBCC
+	If Len(strBCC) > 0 Then	mlMail.Bcc = strBCC
 	mlMail.From = z_SMTP_From
 	mlMail.Subject= strSubject
 	If (InStr(strMSG, "<html>")>0) Then
@@ -101,37 +101,41 @@ End Function
 
 Function zLogMailMessage(lngerr, strto, subject, smtp, body, cc)
 	Set rsLog = Server.CreateObject("ADODB.RecordSet")
-	rsLog.Open "[log_email]", z_SMTP_CONN, 1, 3
+	rsLog.Open "SELECT TOP 1 * FROM [log_email]", z_SMTP_CONN, 1, 3
 	rsLog.AddNew
+On Error Resume Next
 	rsLog("err") = lngerr
-	rsLog("to") = strto
-	rsLog("subject") = subject
-	rsLog("smtp") = smtp
-	rsLog("body") = body
-	rsLog("cc") = cc
+	rsLog("subject") = Left(subject, 200)
 	rsLog("org") = Request.ServerVariables("SERVER_NAME") & Request.ServerVariables("URL")
+	rsLog("body") = body
+	rsLog("smtp") = smtp
+	rsLog("to") = Left(strto, 100)
+	rsLog("cc") = cc	
 	rsLog.Update
 	rsLog.Close
 	Set rsLog = Nothing
-	zLogMailMessage = True
+	zLogMailMessage = True	
+	Exit Function
 End Function
 
 Function zLogMailMessageRem(lngerr, strto, subject, smtp, body, cc, remk)
 	Set rsLog = Server.CreateObject("ADODB.RecordSet")
-	rsLog.Open "[log_email]", z_SMTP_CONN, 1, 3
+	rsLog.Open "SELECT TOP 1 * FROM [log_email]", z_SMTP_CONN, 1, 3
 	rsLog.AddNew
+On Error Resume Next
 	rsLog("err") = lngerr
-	rsLog("to") = strto
-	rsLog("subject") = subject
-	rsLog("smtp") = smtp
-	rsLog("body") = body
-	rsLog("cc") = cc
 	rsLog("rem") = remk
+	rsLog("subject") = subject
 	rsLog("org") = Request.ServerVariables("SERVER_NAME") & Request.ServerVariables("URL")
+	rsLog("body") = body
+	rsLog("smtp") = smtp
+	rsLog("to") = strto
+	rsLog("cc") = cc
 	rsLog.Update
 	rsLog.Close
 	Set rsLog = Nothing
 	zLogMailMessageRem = True
+	Exit Function
 End Function
 
 Function zMsgsLastHour(smtp)

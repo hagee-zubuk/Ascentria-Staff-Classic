@@ -2039,6 +2039,7 @@ ElseIf tmpReport(0) = 16 Then 'billing w/o tagging
 	rsRep.Close
 	Set rsRep = Nothing	
 ElseIf tmpReport(0) = 17 Then 'KPI
+	Response.Redirect "rep_kpi.asp"
 	RepCSV =  "KPI" & tmpdate & ".csv" 
 	strMSG = "KPI report "
 	If tmpReport(1) <> "" Then
@@ -5598,7 +5599,7 @@ ElseIf tmpReport(0) = 57 Then 'billables MA
 	If Not rsInst.EOF Then
 		Do Until rsInst.EOF
 			Set rsReq = CreateObject("ADODB.RecordSet")
-			sqlReq = "SELECT * FROM request_T, institution_T, dept_T  WHERE WHERE request_T.[instID] = institution_T.[index] AND request_T.[deptID] = dept_T.[index] AND [appdate] <= '" & Date & "' " & _
+			sqlReq = "SELECT * FROM request_T, institution_T, dept_T  WHERE request_T.[instID] = institution_T.[index] AND request_T.[deptID] = dept_T.[index] AND [appdate] <= '" & Date & "' " & _
 				"AND [appdate] >= '" & DateAdd("d", -6, Date) & "' AND UPPER(Bstate) = 'MA' " & _
 				"AND [status] <> 2 AND [status] <> 3 AND request_T.[instID] = " & rsInst("myINST")
 			rsReq.Open sqlReq, g_strCONN, 3, 1
