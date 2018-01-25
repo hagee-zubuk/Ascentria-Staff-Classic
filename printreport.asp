@@ -5584,6 +5584,7 @@ ElseIf tmpReport(0) = 56 Then 'wellsense language freq
 	rsRepA.Close
 	Set rsRepA = Nothing
 ElseIf tmpReport(0) = 57 Then 'billables MA 
+	Response.Redirect "rep_billablesMA.asp"
 	RepCSV =  "BillablesMA" & tmpdate & ".csv"
 	strMSG = "Billable Appointments Report from " & tmpReport(1)  & " to " & tmpReport(2) & " for the state of Massachusetts."
 	strHead = "<td class='tblgrn'>Institution</td>" & vbCrlf & _
