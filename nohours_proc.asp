@@ -37,7 +37,7 @@ Do Until x = Ubound(arrIntr) + 1
 	rsApp("InstID")			= 479
 	rsApp("InstRate")		= 1
 	If (Request("selTrain")) = 3 Then	'.. Interpreter Training Hours
-		rsApp("IntrRate")	= 24
+		rsApp("IntrRate")	= 24		' .. change this if rate changes, please 
 	Else
 		rsApp("IntrRate")	= 20
 	End If

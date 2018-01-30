@@ -66,7 +66,7 @@ If tmpReport(2) <> "" Then
 End If
 
 sqlRep = "SELECT [last name], [first name], [appdate], [langid], [deptid] " & _
-			", [IntrID], [actTT], [overpayhrs], [payhrs] " & _
+			", [IntrID], [IntrRate], [actTT], [overpayhrs], [payhrs] " & _
 			", [AStarttime], [AEndtime], [appTimeFrom], [appTimeTo], [training] " & _
 			"FROM [request_T] AS r " & _
 			"INNER JOIN [interpreter_T] AS i ON r.[IntrId] = i.[Index] " & _

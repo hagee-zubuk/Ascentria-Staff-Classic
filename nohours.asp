@@ -157,7 +157,6 @@ Set rsDept = Nothing
 <tr><td align='center' colspan='10'><span class='error'><%=Session("MSG")%></span></td></tr>
 				<tr><td>&nbsp;</td></tr>
 <tr><td align='right'>Type:</td><td><select name='selTrain' class='seltxt' style='width:150px;'>
-
 							<option value='0'>Regular</option>
 							<option value='1'>Training</option>
 							<option value='2'>In house Training</option>
