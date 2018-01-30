@@ -32,7 +32,8 @@ End Function
 DIM tmpIntr(), tmpTown(), tmpIntrName(), tmpLang(), tmpClass(), tmpBill(), tmpAhrs(), tmpApp(), tmpInst(), tmpDept(), tmpAmt(), tmpFac(), tmpMonthYr(), tmpCtr(), tmpMonthYr2(), tmpMonthYr3()
 DIM tmpMonthYr4(), tmpHrs(), tmpHHrs(), tmpMile(), tmpToll(), arrTS(), arrAuthor(), arrPage(), tmpTrain(), tmpIHTrain(), tmpbhrs(), arrBody(), tmpHrs2(), tmpHrs3(), tmpHrs4() , tmpHrs5(), tmpZip()
 DIM tmpHrsHP(), tmpHrsHP2()
-server.scripttimeout = 360000
+DIM tmpTrngIntr(), tmpTrng_Hrs()
+Server.ScriptTimeout = 360000
 
 %>
 <%
@@ -66,7 +67,7 @@ End If
 
 sqlRep = "SELECT [last name], [first name], [appdate], [langid], [deptid] " & _
 			", [IntrID], [actTT], [overpayhrs], [payhrs] " & _
-			", [AStarttime], [AEndtime], [training] " & _
+			", [AStarttime], [AEndtime], [appTimeFrom], [appTimeTo], [training] " & _
 			"FROM [request_T] AS r " & _
 			"INNER JOIN [interpreter_T] AS i ON r.[IntrId] = i.[Index] " & _
 			"WHERE ([IntrID] <> 0 OR [IntrID] = -1) " & _
@@ -82,6 +83,7 @@ If rsRep.EOF Then
 End If
 
 x = 0
+xt = 0
 Do While Not rsRep.EOF
 	strIntr = rsRep("IntrID")
 	TT = Z_FormatNumber(rsRep("actTT"), 2)
@@ -129,6 +131,19 @@ Do While Not rsRep.EOF
 			thours = 0
 			FPHrsHP = 0 
 			ihthours = Z_Czero(PHrs) + Z_Czero(TT)
+		ElseIf rsRep("training") = 3 Then
+			'FPHHrs = Z_Czero(Z_FormatNumber(IntrBillHrs(rsRep("appTimeFrom"), rsRep("appTimeTo")), 2)) + Z_Czero(TT)
+			lngIDx = SearchArraysHours(strIntr, tmpTrngIntr)
+			If lngIdx < 0 Then
+				'Response.Write "Save Trainer: " & strIntr & ": " & xt & " !!!  "
+				ReDim Preserve tmpTrngIntr(xt)
+				ReDim Preserve tmpTrng_Hrs(xt)
+				tmpTrngIntr(xt) = strIntr
+				tmpTrng_Hrs(xt) = Z_CZero(Z_FormatNumber(IntrBillHrs(rsRep("appTimeFrom"), rsRep("appTimeTo")), 2))
+				xt = xt + 1
+			Else
+				tmpTrng_Hrs(lngIdx) = tmpTrng_Hrs(lngIdx) + Z_CZero( Z_FormatNumber(IntrBillHrs(rsRep("appTimeFrom"), rsRep("appTimeTo")), 2) )
+			End If
 		End If
 	End If
 	lngIDx = SearchArraysHours(strIntr, tmpIntr)
@@ -163,11 +178,15 @@ Do While Not rsRep.EOF
 Loop
 rsRep.Close
 Set rsRep = Nothing
-
+'Response.Write "<br /><br />"
+'For ix = 0 To UBound(tmpTrngIntr)
+'	Response.Write ix & ": " & tmpTrngIntr(ix) & "<br />"
+'Next
 y = 0
+ix = 0 
 Do Until y = x
 	kulay = "#FFFFFF"
-	If Not Z_IsOdd(y) Then kulay = "#F5F5F5"
+	If Not Z_IsOdd(ix) Then kulay = "#F5F5F5"
 	TotHours = tmpHrs(y) + tmpHHrs(y) + tmpTrain(y) + tmpIHTrain(y) + tmpHrsHP(y)
 	myTrain = Z_Czero(tmpTrain(y))
 	myIHTrain = Z_Czero(tmpIHTrain(y))
@@ -184,12 +203,13 @@ Do Until y = x
 	myOTHrs = myOTHrs1 
 	myhrsHP = myhrsHP1
 	If TotHours > 0 Or myBhrs > 0 Then
-		strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & GetIntr(tmpIntr(y)) & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & GetFileNum(tmpIntr(y)) & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(myHrs + myhrsHP, 2) & "</td>" & vbCrLf & _ 
-				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(myHHrs, 2) & "</td>" & vbCrLf & _ 		
-				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(myOTHrs, 2) & "</td>" & vbCrLf & _ 		
-				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(myBhrs, 2) & "</td></tr>" & vbCrLf 		
+		strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & GetIntr(tmpIntr(y)) & _
+				"</nobr></td>" & vbCrLf & "<td class='tblgrn2'><nobr>" & GetFileNum(tmpIntr(y)) & "</td>" & vbCrLf 
+		strBody = strBody & "<td class='tblgrn2'>" & Z_FormatNumber(myHrs + myhrsHP, 2) & "</td>" & vbCrLf 	'Regular Hours
+		strBody = strBody & "<td class='tblgrn2'>" & Z_FormatNumber(myHHrs, 2) & "</td>" & vbCrlf 			'Holiday Hours
+		strBody = strBody & "<td class='tblgrn2'>" & Z_FormatNumber(myOTHrs, 2) & "</td>" & vbCrlf 			'Overtime Hours
+		strBody = strBody & "<td class='tblgrn2'>" & Z_FormatNumber(myBhrs, 2) & "</td></tr>" & vbCrlf 		'Back Hours
+
 		If myHrs > 0 Or myOTHrs > 0 Or myBhrs > 0 Then 
 			cleanOTHrs = myOTHrs
 			If myOTHrs = 0 Then cleanOTHrs = ""
@@ -220,6 +240,28 @@ Do Until y = x
 			cleanOTHrs = myOTHrs
 			If myOTHrs = 0 Then cleanOTHrs = "" 	
 			CSVBody = CSVBody & GetIntr(tmpIntr(y)) & ",ACS," & tmpReport(2) & "," & GetFileNum(tmpIntr(y)) & ",," & Z_InHouseRate() & "," & Z_FormatNumber(myIHTrain,2) & "," & Z_FormatNumber(cleanOTHrs,2) & vbCrLf
+		End If
+		ix = ix + 1
+	Else
+		'strBody = strBody & "<tr><td colspan=""6"">" & GetIntr(tmpIntr(y)) & " --wala!--</td></tr>"
+	End If
+
+	' See if tmpIntr(y) [current interpreter] has training hours
+	If IsArray(tmpTrngIntr) Then
+		lngIdx = SearchArraysHours(tmpIntr(y), tmpTrngIntr)
+		'Response.Write "Checking: " & tmpIntr(y) & ".. "
+		If (lngIdx >= 0) Then
+			kulay = "#FFFFFF"
+			If Not Z_IsOdd(ix) Then kulay = "#F5F5F5"
+
+			strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & GetIntr(tmpTrngIntr(lngIdx)) & " (Trng)</td>" & vbCrLf & _
+					"<td class='tblgrn2'><nobr>" & GetFileNum(tmpTrngIntr(lngIdx)) & "</td>" & vbCrLf 
+			strBody = strBody & "<td class='tblgrn2'><nobr>" & Z_FormatNumber(tmpTrng_Hrs(lngIdx),2) & "</td>" & vbCrLf 	'Regular Hours
+			strBody = strBody & "<td class='tblgrn2'><nobr>-</nobr></td>" & vbCrlf 						'Holiday Hours
+			strBody = strBody & "<td class='tblgrn2'><nobr>-</nobr></td>" & vbCrlf 						'Overtime Hours
+			strBody = strBody & "<td class='tblgrn2'><nobr>-</nobr></td></tr>" & vbCrlf 				'Back Hours
+			ix = ix + 1
+			CSVBody = CSVBody & GetIntr(tmpTrngIntr(lngIdx)) & ",ACS," & tmpReport(2) & "," & GetFileNum(tmpTrngIntr(lngIdx)) & ",,24.00," & Z_FormatNumber(tmpTrng_Hrs(lngIdx),2) & ","  & vbCrLf
 		End If
 	End If
 	y = y + 1

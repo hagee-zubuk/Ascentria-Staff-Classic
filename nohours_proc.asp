@@ -26,8 +26,8 @@ Do Until x = Ubound(arrIntr) + 1
 	dtADF = Z_CDate(Request("txtAppDate")) & " " & Request("txtAppTFrom")
 	dtADT = Z_CDate(Request("txtAppDate")) & " " & Request("txtAppTTo")
 	
-	Response.Write "From: " & dtADF & "<br />"
-	Response.Write "To  : " & dtADT & "<br />"
+	'Response.Write "From: " & dtADF & "<br />"
+	'Response.Write "To  : " & dtADT & "<br />"
 
 	rsApp("apptimefrom")	= Z_CDate(dtADF)
 	rsApp("apptimeto")		= Z_CDate(dtADT)
@@ -51,5 +51,5 @@ Do Until x = Ubound(arrIntr) + 1
 Loop
 
 Session("MSG") = "Appointment Saved."
-'Response.Redirect "nohours.asp"
+Response.Redirect "nohours.asp"
 %>

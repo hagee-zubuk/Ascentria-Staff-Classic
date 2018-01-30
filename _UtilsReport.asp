@@ -1481,14 +1481,14 @@ End Function
 Function SearchArraysHours(myIntr, tmpIntr)
 	DIM	lngMax, lngI
 	SearchArraysHours = -1
-	On Error Resume Next	
+On Error Resume Next	
 	lngMax = UBound(tmpIntr)
 	If Err.Number <> 0 Then Exit Function
 	For lngI = 0 to lngMax
 		If tmpIntr(lngI) = myIntr Then Exit For
 	Next
-	If lngI > lngMax Then Exit Function
 	SearchArraysHours = lngI
+	If lngI > lngMax Then SearchArraysHours = -1 'Exit Function
 End Function
 Function GetFileNum(xxx)
 	GetFileNum = ""

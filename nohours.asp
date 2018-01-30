@@ -161,8 +161,7 @@ Set rsDept = Nothing
 							<option value='0'>Regular</option>
 							<option value='1'>Training</option>
 							<option value='2'>In house Training</option>
-							<option value='3'>Interpreter Training Hours</option>
-
+							<option value='3'>Interpreter Training Hours</option><!-- added 2017-12-04 on req from Alen -->
 						</select>
 					</td>
 				</tr>

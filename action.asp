@@ -2884,7 +2884,7 @@ ElseIf Request("ctrl") = 28 Then 'cancel appt
 	'SET STATUS inLB
 	Set rsStat = Server.CreateObject("ADODB.RecordSet")
 	sqlStat = "SELECT appTimeFrom, appTimeTo, intrID, deptID, InstID, status, Cancel, Missed, Astarttime, Aendtime, payHrs, Billable, happen, " & _
-		"payintr, M_Intr, TT_Intr, LBcomment, HPID, appdate, clname, cfname FROM request_T WHERE [index] = " & Request("ID")
+		"payintr, M_Intr, TT_Intr, LBcomment, HPID, appdate, clname, cfname, showIntr FROM request_T WHERE [index] = " & Request("ID")
 	rsStat.Open sqlStat, g_strCONN, 1, 3
 	If Not rsStat.EOF Then
 		tmpAppDateTime = rsStat("appTimeFrom")
