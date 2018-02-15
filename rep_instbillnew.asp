@@ -5,6 +5,9 @@
 <!-- #include file="_Utils.asp" -->
 <!-- #include file="_Security.asp" -->
 <%
+DIM ts0, ts1
+ts0 = Now
+
 Function Z_YMDDate(dtDate)
 DIM lngTmp, strDay, strTmp
 	If Not IsDate(dtDate) Then Exit Function
@@ -64,7 +67,7 @@ If Not rsRate.EOF Then
 End If
 rsRate.Close
 Set rsRate = Nothing
-	
+ctr = 11	
 CSVHead = "Request ID,Institution, Department, Appointment Date, Client Last Name, Client First Name" & _
 		", Language, Interpreter Last Name, Interpreter First Name, Appointment Start Time" & _
 		", Appointment End Time, Hours, Rate, Travel Time, Mileage, Emergency Surcharge, Total" & _
@@ -634,5 +637,9 @@ function PassMe(xxx)
 					</tr>
 				</table>
 		</form>
+<%
+ts1 = Now
+Response.Write "<div class=""debug"" >Time elapsed: " & DateDiff("s", ts0, ts1) & "s</div>"
+%>
 	</body>
 </html>
