@@ -18,6 +18,17 @@ Do Until rsIntr.EOF
 Loop
 rsIntr.Close
 Set rsInt = Nothing
+
+strUsers = "<option value=""-1"">-- all --</option>" & vbCrLf
+strSQL = "SELECT [index], [lname], [fname], [username] FROM [user_T] WHERE [type]<>2 ORDER BY [fname] ASC"
+Set rsUser = Server.CreateObject("ADODB.RecordSet")
+rsUser.Open strSQL, g_strCONN, 3, 1
+Do Until rsUser.EOF
+	strUsers = strUsers & "<option value=""" & rsUser("index") & """>" & rsUser("fname") & " " & rsUser("lname") & "</value>" & vbCrLf
+	rsUser.MoveNext
+Loop
+rsUser.Close
+Set rsUser = Nothing
 %>
 <html>
 	<head>
@@ -78,7 +89,11 @@ Set rsInt = Nothing
 			{
 				yyy = 0;
 			}
-			newwindow = window.open('Intrreports.asp?ctrl=2' + '&selRep=' + xxx + '&txtyear=' + yyy + '&txtRepFrom=' + tmpfrom + '&txtRepTo=' + tmpto + '&selIntr=' + intrID,'','height=800,width=900,scrollbars=1,directories=0,status=0,toolbar=0,resizable=1');
+			newwindow = window.open('Intrreports.asp?ctrl=2' + '&selRep=' + xxx + 
+					'&txtyear=' + yyy + '&txtRepFrom=' + tmpfrom + 
+					'&selUser=' + document.frmReport.selUser.value +
+					'&txtRepTo=' + tmpto + '&selIntr=' + intrID,
+					'','height=800,width=900,scrollbars=1,directories=0,status=0,toolbar=0,resizable=1');
 				if (window.focus) {newwindow.focus()}
 			//document.frmReport.action = "Intrreports.asp?ctrl=2"
 			//document.frmReport.submit();
@@ -93,6 +108,7 @@ Set rsInt = Nothing
 			document.frmReport.txtRepTo.disabled = true;
 			document.frmReport.txtRepFrom.value = "";
 			document.frmReport.txtRepTo.value = "";
+			document.frmReport.selUser.disabled = true;
 			document.frmReport.selIntr.disabled = true;
 			document.frmReport.selIntr.value = 0;
 			if (xxx == 1)
@@ -120,6 +136,7 @@ Set rsInt = Nothing
 				document.frmReport.cal2.disabled = false;
 				document.frmReport.txtRepFrom.disabled = false;
 				document.frmReport.txtRepTo.disabled = false;
+				document.frmReport.selUser.disabled = false;
 			} 
 			if (xxx == 10 || xxx == 11 || xxx == 12 || xxx == 13 || xxx == 15)
 			{
@@ -188,9 +205,6 @@ Set rsInt = Nothing
 											<option value='8' <%=TypeSel8%>>Public Defender Report</option>
 											<option value='16' <%=TypeSel16%>>User Assign</option>
 											<option value='7' <%=TypeSel7%>>User Record</option>
-											
-											
-											
 										</select>
 									</td>
 								</tr>
@@ -213,6 +227,17 @@ Set rsInt = Nothing
 										&nbsp;To:<input class='main' size='10' maxlength='10' name='txtRepTo' readonly value='<%=tmpRepTo%>'>
 										<input type="button" value="..." title='Calendar' name="cal2" style="width: 19px;"
 											onclick="showCalendarControl(document.frmReport.txtRepTo);" class='btnLnk' onmouseover="this.className='hovbtnLnk'" onmouseout="this.className='btnLnk'">
+									</td>
+								</tr>
+								<tr>
+									<td align='right'>
+										Assigners:
+									</td>
+									<td>
+										<select class='seltxt' name='selUser' id="selUser"  style='width:200px;' onchange=''>
+											<!-- option value='0'>&nbsp;</option -->
+											<%=strUsers%>
+										</select>
 									</td>
 								</tr>
 								<tr>

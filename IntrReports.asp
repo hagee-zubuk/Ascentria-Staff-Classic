@@ -5,6 +5,8 @@
 <!-- #include file="_UtilsReport.asp" -->
 <!-- #include file="_Security.asp" -->
 <%
+DIM ts0, ts1
+ts0 = Now
 DIM tmpIntr(), tmpHours()
 Function GetUname(xxx)
 	GetUname = "N/A"
@@ -29,8 +31,12 @@ Function GetTrain(xxx)
 	Set rsTrain = Nothing
 End Function
 server.scripttimeout = 360000
+
+DIM tmpUser
+
 tmpDate2 = date
 tmpReport = Split(Z_DoDecrypt(Request.Cookies("LBREPORT")), "|")
+tmpUser = Request("selUser")
 tmpdate = replace(date, "/", "") 
 tmpTime = replace(FormatDateTime(time, 3), ":", "")
 If Request("ctrl") = 1 Then
@@ -1165,32 +1171,81 @@ ElseIf Request("ctrl")= 2 Then
 		Set rsUser = Nothing
 	ElseIf Request("selRep") = 16 Then'user assign
 		RepCSV =  "UserAssign" & tmpdate & ".csv" 
+		tmpUser = Z_CLng(Request("selUser"))
 		strMSG = "User Assign from " & Request("txtRepFrom") & " to " & Request("txtRepTo")
-		strHead = "<td class='tblgrn'>Name</td>" & vbCrlf & _
-			"<td class='tblgrn'>Number of Appointments</td>" & vbCrlf & vbCrlf 
-		CSVHead = "Last Name, First Name, Number of Appointments"
 		
 		'GET USERS
 		Set rsUser = Server.CreateObject("ADODB.RecordSet")
 		sqlUser = "SELECT * FROM User_T WHERE type <> 2 ORDER BY lname, fname"
+		If tmpUser > 0 Then 
+			sqlUser = "SELECT * FROM User_T WHERE [index]= " & tmpUser & " AND [type]<> 2 ORDER BY lname, fname"
+		End If
 		rsUser.Open sqlUser, g_strCONN, 3, 1
 		Do Until rsUser.EOF
+			CSVHead = ""
+			y = 0
 			kulay = "#FFFFFF"
 			If Not Z_IsOdd(y) Then kulay = "#F5F5F5"
 			tmpCreator = rsUser("fname") & " " & rsUser("lname")
 			username = UCase(Trim(rsUser("fname") & " " & rsUser("lname")))
-			Set rsrep = Server.CreateObject("ADODB.RecordSet")
-			sqlrep = "SELECT Count(interU) AS appcount FROM History_T WHERE Upper(interU) = '" & username & "' AND interTS >= '" & Request("txtRepFrom") & _
-				"' AND interTS <= '" & Request("txtRepTo") & "'"
-			rsrep.Open sqlrep, g_strCONNHist, 3, 1
-			If Not rsrep.EOF Then
-				strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & tmpCreator & "</td>" & vbCrLf & _
-					"<td class='tblgrn2'><nobr>" & rsRep("appcount") & "</td></tr>" & vbCrLf
-				CSVBody = CSVBody & rsUser("lname") & "," & rsUser("fname") & "," & rsRep("appcount") & vbCrLf
-				apptot = apptot + rsRep("appcount")
+			Set rsRep = Server.CreateObject("ADODB.RecordSet")
+			If tmpUser > 0 Then 
+				apptot = 0
+				strHead = "<td class='tblgrn'>Encoded</td>" & _
+						"<td class='tblgrn'>Assigned</td>" & _
+						"<td class='tblgrn'>Req ID</td>" & _
+						"<td class='tblgrn'>Appt Date</td>" & _
+						"<td class='tblgrn'>Interpreter</td>" & _
+						"<td class='tblgrn'>Language</td>" & vbCrlf & vbCrlf 
+				CSVHead = "Assignment report for " & tmpCreator & vbCrLf & "Req timestamp,Assigned,Req_ID,Appt Date,Interpreter,Language"
+				sqlRep = "SELECT rr.[timestamp], hh.[interTS], hh.[reqID], rr.[appDate], CONCAT(it.[First Name], ' ', it.[Last Name]) " & _
+						"AS [interpreter_nm], ln.[Language] " & _
+						"FROM [HistLangBank].dbo.[History_T] AS hh " & _
+						"LEFT JOIN [Langbank].dbo.[request_T] AS rr ON hh.[reqID] = rr.[index] " & _
+						"INNER JOIN [Langbank].dbo.[language_T] AS ln ON rr.[langID] = ln.[index] " & _
+						"INNER JOIN [Langbank].dbo.[interpreter_T] AS it ON rr.[IntrID]=it.[index] " & _
+						"WHERE (hh.[interU]) LIKE '" & tmpCreator  & "' AND interTS >= '" & Request("txtRepFrom") & _
+						"' AND interTS <= '" & Request("txtRepTo") & "' ORDER BY rr.[timestamp] ASC"
+				'Response.Write sqlRep
+				rsRep.Open sqlrep, g_strCONN, 3, 1
+				If Not rsRep.EOF Then
+					Do Until rsRep.EOF
+						If Not Z_IsOdd(y) Then kulay = "#F5F5F5"
+						strBody = strBody & "<tr bgcolor='" & kulay & "'>" & _
+								"<td class='tblgrn2'><nobr>" & rsRep("timestamp") & "</td>" & vbCrLf & _
+								"<td class='tblgrn2'><nobr>" & rsRep("interTS") & "</td>" & vbCrLf & _
+								"<td class='tblgrn2'><nobr>" & rsRep("reqID") & "</td>" & vbCrLf & _
+								"<td class='tblgrn2'><nobr>" & rsRep("appDate") & "</td>" & vbCrLf & _
+								"<td class='tblgrn2'><nobr>" & rsRep("interpreter_nm") & "</td>" & vbCrLf & _
+								"<td class='tblgrn2'><nobr>" & rsRep("language") & "</td></tr>" & vbCrLf
+						CSVBody = CSVBody & rsRep("timestamp") & "," & _
+								rsRep("interTS") & "," & rsRep("reqID") & "," & rsRep("appDate") & "," & _
+								"""" & rsRep("interpreter_nm") & """,""" & rsRep("language") & """" & vbCrLf
+						'apptot = apptot + 1
+						'Response.Write "-->" & rsRep("timestamp") & "<br />" & vbCrLf
+						rsRep.MoveNext
+						y = y + 1
+					Loop
+				End If
+				rsRep.Close
+				apptot = y
+			Else
+				strHead = "<td class='tblgrn'>Name</td>" & vbCrlf & _
+						"<td class='tblgrn'>Number of Appointments</td>" & vbCrlf & vbCrlf 
+				CSVHead = "Last Name, First Name, Number of Appointments"
+				sqlrep = "SELECT Count(interU) AS appcount FROM History_T " & _
+						"WHERE Upper(interU) = '" & username & "' AND interTS >= '" & Request("txtRepFrom") & _
+						"' AND interTS <= '" & Request("txtRepTo") & "'"
+				rsRep.Open sqlrep, g_strCONNHist, 3, 1
+				If Not rsRep.EOF Then
+					strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & tmpCreator & "</td>" & vbCrLf & _
+							"<td class='tblgrn2'><nobr>" & rsRep("appcount") & "</td></tr>" & vbCrLf
+					CSVBody = CSVBody & rsUser("lname") & "," & rsUser("fname") & "," & rsRep("appcount") & vbCrLf
+					apptot = apptot + rsRep("appcount")
+				End If
+				rsRep.Close
 			End If
-			rsrep.Close
-			Set rsrep = Nothing
+			Set rsRep = Nothing
 			y = y + 1
 			rsUser.MoveNext
 		Loop
@@ -1227,6 +1282,8 @@ If Request("csv") <> 1 And Request("selrep") <> 12  And Request("selrep") <> 13 
 Else
 	
 End If
+ts1 = Now
+DateAdd
 %>
 <html>
 	<head>

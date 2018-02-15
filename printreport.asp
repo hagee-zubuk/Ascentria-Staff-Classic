@@ -377,6 +377,7 @@ ElseIf tmpReport(0) = 2 Then
 	Set rsRep = Nothing
 ElseIf tmpReport(0) = 3 Then
 	'INSTITUTION BILLING
+	Response.Redirect "rep_instbillnew.asp"
 	RepCSV =  "InstBillReq" & tmpdate & "-" & tmpTime & ".csv" 
 	RepCSVBill = "InstBillReqNew" & tmpdate & "-" & tmpTime & ".csv" 
 	RepCSVBillL = "InstBillReqNewL" & tmpdate & "-" & tmpTime & ".csv"
@@ -578,7 +579,13 @@ ElseIf tmpReport(0) = 3 Then
 							CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""" & _
 								"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - MW" & rsRep("myindex") & """,""" & date & """,""" & _
 								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
-						ElseIf rsRep("myinstID") = 39 Or rsRep("myinstID") = 168 Or rsRep("myinstID") = 724 Or rsRep("myinstID") = 199 Then 'Manchester School district, con head start and City of Worcester, Southern NH Services 
+						ElseIf rsRep("myinstID") = 39 Or rsRep("myinstID") = 52 Or rsRep("myinstID") = 168 _
+								Or rsRep("myinstID") = 199 Or rsRep("myinstID") = 724 Then
+						' [39] SAU # 37 Manchester School District,
+						' [52] Exeter Hospital,
+						' [168] Concord Head Start,
+						' [199] Southern New Hampshire Services,
+						' [724] City of Worcester 
 							reqp = GetReq(rsRep("reqID"))
 							If Z_Czero(rsRep("HPID")) > 0 Then reqp = reqp & " / " & GetReqHPID(rsRep("HPID"))
 							CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""" & _
