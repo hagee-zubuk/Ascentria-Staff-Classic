@@ -30,7 +30,19 @@ Function GetTrain(xxx)
 	rsTrain.Close
 	Set rsTrain = Nothing
 End Function
-server.scripttimeout = 360000
+Function Z_YMDDate(dtDate)
+DIM lngTmp, strDay, strTmp
+	If Not IsDate(dtDate) Then Exit Function
+	lngTmp = Z_CLng(DatePart("m", dtDate))
+	If lngTmp < 10 Then Z_YMDDate = "0"
+	Z_YMDDate = Z_YMDDate & lngTmp & "-"
+	lngTmp = Z_CLng(DatePart("d", dtDate))
+	If lngTmp < 10 Then Z_YMDDate = Z_YMDDate & "0"
+	Z_YMDDate = Z_YMDDate & lngTmp
+	strTmp = DatePart("yyyy", dtDate)
+	Z_YMDDate = strTmp & "-" & Z_YMDDate
+End Function
+Server.ScriptTimeout = 360000
 
 DIM tmpUser
 
@@ -1198,14 +1210,15 @@ ElseIf Request("ctrl")= 2 Then
 						"<td class='tblgrn'>Interpreter</td>" & _
 						"<td class='tblgrn'>Language</td>" & vbCrlf & vbCrlf 
 				CSVHead = "Assignment report for " & tmpCreator & vbCrLf & "Req timestamp,Assigned,Req_ID,Appt Date,Interpreter,Language"
-				sqlRep = "SELECT rr.[timestamp], hh.[interTS], hh.[reqID], rr.[appDate], CONCAT(it.[First Name], ' ', it.[Last Name]) " & _
-						"AS [interpreter_nm], ln.[Language] " & _
+				tmpDT = Z_YMDDate(DateAdd("d", 1, Z_CDate(Request("txtRepTo"))))
+				sqlRep = "SELECT rr.[timestamp], hh.[interTS], hh.[reqID], rr.[appDate], it.[First Name], it.[Last Name] " & _
+						", ln.[Language] " & _
 						"FROM [HistLangBank].dbo.[History_T] AS hh " & _
 						"LEFT JOIN [Langbank].dbo.[request_T] AS rr ON hh.[reqID] = rr.[index] " & _
 						"INNER JOIN [Langbank].dbo.[language_T] AS ln ON rr.[langID] = ln.[index] " & _
 						"INNER JOIN [Langbank].dbo.[interpreter_T] AS it ON rr.[IntrID]=it.[index] " & _
-						"WHERE (hh.[interU]) LIKE '" & tmpCreator  & "' AND interTS >= '" & Request("txtRepFrom") & _
-						"' AND interTS <= '" & Request("txtRepTo") & "' ORDER BY rr.[timestamp] ASC"
+						"WHERE (hh.[interU]) LIKE '" & tmpCreator  & "' AND interTS >= '" & Z_YMDDate(Request("txtRepFrom")) & _
+						"' AND interTS <= '" & tmpDT & "' ORDER BY rr.[timestamp] ASC"
 				'Response.Write sqlRep
 				rsRep.Open sqlrep, g_strCONN, 3, 1
 				If Not rsRep.EOF Then
@@ -1216,11 +1229,11 @@ ElseIf Request("ctrl")= 2 Then
 								"<td class='tblgrn2'><nobr>" & rsRep("interTS") & "</td>" & vbCrLf & _
 								"<td class='tblgrn2'><nobr>" & rsRep("reqID") & "</td>" & vbCrLf & _
 								"<td class='tblgrn2'><nobr>" & rsRep("appDate") & "</td>" & vbCrLf & _
-								"<td class='tblgrn2'><nobr>" & rsRep("interpreter_nm") & "</td>" & vbCrLf & _
+								"<td class='tblgrn2'><nobr>" & rsRep("first name") & " " & rsRep("last name") & "</nobr></td>" & vbCrLf & _
 								"<td class='tblgrn2'><nobr>" & rsRep("language") & "</td></tr>" & vbCrLf
 						CSVBody = CSVBody & rsRep("timestamp") & "," & _
 								rsRep("interTS") & "," & rsRep("reqID") & "," & rsRep("appDate") & "," & _
-								"""" & rsRep("interpreter_nm") & """,""" & rsRep("language") & """" & vbCrLf
+								"""" & rsRep("first name") & " " & rsRep("last name") & """,""" & rsRep("language") & """" & vbCrLf
 						'apptot = apptot + 1
 						'Response.Write "-->" & rsRep("timestamp") & "<br />" & vbCrLf
 						rsRep.MoveNext
@@ -1283,7 +1296,7 @@ Else
 	
 End If
 ts1 = Now
-DateAdd
+'DateAdd
 %>
 <html>
 	<head>
