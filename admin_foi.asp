@@ -82,6 +82,7 @@ strSQL = "SELECT i.[index], COALESCE(ir.[userid],-1) AS [userid], ir.[empname], 
 		"FROM [interpreter_T] AS i " & _ 
 		"INNER JOIN [user_t] AS u ON i.[index]=u.[intrid] " & _
 		"LEFT JOIN [InfoRelease] AS ir ON u.[index]=ir.[userid] " & _
+		"WHERE i.[active]=1 " & _
 		"ORDER BY i.[Last Name] ASC"
 rsIntr.Open strSQL, g_strCONN, 3, 1
 Prt.WriteLine "LANGUAGE BANK - CONSENT FORM SUBMISSIONS"
