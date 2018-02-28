@@ -168,6 +168,20 @@ mysundate = GetSun(tmpDate)
 mysatdate = GetSat(tmpDate)
 mytsheet = mysundate & " - " & mysatdate
 mymileage = tmpMonth
+
+sqlDup = "SELECT COUNT(qq) AS dup FROM (" & _
+		"SELECT COUNT([index]) AS qq, [Clname], [Cfname] " & _
+		"FROM [request_T] " & _
+		"WHERE [appDate]='" & tmpDate & "' AND ([Status]<2 OR [Status]>3) " & _
+		"GROUP BY [Clname], [Cfname]) AS z WHERE qq > 1"
+Set rsDup = Server.CreateObject("ADODB.RecordSet")		
+rsDup.Open sqlDup, g_strConn, 3, 1
+blnDup = False
+If Not rsDup.EOF Then
+	blnDup = CBool(rsDup("dup") > 0)
+End If
+rsDup.Close
+Set rsDup = Nothing
 Set rsReq = Server.CreateObject("ADODB.RecordSet")
 If Request.Cookies("LBUSERTYPE") <> 2 Then
 	sqlReq = "SELECT * FROM request_T WHERE appDate = '" & tmpDate & "' ORDER BY appTimeFrom"
@@ -431,6 +445,13 @@ Set rsReq = Nothing
 			else {
 				document.frmCal.btnFIND.disabled = false;
 			}
+<% If (blnDup) Then %>
+			dupwin = window.open("calDuplicates.asp?dt=<%=tmpDate%>","WinDup",
+							"channelmode=0,directories=0,fullscreen=0,height=400," + 
+							"left=100,location=0,menubar=0,resizable=1,scrollbars=1" +
+							"status=0,titlebar=0,toolbar=0,top=100,width=600");
+			//alert("possible duplicate appointment found");
+<% End If %>
 		}
 		//-->
 		</script>
