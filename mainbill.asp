@@ -82,11 +82,13 @@ If Not rsConfirm.EOF Then
 	misd = ""
 	canc = ""
 	canc2 = ""
+	unful = ""
 	If rsConfirm("Status") = 0 Then stat = "checked"
 	If rsConfirm("Status") = 1 Then comp = "checked"
 	If rsConfirm("Status") = 2 Then misd = "checked"
 	If rsConfirm("Status") = 3 Then canc = "checked"
 	If rsConfirm("Status") = 4 Then canc2 = "checked"
+	If rsConfirm("Status") = 8 Then unful = "checked"
 	billedna = ""
 	If rsConfirm("Processed") <> Empty Or rsConfirm("ProcessedPR") <> Empty Then billedna = "disabled"
 	If Request.Cookies("LBUSERTYPE") = 1 Then billedna = ""
@@ -496,6 +498,12 @@ Set rsMiss = Nothing
 			  document.frmConfirm.txtActMile.value = 0;
 		  }
 	  <% End If %>
+	  	function Unfulfilled() {
+	  		document.frmConfirm.selCancel.value = 0;
+			document.frmConfirm.selCancel.disabled = true;	
+			document.frmConfirm.selMissed.value = 0;
+			document.frmConfirm.selMissed.disabled = true;
+	  	}
 		function CancelMe()
 		{
 			document.frmConfirm.selCancel.value = 0;
@@ -996,6 +1004,8 @@ Set rsMiss = Nothing
 											<td>&nbsp;</td>
 											<td align='left'>
 												<input type='radio' <%=canc2%>  name='radioStat' value='4' onclick='CancelMe(); MissedMe(); ChkComplete();'>&nbsp;<b>Canceled (billable)</b>
+												&nbsp;&nbsp;
+												<input type='radio' <%=unful%>  name='radioStat' value='8' onclick='Unfulfilled()'>&nbsp;<b>Unfulfilled</b>
 											</td>
 											<td align='right'>
 												Missed Reason:

@@ -20,6 +20,8 @@ Function CleanFax(strFax)
 End Function
 Function GetMyStatus(xxx)
 	Select Case xxx
+		Case 8
+			GetMyStatus = "UNFULFILLED"
 		Case 1
 			GetMyStatus = "COMPLETED"
 		Case 2

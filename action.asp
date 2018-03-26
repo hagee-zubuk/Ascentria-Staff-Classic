@@ -1220,6 +1220,9 @@ ElseIf Request("ctrl") = 10 Then
 		tmpstat = GetStatNum(Request("ReqID"))
 		rsBill.Open sqlBill, g_strCONN, 1, 3
 		If Not rsBill.EOF Then
+			If tmpEntry(1) = 8 AND (tmpEntry(1) <> rsBill("Status")) Then
+				rsBill("billingTrail") = rsBill("billingTrail") & "<br>Status changed to UNFULFILLED"	
+			End If
 			rsBill("Status") = tmpEntry(1)
 			If tmpEntry(1) = 3 Or tmpEntry(1) = 4 Then
 				If tmpEntry(1) = 4 Then
@@ -1332,6 +1335,8 @@ ElseIf Request("ctrl") = 10 Then
 					rsBill("Status") = 3
 				ElseIf tmpEntry(1) = 4 Then
 					rsBill("Status") = 4
+				ElseIf tmpEntry(1) = 8 Then			
+					rsBill("Status") = 8
 				Else
 					rsBill("Status") = 0
 				End If
