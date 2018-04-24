@@ -187,9 +187,11 @@ If Not rsConfirm.EOF Then
 	train0 = ""
 	train1 = ""
 	train2 = ""
+	train3 = ""
 	If rsConfirm("training") = 0 Then train0 = "selected"
 	If rsConfirm("training") = 1 Then train1 = "selected"
 	If rsConfirm("training") = 2 Then train2 = "selected"
+	If rsConfirm("training") = 3 Then train3 = "selected"
 	mrrec = rsConfirm("mrrec")
 	tmpblock = ""
 	If rsConfirm("blocksched") Then tmpblock = "checked"
@@ -1118,8 +1120,9 @@ End If
 												&nbsp;&nbsp;&nbsp;&nbsp;Training:
 												<select name='selTrain' class='seltxt' style='width:150px;'>
 													<option value='0' <%=train0%>>Regular</option>
-													<option value='1' <%=train1%>>Training</option>
-													<option value='2' <%=train2%>>In house Training</option>
+													<option value='1' <%=train1%>>MIT Interpreter 1</option>
+													<option value='2' <%=train2%>>Continuing Education Hours</option>
+													<option value='3' <%=train3%>>Trainers Hours</option>
 												</select>
 											<% End If %>
 										</td>

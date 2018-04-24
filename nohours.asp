@@ -158,9 +158,9 @@ Set rsDept = Nothing
 				<tr><td>&nbsp;</td></tr>
 <tr><td align='right'>Type:</td><td><select name='selTrain' class='seltxt' style='width:150px;'>
 							<option value='0'>Regular</option>
-							<option value='1'>Training</option>
-							<option value='2'>In house Training</option>
-							<option value='3'>Interpreter Training Hours</option><!-- added 2017-12-04 on req from Alen -->
+							<option value='1'>MIT Interpreter 1</option><!-- Training -->
+							<option value='2'>Continuing Education Hours</option><!-- In house Training -->
+							<option value='3'>Trainers Hours</option><!-- added 2017-12-04 on req from Alen; was: Interpreter Training Hours -->
 						</select>
 					</td>
 				</tr>
