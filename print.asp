@@ -291,40 +291,31 @@ If tmpClass = 3 Or tmpClass = 5 Then tmpName = tmpfName & " " & Left(tmplName, 1
 						<td valign='top' align='center'>
 							<table cellSpacing='0' cellPadding='0' height='80px' width='620px' bgcolor='#FFFFFF'  border='0' align='center'>
 								<tr>
-									<td align='right' colspan='2'>
-										<table cellSpacing='0' cellPadding='0'  bgcolor='#FFFFFF'  border='0' align='right'>
-											<tr>
-												<td align='center' width='100%' style='border: solid 1px;'>
-													<img src="_barcode.asp?code=<%=PID%>&height=20&width=2&mode=code39&text=0&fileout=<%=myPath%>" style="visibility:hidden" >
-													<br />
-										    	&nbsp;<img src="Images/BC/<%=myBC%>">&nbsp;
-										   		<br />
-	                  			<b><%=PID%></b>
-	                  		</td>
-											</tr>
-										</table>
-									</td>
-								</tr>
-								<tr><td>&nbsp;</td></tr>
-								<tr>
 									<td align='center' width='50%'>
 										<p class="headerumass">
-											UMASS MEMORIAL MEDICAL CENTER <br />
-                    	INTERPRETER SERVICES<br />
-                    	<font size='1'><i>for inquiries call 508-334-7651</i></font><br /><br />
-                      <b>ENCOUNTER FORM</b>
+UMASS MEMORIAL MEDICAL CENTER <br />
+INTERPRETER SERVICES
+<br /><br />
+<b>ENCOUNTER FORM</b>
 										</p>
 									</td>
-                  <td align='left' width='50%' style="border: 1px solid;" rowspan='5'>
-                    <p class="header2">
-	                  	Patient Name: <u>_<b><%=tmpName%></b></u>____________
-	                  	<br /><br />
-	                  	Address:  <u>_<b><%=tmpDeptaddr%></b></u>
-	                  	<br /><br />
-	                    Date of Birth: <u>_<b><%=tmpDOB%></b></u>______________
-	                    <br /><br />
-	                    Medical Record #: <u>_<b><%=mrrec%></b></u>____________________
-                 		</p>
+
+                  <td align='left' width='50%' style="border: 1px solid; vertical-align: top;" rowspan='5'>
+                  	<div style="padding: 2px 4px; position: relative; height: 100%; width: 100%;">
+<b>MEDICAL RECORD NUMBER ONLY:</b><br /><br />
+<div style="font-size: 150%; text-align: center; width: 100%;"><u><b><%=mrrec%></b></u></div>
+<div style="display: block; position: absolute; bottom: 25px; width: 90%; margin: 0px auto; text-align: center; ">
+	<div style="font-size: 70%;">LB tracking code</div>
+	<img src="_barcode.asp?code=<%=PID%>&height=20&width=2&mode=code39&text=0&fileout=<%=myPath%>" style="visibility:hidden" >
+	<br />
+	&nbsp;<img src="Images/BC/<%=myBC%>">&nbsp;
+	<br />
+	<b><%=PID%></b>
+</div>
+<div style="position: absolute; bottom: -0px; font-size: 80%;">
+	<i>Do not include any other information besides MRN#</i>
+</div>
+					</div>
                   </td>
 								</tr>
 								<tr><td>&nbsp;</td></tr>
@@ -641,12 +632,32 @@ If tmpClass = 3 Or tmpClass = 5 Then tmpName = tmpfName & " " & Left(tmplName, 1
 				        </tr>
 				        <tr><td>&nbsp;</td></tr>
 				        <tr>
+<%
+tmpHr = Hour(tmpAppTFrom)
+tmpAP = "AM"
+If tmpHr > 12 Then 
+	tmpHr = tmpHr - 12
+	tmpAP = "PM"
+End If
+tmpAppTFrom =  tmpHr & ":" & Right("0" & Minute(tmpAppTFrom),2) & tmpAP
+' Format("HH:mm", tmpAppTFrom)
+tmpHr = Hour(tmpAppTTo)
+tmpAP = "AM"
+If tmpHr > 12 Then 
+	tmpHr = tmpHr - 12
+	tmpAP = "PM"
+End If
+tmpAppTTo =  tmpHr & ":" & Right("0" & Minute(tmpAppTTo),2) & tmpAP
+
+
+%>				        			
+
 				        	<td>
 				        		<p class="header">
 				        			Requested Date/Time:<u>_<b><%=tmpAppDate%>&nbsp;<%=tmpAppTFrom%> - <%=tmpAppTTo%></b></u>
 				        		</p>
 				        	</td>
-				        	<td align='left' width='50%' style="border: 1px solid;" rowspan='3'>
+				        	<td align='left' width='50%' style="border: 1px solid;" rowspan='2'>
                     <p class="header">
 											<table style="width: 100%;">
 												<tr>
@@ -661,7 +672,7 @@ If tmpClass = 3 Or tmpClass = 5 Then tmpName = tmpfName & " " & Left(tmplName, 1
 				        <tr>
 				        	<td>
 				        		<p class="header">
-				        			Arrival Time:______________________________________
+				        			Arrival Time:________________________________&nbsp;AM/PM
 				        		</p>
 				        	</td>
 				        </tr>
@@ -669,7 +680,7 @@ If tmpClass = 3 Or tmpClass = 5 Then tmpName = tmpfName & " " & Left(tmplName, 1
 				        <tr>
 				        	<td>
 				        		<p class="header">
-				        			Interpretation Begins:______________________________
+				        			Interpretation Begins:_________________________&nbsp;AM/PM
 				        		</p>
 				        	</td>
 				        	<td align='left' width='50%' style="border: 1px solid;" rowspan='3'>
@@ -691,7 +702,7 @@ If tmpClass = 3 Or tmpClass = 5 Then tmpName = tmpfName & " " & Left(tmplName, 1
 				        <tr>
 				        	<td>
 				        		<p class="header">
-				        			Encounter Ends:___________________________________
+				        			Encounter Ends:______________________________&nbsp;AM/PM
 				        		</p>
 				        	</td>
 				        </tr>

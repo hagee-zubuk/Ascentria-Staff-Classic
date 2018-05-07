@@ -338,10 +338,15 @@ ElseIf Request("sino") = 1 Or Request("sino") = 3 Then 'FOR INTERPRETER
 			"Main Office 978-937-6591"
 		theDoc.AddHtml(theText)
 	ElseIf intInstID = 860 Then
-		Set theDoc2 = Server.CreateObject("ABCpdf6.Doc") 'converts html to pdf
-		theDoc2.Read(DirectionPath & "Instructions for Interpreters at UMass pdf version 10.10.17.pdf")
-		theDoc.Append(theDoc2)
-		Set theDoc2 = Nothing
+'		Set theDoc2 = Server.CreateObject("ABCpdf6.Doc") 'converts html to pdf
+'		theDoc2.Read(DirectionPath & "Instructions for Interpreters at UMass pdf version 10.10.17.pdf")
+'		theDoc.Append(theDoc2)
+'		Set theDoc2 = Nothing
+
+		Set theDoc3 = Server.CreateObject("ABCpdf6.Doc")
+		theDoc3.Read(DirectionPath & "umass_encounter_form.2018.pdf")
+		theDoc.Append(theDoc3)
+
 	End If
 
 	Do
