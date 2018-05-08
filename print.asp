@@ -304,14 +304,6 @@ INTERPRETER SERVICES
                   	<div style="padding: 2px 4px; position: relative; height: 100%; width: 100%;">
 <b>MEDICAL RECORD NUMBER ONLY:</b><br /><br />
 <div style="font-size: 150%; text-align: center; width: 100%;"><u><b><%=mrrec%></b></u></div>
-<div style="display: block; position: absolute; bottom: 25px; width: 90%; margin: 0px auto; text-align: center; ">
-	<div style="font-size: 70%;">LB tracking code</div>
-	<img src="_barcode.asp?code=<%=PID%>&height=20&width=2&mode=code39&text=0&fileout=<%=myPath%>" style="visibility:hidden" >
-	<br />
-	&nbsp;<img src="Images/BC/<%=myBC%>">&nbsp;
-	<br />
-	<b><%=PID%></b>
-</div>
 <div style="position: absolute; bottom: -0px; font-size: 80%;">
 	<i>Do not include any other information besides MRN#</i>
 </div>
