@@ -74,10 +74,13 @@ CSVHead = "Request ID,Institution, Department, Appointment Date, Client Last Nam
 		", Comments, DOB, Customer ID, DHHS, Requesting Person, User"
 	
 sqlRep = "SELECT claimant, judge, meridian, nhhealth, wellsense" & _
-		", DocNum, billingTrail, ReqID, HPID, syscom, processed, hasmed" & _
+		", billingTrail, ReqID, HPID, syscom, processed, hasmed" & _
 		", outpatient, medicaid, vermed, autoacc, wcomp, drg, pid" & _
+		", RTRIM(COALESCE([cfname], '')) AS [cfname]" & _
+		", RTRIM(COALESCE([clname], '')) AS [clname]" & _
+		", COALESCE([docnum], '') AS [docnum]"" & _
 		", r.[index] AS myindex, r.InstID AS myinstID, [status]" & _
-		", Clname, Cfname, AStarttime, AEndtime, Billable, DOB, emerFEE" & _
+		", AStarttime, AEndtime, Billable, DOB, emerFEE" & _
 		", [class], TT_Inst, M_Inst, DeptID, LangID, appDate, InstRate" & _
 		", bilComment, custID, ccode, billgroup, IntrID, appTimeFrom, appTimeTo" & _
 		", d.distcode, i.[Last Name], i.[First Name] " & _
@@ -117,7 +120,6 @@ If tmpReport(9) <> 0 Then
 		sqlRep = sqlRep & " AND [Class] = " & tmpReport(8)
 	End If
 End If
-
 sqlRep = sqlRep & " ORDER BY CustID ASC, AppDate DESC" '" ORDER BY AppDate DESC"
 ' Response.Write "<pre>" & sqlRep & "</pre>"
 ' Response.End
@@ -129,6 +131,7 @@ If Not rsRep.EOF Then
 	Do Until rsRep.EOF
 		BillHours = 0
 		IncludeReq = True
+		docnum = ""
 		kulay = "#FFFFFF"
 		If Not Z_IsOdd(x) Then kulay = "#F5F5F5"
 		CB = ""
