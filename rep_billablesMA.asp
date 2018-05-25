@@ -102,6 +102,7 @@ If Request("csv") <> 1 Then
 	'EXPORT CSV
 	'If Request("bill") <> 1 Then
 	tmpstring = "CSV/" & repCSV 'add for RepCSVBill
+	tmpstring = "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV)
 End If
 %>
 <!DOCTYPE html>

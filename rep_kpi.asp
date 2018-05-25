@@ -284,7 +284,7 @@ If Request("csv") <> 1 Then
 	Set fso = Nothing
 	'EXPORT CSV
 	'If Request("bill") <> 1 Then
-	tmpstring = "CSV/" & repCSV 'add for RepCSVBill
+	tmpstring = "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV) & "&NF=" & Z_DoEncrypt("KPI_Report.csv")
 End If
 %>
 <!DOCTYPE html>

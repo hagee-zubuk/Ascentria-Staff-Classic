@@ -574,6 +574,18 @@ If Z_CZero(tmpReport(0)) = 3 Or Z_CZero(tmpReport(0)) = 16 Then 'additional csv 
 	tmpstringWSHP = "CSV/" & RepCSVBillWSHP
 	tmpstringcourts = "CSV/" & RepCSVBillCourts
 
+	' corrections!
+	tmpstring = "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV)
+	tmpstring2 = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBill)
+	tmpstring3 = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillL)
+	tmpstring4 = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillSigma)
+	tmpstring5 = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillMeri)
+	tmpstringMED = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillLB)
+	tmpstringMHP = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillMHP)
+	tmpstringNHHF = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillNHHF)
+	tmpstringWSHP = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillWSHP)
+	tmpstringcourts = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillCourts)
+
 	'COPY FILE TO BACKUP
 	fso.CopyFile RepPath & RepCSV, BackupStr
 	

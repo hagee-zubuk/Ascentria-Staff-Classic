@@ -431,7 +431,7 @@ If Not rsReq.EOF Then
 				Set Prt = Nothing
 				fso.CopyFile RepPath & RepCSV, BackupStr
 				Set fso = Nothing
-				tmpstring = "CSV/" & repCSV
+				tmpstring = "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV)
 			strtbl = strtbl & "</tr>" & vbCrLf
 		x = x + 1
 		totFPHours = totFPHours + FPHrs

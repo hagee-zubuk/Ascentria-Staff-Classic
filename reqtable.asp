@@ -362,7 +362,7 @@ If Not rsReq.EOF Then
 				Set Prt = Nothing
 				fso.CopyFile RepPath & RepCSV, BackupStr
 				Set fso = Nothing
-				tmpstring = "CSV/" & repCSV
+				tmpstring = "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV)
 			End If
 		Else
 				strtbl = strtbl & "<tr bgcolor='" & kulay & "'>" & vbCrLf & _ 

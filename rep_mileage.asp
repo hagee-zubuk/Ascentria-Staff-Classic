@@ -337,6 +337,15 @@ RepCSV =  "Mileage" & tmpdate & "-" & tmpTime & ".csv"
 	Set LogMe = Nothing
 	Set fso = Nothing
 
+	Set Prt = fso.CreateTextFile(RepPath &  RepCSV, True)
+	Prt.WriteLine "LANGUAGE BANK - REPORT"
+	Prt.WriteLine strMSG
+	Prt.WriteLine CSVHead
+	Prt.WriteLine CSVBody
+	Prt.Close	
+	Set Prt = Nothing
+	
+	tmpstring = "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV)
 %>
 <!DOCTYPE html>
 <html lang="en">

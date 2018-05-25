@@ -164,7 +164,8 @@ If Request("fname") <> "none" Then
 		Set Prt = Nothing
 		fso.CopyFile RepPath & RepCSV, BackupStr
 		Set fso = Nothing
-		tmpstring = "CSV/" & repCSV
+		
+		tmpstring = "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV)
 	Else
     strBody = "<tr><td colspan='13' align='center'><i>&lt --- Invalid File --- &gt</i></td></tr>"
  	End If

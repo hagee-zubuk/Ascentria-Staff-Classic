@@ -6095,16 +6095,17 @@ If Request("csv") <> 1 Then
 	Set fso = Nothing
 	'EXPORT CSV
 	'If Request("bill") <> 1 Then
-		tmpstring = "CSV/" & repCSV 'add for RepCSVBill
-		tmpstring2 = "CSV/" & RepCSVBill
-		tmpstring3 = "CSV/" & RepCSVBillL
-		tmpstring4 = "CSV/" & RepCSVBillSigma
-		tmpstring5 = "CSV/" & RepCSVBillMeri
-		tmpstringMED = "CSV/" & RepCSVBillLB
-		tmpstringMHP = "CSV/" & RepCSVBillMHP
-		tmpstringNHHF = "CSV/" & RepCSVBillNHHF
-		tmpstringWSHP = "CSV/" & RepCSVBillWSHP
-		tmpstringcourts = "CSV/" & RepCSVBillCourts
+		' corrections!
+		tmpstring = "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV)
+		tmpstring2 = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBill)
+		tmpstring3 = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillL)
+		tmpstring4 = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillSigma)
+		tmpstring5 = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillMeri)
+		tmpstringMED = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillLB)
+		tmpstringMHP = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillMHP)
+		tmpstringNHHF = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillNHHF)
+		tmpstringWSHP = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillWSHP)
+		tmpstringcourts = "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillCourts)
 	'Else
 	'	tmpstring= "CSV/" & repCSV2
 	'End IF
@@ -6121,6 +6122,7 @@ Else
 	'	'dload.Download RepCSV2
 	'End IF
 	'Set dload = Nothing
+	tmpstring = "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV)
 End If
 %>
 <html>

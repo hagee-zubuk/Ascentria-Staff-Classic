@@ -58,7 +58,7 @@ Set Prt = Nothing
 Set fso = Nothing
 
 tmpstring = "CSV/" & repCSV
-
+tmpstring = "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV)
 
 %>
 <html>

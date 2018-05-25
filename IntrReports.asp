@@ -1290,8 +1290,7 @@ If Request("csv") <> 1 And Request("selrep") <> 12  And Request("selrep") <> 13 
 	
 	Set fso = Nothing
 	
-	tmpstring = "CSV/" & repCSV
-	
+	tmpstring = "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV)	
 Else
 	
 End If
