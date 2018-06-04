@@ -98,7 +98,7 @@ RepCSV =  "Mileage" & tmpdate & "-" & tmpTime & ".csv"
 				tmpToll(lngIdx) = tmpToll(lngIdx) + strTol
 			End If
 
-			rsRep("mileageproc") = Date ' TODO: put this back in effect!
+			'rsRep("mileageproc") = Date ' TODO: put this back in effect!
 			rsRep.Update
 			rsRep.MoveNext
 		Loop
@@ -309,7 +309,7 @@ RepCSV =  "Mileage" & tmpdate & "-" & tmpTime & ".csv"
 					"<td align='left' colspan='4'><nobr><b><u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u></b></u></td>" & vbCrLf & _
 				"</tr>" & vbCrLf & _
 				"<tr><td colspan='6'>&nbsp;</td></tr>" & vbCrLf & _
-				"</table><div class='page-break'><br></div>" & vbCrLf
+				"</table><div style=""page-break-after: always;""><br></div>" & vbCrLf
 				
 				
 		'	strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & GetFileNum(tmpIntr(y)) & "</td>" & vbCrLf & _
@@ -335,7 +335,7 @@ RepCSV =  "Mileage" & tmpdate & "-" & tmpTime & ".csv"
 	strLog = Now & vbTab & "Mileage ran by " & Session("UsrName") & "."
 	LogMe.WriteLine strLog
 	Set LogMe = Nothing
-	Set fso = Nothing
+	
 
 	Set Prt = fso.CreateTextFile(RepPath &  RepCSV, True)
 	Prt.WriteLine "LANGUAGE BANK - REPORT"
@@ -346,12 +346,13 @@ RepCSV =  "Mileage" & tmpdate & "-" & tmpTime & ".csv"
 	Set Prt = Nothing
 	
 	tmpstring = "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV)
+	Set fso = Nothing
 %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-	<title>Language Bank - Report Result</title>
+	<title>Mileage Report Result</title>
 	<link href='style.css' type='text/css' rel='stylesheet'>
 	<script language='JavaScript'>
 function exportMe()
@@ -368,7 +369,7 @@ function PassMe(xxx)
 	</script>
 </head>
 <body>
-<div style="width: 300px; text-align: center; margin: 0px auto 20px;">
+<div style="width: 300px; text-align: center; margin: 0px auto 20px;" >
 	<img src='images/LBISLOGO.jpg' align='center' style="width: 287px; height: 67px;" />
 	340 Granite Street 3<sup>rd</sup> Floor, Manchester, NH 03102<br />
 	Tel:&nbsp;(603)&nbsp;410-6183&nbsp;|&nbsp;Fax:&nbsp;(603)&nbsp;410-6186
@@ -377,14 +378,16 @@ function PassMe(xxx)
 			<table cellSpacing='0' cellPadding='0' width="100%" bgColor='white' border='0'>
 				<tr><td valign='top' >
 							<table bgColor='white' border='0' cellSpacing='2' cellPadding='0' align='center'>
-								<tr bgcolor='#f58426'>
+								<tr style="background-color: #f58426;">
 									<td colspan='<%=ctr + 7%>' align='center'>
 <b><%=strMSG%></b>
 									</td>
 								</tr>
+							</table>
 <%=strBody%>
 								<tr><td>&nbsp;</td></tr>
 							</table>
+<div style="page-break-after: always;">&nbsp;</div>
 <div>
 <%
 arrCtr = 0
