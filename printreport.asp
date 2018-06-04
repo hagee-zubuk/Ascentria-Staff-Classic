@@ -1230,60 +1230,8 @@ ElseIf tmpReport(0) = 14 Then 'canceled'
 	rsRep.Close
 	Set rsRep = Nothing
 ElseIf tmpReport(0) = 15 Then 'canceled- billable
-	ctr = 10
-	RepCSV =  "CanceledBill" & tmpdate & ".csv" 
-	Set rsRep = Server.CreateObject("ADODB.RecordSet")
-	sqlRep = "SELECT request_T.[index] as myindex, Facility, dept, DeptID, LangID, Clname, Cfname, [Last Name], [First Name], appDate, AStarttime, AEndtime, Comment, cancel  FROM request_T, Interpreter_T, institution_T, Dept_T WHERE request_T.[instID] <> 479 AND IntrID = interpreter_T.[index] AND institution_T.[index] = request_T.InstID AND dept_T.[index] = DeptID " & _
-		"AND Status = 4"
-	strMSG = "Canceled (Billable) appointment report"
-	strHead = "<td class='tblgrn'>Request ID</td>" & vbCrlf & _
-		"<td class='tblgrn'>Institution</td>" & vbCrlf & _
-		"<td class='tblgrn'>Language</td>" & vbCrlf & _
-		"<td class='tblgrn'>Client</td>" & vbCrlf & _
-		"<td class='tblgrn'>Interpreter</td>" & vbCrlf & _
-		"<td class='tblgrn'>Appointment Date</td>" & vbCrlf & _
-		"<td class='tblgrn'>Start and End Time</td>" & vbCrlf & _
-		"<td class='tblgrn'>Reason</td>" & vbCrlf & _
-		"<td class='tblgrn'>Comments</td>" & vbCrlf
-	CSVHead = "Request ID, Institution, Department,Language, Client Last Name, Client First Name, Interpreter Last Name, Interpreter First Name, Appointment Date, Appointment Start Time, " & _
-		"Appointment End Time, Reason, Comments"		
-	If tmpReport(1) <> "" Then
-		sqlRep = sqlRep & " AND appDate >= '" & tmpReport(1) & "'"
-		strMSG = strMSG & " from " & tmpReport(1)
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRep = sqlRep & " AND appDate <= '" & tmpReport(2) & "'"
-		strMSG = strMSG & " to " & tmpReport(2)
-	End If
-	sqlRep = sqlRep & " ORDER BY Facility, appDate, Clname, Cfname"
-	rsRep.Open sqlRep, g_strCONN, 1, 3	
-	If Not rsRep.EOF Then
-		x = 0
-		Do Until rsRep.EOF
-			kulay = "#FFFFFF"
-			If Not Z_IsOdd(x) Then kulay = "#F5F5F5"
-			strBody = strBody & "<tr bgcolor='" & kulay & "' onclick='PassMe(" & rsRep("myindex") & ")'>" & _
-				"<td class='tblgrn2'><nobr>" & rsRep("myindex") & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & rsRep("Facility") & " - " & rsRep("dept") & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & GetLang(rsRep("LangID")) & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & rsRep("Clname") & ", " & rsRep("Cfname") & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & rsRep("Last Name") & ", " & rsRep("First Name") & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & rsRep("appDate") & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & ctime(rsRep("AStarttime")) & " - " & ctime(rsRep("AEndtime")) &"</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & GetCanReason(rsRep("Cancel")) & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & rsRep("Comment") & "</td></tr>" & vbCrLf
-			CSVBody = CSVBody & rsRep("myindex") & "," & rsRep("Facility") & "," &  Replace(GetMyDept(rsRep("DeptID")), " - ", "") & "," & GetLang(rsRep("LangID")) & "," & rsRep("Clname") & "," & rsRep("Cfname") &  ","  & rsRep("Last Name") & _
-				"," & rsRep("First Name") & ","  & rsRep("appDate") & "," & ctime(rsRep("AStarttime")) & "," & ctime(rsRep("AEndtime")) & ",""" & GetCanReason(rsRep("Cancel")) & """,""" & _
-				rsRep("Comment") &"""" &  vbCrLf
-			rsRep.MoveNext
-			x = x + 1
-		Loop
-	Else
-		strBody = "<tr><td colspan='8' align='center'><i>&lt --- No records found --- &gt</i></td></tr>"
-		CSVBody = "< --- No records found --- >"
-	End If
-	rsRep.Close
-	Set rsRep = Nothing
+	Response.Redirect "rep_cancelledbillable.asp"
+	' moved to script file 
 ElseIf tmpReport(0) = 16 Then 'billing w/o tagging
 	'INSTITUTION BILLING
 	RepCSV =  "InstXBillReq" & tmpdate & "-" & tmpTime & ".csv" 

@@ -16,6 +16,7 @@ Function Z_MinRate()
 	rsRate.Close
 	Set rsRate = Nothing
 End Function
+
 Function Z_InHouseRate()
 	Z_InHouseRate = 0
 	Set rsRate = Server.CreateObject("ADODB.RecordSet")
@@ -27,17 +28,21 @@ Function Z_InHouseRate()
 	rsRate.Close
 	Set rsRate = Nothing
 End Function
+
 Function Z_GetRequestCount(sqlDt, sqlFilt)
 	Z_GetRequestCount = 0
 	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT([appDate]) AS CTR FROM [request_T] INNER JOIN [dept_T] ON [request_T].[DeptID]=[dept_T].[index] WHERE [request_T].[instID] <> 479 " & _
-				sqlDt & sqlFilt
+	sqlRef = "SELECT COUNT([appDate]) AS CTR " & _
+			", SUM(CASE WHEN d.[State]='NH' THEN 1 ELSE 0 END) AS NHCtr " & _
+			", SUM(CASE WHEN d.[State]='MA' THEN 1 ELSE 0 END) AS MACtr " & _
+			"FROM [request_T] INNER JOIN [dept_T] AS d ON [request_T].[DeptID]=d.[index] " & _
+			"WHERE [request_T].[instID] <> 479 " & sqlDt & sqlFilt
 On Error Resume Next				
 	rsRef.Open sqlRef, g_strCONN, 1, 3
-	Z_GetRequestCount = rsRef("CTR")
-	rsRef.Close
+	Set Z_GetRequestCount = rsRef
+	'rsRef.Close
 On Error Goto 0	
-	Set rsRef = Nothing
+	'Set rsRef = Nothing
 End Function
 
 DIM tmpIntr(), tmpTown(), tmpIntrName(), tmpLang(), tmpClass(), tmpBill(), tmpAhrs(), tmpApp(), tmpInst(), tmpDept(), tmpAmt(), tmpFac(), tmpMonthYr(), tmpCtr(), tmpMonthYr2(), tmpMonthYr3()
@@ -54,19 +59,20 @@ tmpTime = replace(FormatDateTime(time, 3), ":", "")
 
 RepCSV =  "KPI" & tmpdate & ".csv"
 strMSG = "KPI report (rev. 2018-01-17)"
-CSVHead = "Interpreter Last Name, Interpreter First Name,Company Code,Charge Date" & _
-		",File #,Temp Dept,Temp Rate,Regular Hours,OT Hours,Regular Backup Pay Code" & _
-		",Regular Backup Pay Hours,OT Back Pay Code,OT Back Pay Hours,Earnings Code,Amount"
 Set rsRep = Server.CreateObject("ADODB.RecordSet")
 strIDT = ""
 
 If tmpReport(1) <> "" Then strMSG = strMSG & " from " & tmpReport(1)
 If tmpReport(2) <> "" Then strMSG = strMSG & " to " & tmpReport(2)
 
-strHead = "<td class='tblgrn'>Classification</td>" & vbCrlf & _
-		"<td class='tblgrn'>Status</td>" & vbCrlf & _
-		"<td class='tblgrn'>" & tmpReport(1) & " - " & tmpReport(2) & "</td>" & vbCrlf
-CSVHead = "Classification,Status," & tmpReport(1) & " - " & tmpReport(2)
+strHead = "<td class=""tblgrn"">Classification</td>" & vbCrlf & _
+		"<td class=""tblgrn"">Status</td>" & vbCrlf & _
+		"<td class=""tblgrn"" style=""width: 60px;"">Total</td>" & _
+		"<td class=""tblgrn"" style=""width: 60px;"">NH</td>" & _
+		"<td class=""tblgrn"" style=""width: 60px;"">MA</td>"
+		' & tmpReport(1) & " - " & tmpReport(2) & "</td>" & vbCrlf
+CSVHead = "Classification,Status,Total,NH,MA"
+'' & tmpReport(1) & " - " & tmpReport(2)
 tmpRef = 0
 tmpCan = 0
 tmpCanB = 0
@@ -100,78 +106,145 @@ For lngI = 0 To 3
 	'REFERRALS
 	strBody = strBody & "<td class='tblgrn3'><nobr># of Referrals</td>" & vbCrLf
 	CSVBody = CSVBody & "# of Referrals,"
-	lngReqs = Z_GetRequestCount(sqlDt, strSeq(lngI))
-	strBody = strBody & "<td class='tblgrn4'>" & lngReqs & "</td></tr>" & vbCrLf
-	CSVBody = CSVBody & lngReqs  & "," & vbCrLf
-	tmpRef = tmpRef + lngReqs
+	Set rsReqs = Z_GetRequestCount(sqlDt, strSeq(lngI))
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("ctr") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("NHCtr") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("MACtr") & "</td>"
+	strBody = strBody & "</tr>" & vbCrLf
+	CSVBody = CSVBody & rsReqs("ctr") & "," & rsReqs("NHCtr") & "," & rsReqs("MACtr") & vbCrLf
+	tmpRef = tmpRef + rsReqs("ctr")
+	tmpRefNH = tmpRefNH + rsReqs("NHCtr")
+	tmpRefMA = tmpRefMA + rsReqs("MACtr")
+	rsReqs.Close
+	Set rsReqs = Nothing
 
 	'CANCELLED
 	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Canceled Appointments,"
-	lngReqs = Z_GetRequestCount(sqlDt, strSeq(lngI) & " AND [status]=3 ")
-	strBody = strBody & "<td class='tblgrn4'>" & lngReqs & "</td></tr>" & vbCrLf
-	CSVBody = CSVBody & lngReqs  & "," & vbCrLf
-	tmpCan = tmpCan + lngReqs
+	Set rsReqs = Z_GetRequestCount(sqlDt, strSeq(lngI) & " AND [status]=3 ")
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("ctr") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("NHCtr") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("MACtr") & "</td>"
+	strBody = strBody & "</tr>" & vbCrLf
+	CSVBody = CSVBody & rsReqs("ctr") & "," & rsReqs("NHCtr") & "," & rsReqs("MACtr") & vbCrLf
+	tmpCan = tmpCan + rsReqs("ctr")
+	tmpCanNH = tmpCanNH + rsReqs("NHCtr")
+	tmpCanMA = tmpCanMA + rsReqs("MACtr")
+	rsReqs.Close
+	Set rsReqs = Nothing
 
 	'CANCELLED BILLABLE
 	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments (Billable)</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Canceled Appointments (Billable),"
-	lngReqs = Z_GetRequestCount(sqlDt, strSeq(lngI) & " AND [status]=4 ")
-	strBody = strBody & "<td class='tblgrn4'>" & lngReqs & "</td></tr>" & vbCrLf
-	CSVBody = CSVBody & lngReqs & "," & vbCrLf
-	tmpCanB = tmpCanB + lngReqs
+	Set rsReqs = Z_GetRequestCount(sqlDt, strSeq(lngI) & " AND [status]=4 ")
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("ctr") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("NHCtr") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("MACtr") & "</td>"
+	strBody = strBody & "</tr>" & vbCrLf
+	CSVBody = CSVBody & rsReqs("ctr") & "," & rsReqs("NHCtr") & "," & rsReqs("MACtr") & vbCrLf
+	tmpCanB = tmpCanB + rsReqs("ctr")
+	tmpCanBNH = tmpCanBNH + rsReqs("NHCtr")
+	tmpCanBMA = tmpCanBMA + rsReqs("MACtr")
+	rsReqs.Close
+	Set rsReqs = Nothing
 
 	'MISSED
 	strBody = strBody & "<tr><td class='tblgrn2'>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments Missed by Interpreter</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Appointments Missed by Interpreters,"
-	lngReqs = Z_GetRequestCount(sqlDt, strSeq(lngI) & " AND [status]=2 AND [missed]<>1 ")
-	strBody = strBody & "<td class='tblgrn4'>" & lngReqs & "</td></tr>" & vbCrLf
-	CSVBody = CSVBody &  lngReqs & "," & vbCrLf
-	tmpMis = tmpMis + lngReqs
+	Set rsReqs = Z_GetRequestCount(sqlDt, strSeq(lngI) & " AND [status]=2 AND [missed]<>1 ")
+	strBody = strBody & "<td class='tblgrn4'>" & Z_CLng(rsReqs("ctr")) & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & Z_CLng(rsReqs("NHCtr")) & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & Z_CLng(rsReqs("MACtr")) & "</td>"
+	strBody = strBody & "</tr>" & vbCrLf
+	CSVBody = CSVBody & rsReqs("ctr") & "," & rsReqs("NHCtr") & "," & rsReqs("MACtr") & vbCrLf
+	tmpMis = tmpMis + Z_CLng(rsReqs("ctr"))
+	tmpMisNH = tmpMisNH + Z_CLng(rsReqs("NHCtr"))
+	tmpMisMA = tmpMisMA + Z_CLng(rsReqs("MACtr"))
+	rsReqs.Close
+	Set rsReqs = Nothing
 	
 	'MISSED 2
 	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn2'>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments LB Unable to Send Interpreter</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Appointments LB Unable to Send Interpreter,"
-	lngReqs = Z_GetRequestCount(sqlDt, strSeq(lngI) & " AND [status]=2 AND [missed]=1 ")
-	strBody = strBody & "<td class='tblgrn4'>" & lngReqs & "</td></tr>" & vbCrLf
-	CSVBody = CSVBody & lngReqs & "," & vbCrLf
-	tmpMis2 = tmpMis2 + lngReqs
+	Set rsReqs = Z_GetRequestCount(sqlDt, strSeq(lngI) & " AND [status]=2 AND [missed]=1 ")
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("ctr") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("NHCtr") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("MACtr") & "</td>"
+	strBody = strBody & "</tr>" & vbCrLf
+	CSVBody = CSVBody & rsReqs("ctr") & "," & rsReqs("NHCtr") & "," & rsReqs("MACtr") & vbCrLf
+	tmpMis2 = tmpMis2 + rsReqs("ctr")
+	tmpMis2NH = tmpMis2NH + rsReqs("NHCtr")
+	tmpMis2MA = tmpMis2MA + rsReqs("MACtr")
+	rsReqs.Close
+	Set rsReqs = Nothing
 	
 	'PENDING
 	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Pending Appointments</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Pending Appointments,"
-	lngReqs = Z_GetRequestCount(sqlDt, strSeq(lngI) & " AND [status]=0 ")
-	strBody = strBody & "<td class='tblgrn4'>" & lngReqs & "</td></tr>" & vbCrLf
-	CSVBody = CSVBody & lngReqs & "," & vbCrLf
-	tmpPen = tmpPen + lngReqs
+	Set rsReqs = Z_GetRequestCount(sqlDt, strSeq(lngI) & " AND [status]=0 ")
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("ctr") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("NHCtr") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("MACtr") & "</td>"
+	strBody = strBody & "</tr>" & vbCrLf
+	CSVBody = CSVBody & rsReqs("ctr") & "," & rsReqs("NHCtr") & "," & rsReqs("MACtr") & vbCrLf
+	tmpPen = tmpPen + rsReqs("ctr")
+	tmpPenNH = tmpPenNH + rsReqs("NHCtr")
+	tmpPenMA = tmpPenMA + rsReqs("MACtr")
+	rsReqs.Close
+	Set rsReqs = Nothing
 	
 	'EMERGENCY
 	strBody = strBody & "<tr bgcolor='#F5F5F5'><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Emergency Appointments</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Emergency Appointments,"
-	lngReqs = Z_GetRequestCount(sqlDt, strSeq(lngI) & " AND [Emergency]=1 ")
-	strBody = strBody & "<td class='tblgrn4'>" & lngReqs & "</td></tr>" & vbCrLf
-	CSVBody = CSVBody & lngReqs & "," & vbCrLf
-	tmpEmer = tmpEmer + lngReqs
+	Set rsReqs = Z_GetRequestCount(sqlDt, strSeq(lngI) & " AND [Emergency]=1 ")
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("ctr") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("NHCtr") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("MACtr") & "</td>"
+	strBody = strBody & "</tr>" & vbCrLf
+	CSVBody = CSVBody & rsReqs("ctr") & "," & rsReqs("NHCtr") & "," & rsReqs("MACtr") & vbCrLf
+	tmpEmer = tmpEmer + rsReqs("ctr")
+	tmpEmerNH = tmpEmerNH + rsReqs("NHCtr")
+	tmpEmerMA = tmpEmerMA + rsReqs("MACtr")
+	rsReqs.Close
+	Set rsReqs = Nothing
 
 	'COMLPETED
 	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Completed Appointments</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Completed Appointments,"
-	lngReqs = Z_GetRequestCount(sqlDt, strSeq(lngI) & " AND [status]=1 ")
-	strBody = strBody & "<td class='tblgrn4'>" & lngReqs & "</td></tr>" & vbCrLf
-	CSVBody = CSVBody &  lngReqs & "," & vbCrLf
-	tmpCom = tmpCom + lngReqs
+	Set rsReqs = Z_GetRequestCount(sqlDt, strSeq(lngI) & " AND [status]=1 ")
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("ctr") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("NHCtr") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsReqs("MACtr") & "</td>"
+	strBody = strBody & "</tr>" & vbCrLf
+	CSVBody = CSVBody & rsReqs("ctr") & "," & rsReqs("NHCtr") & "," & rsReqs("MACtr") & vbCrLf
+	tmpCom = tmpCom + rsReqs("ctr")
+	tmpComNH = tmpComNH + rsReqs("NHCtr")
+	tmpComMA = tmpComMA + rsReqs("MACtr")
+	rsReqs.Close
+	Set rsReqs = Nothing
 	
 	' NEW ROW! 171204: Facilities Clients requesting appointments'
 	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Facilities Clients</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Facilities Clients,"
 	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(DISTINCT([request_T].[InstID])) AS instcnt FROM [request_T] INNER JOIN [dept_T] ON [request_T].[DeptID]=[dept_T].[index] " & _
-			" WHERE [request_T].[instID] <> 479 " & _
-			sqlDT & _
-			strSeq(lngI)
+	sqlRef = "SELECT COUNT([II]) AS InstCnt, COUNT([NH]) CntNH, COUNT([MA]) AS CntMA FROM ( " & _
+			"SELECT COUNT(r1.[InstID]) AS II " & _
+			", SUM (CASE WHEN d.[State]='NH' THEN 1 ELSE NULL END) AS NH " & _
+			", SUM (CASE WHEN d.[State]='MA' THEN 1 ELSE NULL END) AS MA " & _
+			"FROM [request_T] AS r1 INNER JOIN [dept_T] AS d ON r1.[DeptID]=d.[index] " & _
+			"WHERE r1.[instID] <> 479 " & sqlDT & strSeq(lngI) & _
+			"GROUP BY r1.[instID] ) AS zz"
+	'sqlRef = "SELECT COUNT(DISTINCT([request_T].[InstID])) AS instcnt " & _
+	'		"FROM [request_T] INNER JOIN [dept_T] AS d ON [request_T].[DeptID]=d.[index] " & _
+	'		" WHERE [request_T].[instID] <> 479 " & _
+	'		sqlDT & _
+	'		strSeq(lngI)
 	rsRef.Open sqlRef, g_strCONN, 1, 3
-	strBody = strBody & "<td class='tblgrn4'>" & rsRef("instcnt") & "</td></tr>" & vbCrLf
-	CSVBody = CSVBody &  rsRef("instcnt") & "," & vbCrLf
+	strBody = strBody & "<td class='tblgrn4'>" & rsRef("instcnt") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsRef("CntNH") & "</td>"
+	strBody = strBody & "<td class='tblgrn4'>" & rsRef("CntMA") & "</td>"
+	strBody = strBody & "</tr>" & vbCrLf
+	CSVBody = CSVBody &  rsRef("instcnt") & vbCrLf
 	rsRef.Close
 	Set rsRef = Nothing
 
@@ -179,11 +252,23 @@ For lngI = 0 To 3
 	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Interpreters Involved</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Interpreters Involved,"
 	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(	DISTINCT([request_T].[IntrID])	) AS intrcnt FROM [request_T] INNER JOIN [dept_T] ON [request_T].[DeptID]=[dept_T].[index] " & _
-			"WHERE [request_T].[instID] <> 479 AND [IntrID] > 0 " & sqlDT & strSeq(lngI)
+
+	sqlRef = "SELECT COUNT([II]) AS IntrCnt" & _
+			", SUM (CASE WHEN [NH]>0 THEN 1 ELSE 0 END) AS CntNH" & _
+			", SUM (CASE WHEN [MA]>0 THEN 1 ELSE 0 END) AS CntMA FROM (" & _
+			"SELECT COUNT(	i.[index]) AS ii" & _
+			", SUM (CASE WHEN i.[State]='NH' THEN 1 ELSE 0 END) AS NH" & _
+			", SUM (CASE WHEN i.[State]='MA' THEN 1 ELSE 0 END) AS MA " & _
+			"FROM [request_T] AS r INNER JOIN [dept_T] AS d ON r.[DeptID]=d.[index] " & _
+			"INNER JOIN [interpreter_T] AS i ON r.[IntrID]=i.[index] " & _
+			"WHERE r.[instID] <> 479 AND [IntrID] > 0 " & sqlDT & strSeq(lngI) & _
+			"GROUP BY i.[index], i.[State]) AS zz"
 	rsRef.Open sqlRef, g_strCONN, 1, 3
-	strBody = strBody & "<td class='tblgrn4'>" & rsRef("intrcnt") & "</td></tr>" & vbCrLf
-	CSVBody = CSVBody &  rsRef("intrcnt") & "," & vbCrLf
+	strBody = strBody & "<td class='tblgrn4'>" & rsRef("intrcnt") & "</td>" & _
+			"<td class='tblgrn4'>" & rsRef("CntNH") & "</td>" & _
+			"<td class='tblgrn4'>" & rsRef("CntMA") & "</td>" & _
+			"</tr>" & vbCrLf
+	CSVBody = CSVBody &  rsRef("intrcnt") & "," & rsRef("CntNH") & "," & rsRef("CntMA") & vbCrLf
 	rsRef.Close
 	Set rsRef = Nothing
 
@@ -191,11 +276,21 @@ For lngI = 0 To 3
 	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Languages Requested</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Languages Requested,"
 	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(	DISTINCT([request_T].[LangID])	) AS langcnt FROM [request_T] INNER JOIN [dept_T] ON [request_T].[DeptID]=[dept_T].[index] " & _
-			"WHERE [request_T].[instID] <> 479 AND [IntrID] > 0 " & sqlDT & strSeq(lngI)
+	sqlRef = "SELECT COUNT([II]) AS LangCnt, SUM (CASE WHEN [NH]>0 THEN 1 ELSE 0 END) AS CntNH" & _
+			", SUM (CASE WHEN [MA]>0 THEN 1 ELSE 0 END) AS CntMA FROM ( " & _
+			"SELECT COUNT(r1.[LangID]) AS II" & _
+			", SUM (CASE WHEN d.[State]='NH' THEN 1 ELSE 0 END) AS NH" & _
+			", SUM (CASE WHEN d.[State]='MA' THEN 1 ELSE 0 END) AS MA " & _
+			"FROM [request_T] AS r1 INNER JOIN [dept_T] AS d ON r1.[DeptID]=d.[index] " & _
+			"WHERE r1.[instID] <> 479 AND [IntrID] > 0 " & _
+			sqlDt & strSeq(lngI) & " GROUP BY r1.[LangID] ) AS zz"
+	'Response.Write sqlRef
 	rsRef.Open sqlRef, g_strCONN, 1, 3
-	strBody = strBody & "<td class='tblgrn4'>" & rsRef("langcnt") & "</td></tr>" & vbCrLf
-	CSVBody = CSVBody &  rsRef("langcnt") & "," & vbCrLf
+	strBody = strBody & "<td class='tblgrn4'>" & rsRef("langcnt") & "</td>" & vbCrLf
+	strBody = strBody & "<td class='tblgrn4'>" & rsRef("CntNH") & "</td>" & vbCrLf	
+	strBody = strBody & "<td class='tblgrn4'>" & rsRef("CntMA") & "</td>" & vbCrLf	
+	strBody = strBody & "</tr>" & vbCrLf
+	CSVBody = CSVBody &  rsRef("langcnt") & "," & rsRef("CntNH") & "," & rsRef("CntMA") & vbCrLf
 	rsRef.Close
 	Set rsRef = Nothing
 
@@ -207,39 +302,75 @@ Next
 strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn2'><nobr>TOTALS</td>" & vbCrLf
 CSVBody = CSVBody &  "TOTALS,"
 'REFERRALS
-strBody = strBody & "<td class='tblgrn3'><nobr># of Referrals</td><td class='tblgrn4'>" & tmpRef & "</td></tr>" & vbCrLf
-CSVBody = CSVBody &  "# of Referrals," & tmpRef & vbCrLf
+strBody = strBody & "<td class='tblgrn3'><nobr># of Referrals</td><td class='tblgrn4'>" & tmpRef & "</td>" & _
+		"<td class='tblgrn4'>" & tmpRefNH & "</td>" & _
+		"<td class='tblgrn4'>" & tmpRefMA & "</td>" & _
+		"</tr>" & vbCrLf
+CSVBody = CSVBody &  "# of Referrals," & tmpRef & "," & tmpRefNH & "," & tmpRefMA & vbCrLf
 'CANCELLED
-strBody = strBody & "<tr bgcolor='#F5F5F5'><td>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments</td><td class='tblgrn4'>" & tmpCan & "</td></tr>" & vbCrLf
-CSVBody = CSVBody &  ",# of Canceled Appointments," & tmpCan & vbCrLf
+strBody = strBody & "<tr bgcolor='#F5F5F5'><td>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments</td><td class='tblgrn4'>" & tmpCan & "</td>" & _
+		"<td class='tblgrn4'>" & tmpCanNH & "</td>" & _
+		"<td class='tblgrn4'>" & tmpCanMA & "</td>" & _
+		"</tr>" & vbCrLf
+CSVBody = CSVBody &  ",# of Canceled Appointments," & tmpCan & "," & tmpCanNH & "," & tmpCanMA & "," & vbCrLf
 'CANCELLED BILLABLE
-strBody = strBody & "<tr bgcolor='#F5F5F5'><td>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments (Billable)</td><td class='tblgrn4'>" & tmpCanB & "</td></tr>" & vbCrLf
-CSVBody = CSVBody &  ",# of Canceled Appointments (Billable)," & tmpCanB & vbCrLf
+strBody = strBody & "<tr bgcolor='#F5F5F5'><td>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments (Billable)</td>" & _
+		"<td class='tblgrn4'>" & tmpCanB & "</td>" & _
+		"<td class='tblgrn4'>" & tmpCanBNH & "</td>" & _
+		"<td class='tblgrn4'>" & tmpCanBMA & "</td>" & _
+		"</tr>" & vbCrLf
+CSVBody = CSVBody &  ",# of Canceled Appointments (Billable)," & tmpCanB & "," & tmpCanBNH & "," & tmpCanBMA & "," & vbCrLf
 'MISSED
-strBody = strBody & "<tr bgcolor='#F5F5F5'><td>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments Missed by Interpreter</td><td class='tblgrn4'>" & tmpMis & "</td></tr>" & vbCrLf
-CSVBody = CSVBody &  ",# of Appointments Missed by Interpreter," & tmpMis & vbCrLf
+strBody = strBody & "<tr bgcolor='#F5F5F5'><td>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments Missed by Interpreter</td>" & _
+		"<td class='tblgrn4'>" & tmpMis & "</td>" & _
+		"<td class='tblgrn4'>" & tmpMisNH & "</td>" & _
+		"<td class='tblgrn4'>" & tmpMisMA & "</td>" & _
+		"</tr>" & vbCrLf
+CSVBody = CSVBody &  ",# of Appointments Missed by Interpreter," & tmpMis & "," & tmpMisNH & "," & tmpMisMA & "," & vbCrLf
 'MISSED 2
-strBody = strBody & "<tr bgcolor='#F5F5F5'><td>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments LB Unable to Send Interpreter</td><td class='tblgrn4'>" & tmpMis2 & "</td></tr>" & vbCrLf
-CSVBody = CSVBody &  ",# of Appointments LB Unable to Send Interpreter," & tmpMis2 & vbCrLf
+strBody = strBody & "<tr bgcolor='#F5F5F5'><td>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments LB Unable to Send Interpreter</td>" & _
+		"<td class='tblgrn4'>" & tmpMis2 & "</td>" & _
+		"<td class='tblgrn4'>" & tmpMis2NH & "</td>" & _
+		"<td class='tblgrn4'>" & tmpMis2MA & "</td>" & _
+		"</tr>" & vbCrLf
+CSVBody = CSVBody &  ",# of Appointments LB Unable to Send Interpreter," & tmpMis2 & "," & tmpMis2NH & "," & tmpMis2MA & vbCrLf
 'PENDING
-strBody = strBody & "<tr bgcolor='#F5F5F5'><td>&nbsp;</td><td class='tblgrn3'><nobr># of Pending Appointments</td><td class='tblgrn4'>" & tmpPen & "</td></tr>" & vbCrLf
-CSVBody = CSVBody &  ",# of Pending Appointments," & tmpPen & vbCrLf
+strBody = strBody & "<tr bgcolor='#F5F5F5'><td>&nbsp;</td><td class='tblgrn3'><nobr># of Pending Appointments</td>" & _
+		"<td class='tblgrn4'>" & tmpPen & "</td>" & _
+		"<td class='tblgrn4'>" & tmpPenNH & "</td>" & _
+		"<td class='tblgrn4'>" & tmpPenMA & "</td>" & _
+		"</tr>" & vbCrLf
+CSVBody = CSVBody &  ",# of Pending Appointments," & tmpPen & "," & tmpPenNH & "," & tmpPenMA & vbCrLf
 'PENDING
-strBody = strBody & "<tr bgcolor='#F5F5F5'><td>&nbsp;</td><td class='tblgrn3'><nobr># of Emergency Appointments</td><td class='tblgrn4'>" & tmpEmer & "</td></tr>" & vbCrLf
-CSVBody = CSVBody &  ",# of Emergency Appointments," & tmpEmer & vbCrLf
+strBody = strBody & "<tr bgcolor='#F5F5F5'><td>&nbsp;</td><td class='tblgrn3'><nobr># of Emergency Appointments</td>" & _
+		"<td class='tblgrn4'>" & tmpEmer & "</td>" & _
+		"<td class='tblgrn4'>" & tmpEmerNH & "</td>" & _
+		"<td class='tblgrn4'>" & tmpEmerMA & "</td>" & _
+		"</tr>" & vbCrLf
+CSVBody = CSVBody &  ",# of Emergency Appointments," & tmpEmer & "," & tmpEmerNH & "," & tmpEmerMA & vbCrLf
 'COMLPETED
-strBody = strBody & "<tr bgcolor='#F5F5F5'><td>&nbsp;</td><td class='tblgrn3'><nobr># of Completed Appointments</td><td class='tblgrn4'>" & tmpCom & "</td></tr>" & vbCrLf
-CSVBody = CSVBody &  ",# of Completed Appointments," & tmpCom & vbCrLf
+strBody = strBody & "<tr bgcolor='#F5F5F5'><td>&nbsp;</td><td class='tblgrn3'><nobr># of Completed Appointments</td>" & _
+		"<td class='tblgrn4'>" & tmpCom & "</td>" & _
+		"<td class='tblgrn4'>" & tmpComNH & "</td>" & _
+		"<td class='tblgrn4'>" & tmpComMA & "</td>" & _
+		"</tr>" & vbCrLf
+CSVBody = CSVBody &  ",# of Completed Appointments," & tmpCom & "," & tmpComNH & "," & tmpComMA & vbCrLf
 ' NEW ROW! 171204: Facilities Clients requesting appointments'
 strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Facilities Clients</td>" & vbCrLf
 CSVBody = CSVBody &  ",# of Facilities Clients,"
 Set rsRef = Server.CreateObject("ADODB.RecordSet")
-sqlRef = "SELECT COUNT(DISTINCT([request_T].[InstID])) AS instcnt FROM [request_T] INNER JOIN [dept_T] ON [request_T].[DeptID]=[dept_T].[index] " & _
-		" WHERE [request_T].[instID] <> 479 " & _
-		sqlDT
+	sqlRef = "SELECT COUNT([II]) AS InstCnt, COUNT([NH]) AS CntNH, COUNT([MA]) AS CntMA FROM ( " & _
+			"SELECT COUNT(r1.[InstID]) AS II " & _
+			", SUM (CASE WHEN d.[State]='NH' THEN 1 ELSE NULL END) AS NH " & _
+			", SUM (CASE WHEN d.[State]='MA' THEN 1 ELSE NULL END) AS MA " & _
+			"FROM [request_T] AS r1 INNER JOIN [dept_T] AS d ON r1.[DeptID]=d.[index] " & _
+			"WHERE r1.[instID] <> 479 " & sqlDT & "GROUP BY r1.[instID] ) AS zz"
 rsRef.Open sqlRef, g_strCONN, 1, 3
-strBody = strBody & "<td class='tblgrn4'>" & rsRef("instcnt") & "</td></tr>" & vbCrLf
-CSVBody = CSVBody &  rsRef("instcnt") & "," & vbCrLf
+	strBody = strBody & "<td class='tblgrn4'>" & rsRef("InstCnt") & "</td>" & _ 
+			"<td class='tblgrn4'>" & rsRef("CntNH") & "</td>" & _ 
+			"<td class='tblgrn4'>" & rsRef("CntMA") & "</td>" & _ 
+			"</tr>" & vbCrLf
+CSVBody = CSVBody &  rsRef("instcnt") & "," & rsRef("CntNH") & "," & rsRef("CntMA") & vbCrLf
 tmpCom = tmpCom + rsRef("instcnt")
 rsRef.Close
 Set rsRef = Nothing
@@ -247,22 +378,41 @@ Set rsRef = Nothing
 	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Interpreters Involved</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Interpreters Involved,"
 	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(	DISTINCT([request_T].[IntrID])	) AS intrcnt FROM [request_T] INNER JOIN [dept_T] ON [request_T].[DeptID]=[dept_T].[index] " & _
-			"WHERE [request_T].[instID] <> 479 AND [IntrID] > 0 " & sqlDT
+	sqlRef = "SELECT COUNT([II]) AS IntrCnt" & _
+			", SUM (CASE WHEN [NH]>0 THEN 1 ELSE 0 END) AS CntNH" & _
+			", SUM (CASE WHEN [MA]>0 THEN 1 ELSE 0 END) AS CntMA FROM (" & _
+			"SELECT COUNT(	i.[index]) AS ii" & _
+			", SUM (CASE WHEN i.[State]='NH' THEN 1 ELSE 0 END) AS NH" & _
+			", SUM (CASE WHEN i.[State]='MA' THEN 1 ELSE 0 END) AS MA " & _
+			"FROM [request_T] AS r INNER JOIN [dept_T] AS d ON r.[DeptID]=d.[index] " & _
+			"INNER JOIN [interpreter_T] AS i ON r.[IntrID]=i.[index] " & _
+			"WHERE r.[instID] <> 479 AND [IntrID] > 0 " & sqlDT & "GROUP BY i.[index], i.[State]) AS zz"
 	rsRef.Open sqlRef, g_strCONN, 1, 3
-	strBody = strBody & "<td class='tblgrn4'>" & rsRef("intrcnt") & "</td></tr>" & vbCrLf
-	CSVBody = CSVBody &  rsRef("intrcnt") & "," & vbCrLf
+	strBody = strBody & "<td class='tblgrn4'>" & rsRef("intrcnt") & "</td>" & _ 
+			"<td class='tblgrn4'>" & rsRef("CntNH") & "</td>" & _ 
+			"<td class='tblgrn4'>" & rsRef("CntMA") & "</td>" & _ 
+			"</tr>" & vbCrLf
+	CSVBody = CSVBody &  rsRef("IntrCnt") & "," & rsRef("CntNH") & "," & rsRef("CntMA") & vbCrLf
 	rsRef.Close
 	Set rsRef = Nothing
 ' NEW ROW! 180117: How many distinct languages provided at this time
 	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Languages Requested</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Languages Requested,"
 	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-	sqlRef = "SELECT COUNT(	DISTINCT([request_T].[LangID])	) AS langcnt FROM [request_T] INNER JOIN [dept_T] ON [request_T].[DeptID]=[dept_T].[index] " & _
-			"WHERE [request_T].[instID] <> 479 AND [IntrID] > 0 " & sqlDT
+	sqlRef = "SELECT COUNT([II]) AS LangCnt, SUM (CASE WHEN [NH]>0 THEN 1 ELSE 0 END) AS CntNH" & _
+			", SUM (CASE WHEN [MA]>0 THEN 1 ELSE 0 END) AS CntMA FROM ( " & _
+			"SELECT COUNT(r1.[LangID]) AS II" & _
+			", SUM (CASE WHEN d.[State]='NH' THEN 1 ELSE 0 END) AS NH" & _
+			", SUM (CASE WHEN d.[State]='MA' THEN 1 ELSE 0 END) AS MA " & _
+			"FROM [request_T] AS r1 INNER JOIN [dept_T] AS d ON r1.[DeptID]=d.[index] " & _
+			"WHERE r1.[instID] <> 479 AND [IntrID] > 0 " & _
+			sqlDt & " GROUP BY r1.[LangID] ) AS zz"
 	rsRef.Open sqlRef, g_strCONN, 1, 3
-	strBody = strBody & "<td class='tblgrn4'>" & rsRef("langcnt") & "</td></tr>" & vbCrLf
-	CSVBody = CSVBody &  rsRef("langcnt") & "," & vbCrLf
+	strBody = strBody & "<td class='tblgrn4'>" & rsRef("langcnt") & "</td>" & _
+			"<td class='tblgrn4'>" & rsRef("CntNH") & "</td>" & _
+			"<td class='tblgrn4'>" & rsRef("CntMA") & "</td>" & _
+			"</tr>" & vbCrLf
+	CSVBody = CSVBody &  rsRef("langcnt") & "," & rsRef("CntNH") & "," & rsRef("CntMA") & vbCrLf
 	rsRef.Close
 	Set rsRef = Nothing
 strBody = strBody & "<tr><td>&nbsp;</td></tr>"
@@ -318,7 +468,7 @@ function PassMe(xxx)
 				<tr><td valign='top' >
 							<table bgColor='white' border='0' cellSpacing='2' cellPadding='0' align='center'>
 								<tr bgcolor='#f58426'>
-									<td colspan='<%=ctr + 7%>' align='center'>
+									<td colspan="5" align="center">
 <b><%=strMSG%></b>
 									</td>
 								</tr>
