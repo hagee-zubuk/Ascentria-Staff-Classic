@@ -78,15 +78,17 @@ sqlRep = "SELECT claimant, judge, meridian, nhhealth, wellsense" & _
 		", outpatient, medicaid, vermed, autoacc, wcomp, drg, pid" & _
 		", RTRIM(COALESCE([cfname], '')) AS [cfname]" & _
 		", RTRIM(COALESCE([clname], '')) AS [clname]" & _
-		", COALESCE([docnum], '') AS [docnum]"" & _
+		", COALESCE([docnum], '') AS [docnum]" & _
 		", r.[index] AS myindex, r.InstID AS myinstID, [status]" & _
 		", AStarttime, AEndtime, Billable, DOB, emerFEE" & _
 		", [class], TT_Inst, M_Inst, DeptID, LangID, appDate, InstRate" & _
 		", bilComment, custID, ccode, billgroup, IntrID, appTimeFrom, appTimeTo" & _
+		", l.[Language]" & _
 		", d.distcode, i.[Last Name], i.[First Name] " & _
 		"FROM [request_T] AS r " & _
 		"INNER JOIN [interpreter_T] AS i ON r.[IntrID]=i.[index] " & _
 		"INNER JOIN [dept_T] AS d ON r.[DeptID]=d.[index] " & _
+		"INNER JOIN [language_T] AS l ON r.[LangID]=l.[index] " & _
 		"WHERE r.[instID] <> 479  " & _
 		"AND (Status = 1 OR Status = 4)  " & _
 		"AND Processed IS NULL " & _
@@ -171,7 +173,7 @@ If Not rsRep.EOF Then
 					"<td class='tblgrn2'><nobr>" & Replace(GetMyDept(rsRep("DeptID")), " - ", "") & "</td>" & vbCrLf & _
 					"<td class='tblgrn2'><nobr>" & rsRep("appDate") & "</td>" & vbCrLf & _
 					"<td class='tblgrn2'><nobr>" & strCliName & "</td>" & vbCrLf & _
-					"<td class='tblgrn2'><nobr>" & GetLang(rsRep("LangID")) & "</td>" & vbCrLf & _
+					"<td class='tblgrn2'><nobr>" & rsRep("Language") & "</td>" & vbCrLf & _
 					"<td class='tblgrn2'><nobr>" & strIntrName & "</td>" & vbCrLf & _
 					"<td class='tblgrn2'><nobr>" & strATime & "</td>" & vbCrLf & _
 					"<td class='tblgrn2'><nobr>" & BillHours & "</td>" & vbCrLf
@@ -208,7 +210,7 @@ If Not rsRep.EOF Then
 			CSVBodyLine = CB & rsRep("myindex") & "," & GetInst2(rsRep("myinstID")) & "," & _
 					Replace(GetMyDept(rsRep("DeptID")), " - ", "") & "," & rsRep("appDate") & _
 					"," & rsRep("Clname") & "," & rsRep("Cfname") &  "," & _
-					GetLang(rsRep("LangID")) & "," & rsRep("Last Name") & _
+					rsRep("Language") & "," & rsRep("Last Name") & _
 					"," & rsRep("First Name") & ","  & cTime(rsRep("AStarttime")) & _
 					"," & cTime(rsRep("AEndtime")) & "," & BillHours
 					
@@ -216,7 +218,11 @@ If Not rsRep.EOF Then
 			If rsRep("myinstID") <> 108 And rsRep("myinstID") <> 30 Then 'exclude DHHS and LSS
 				'If rsRep("class") <> 3 Then
 				tmpCID = Trim(UCase(rsRep("custID")))
-				tmpccode = "LB " & rsRep("InstRate") & " Rate"
+				If (rsRep("langID")=52 Or rsRep("langID")=109 Or rsRep("langID")=81) Then
+					tmpccode = "LB 70 Rate ASL"
+				Else
+					tmpccode = "LB " & rsRep("InstRate") & " Rate"
+				End If
 				If tmpCID <> tmpCID2 Or tmpCID2 = "" Then
 					If rsRep("class") <> 5 Then
 						If rsRep("myInstID") = 240 Then
@@ -246,7 +252,7 @@ If Not rsRep.EOF Then
 						'concord hosp, fam and mchc and com council nashua, riverbend
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
 								rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - " & _
-								GetLang(rsRep("LangID")) & """,""" & date & """,""" & _
+								rsRep("Language") & """,""" & date & """,""" & _
 								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 					ElseIf rsRep("deptID") = 1058 Then 'man welfare
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
@@ -269,7 +275,7 @@ If Not rsRep.EOF Then
 					ElseIf rsRep("myinstID") = 860 Then 'umass med
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
 								rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - " & _
-								GetLang(rsRep("LangID")) & " - " & Replace(GetMyDept(rsRep("DeptID")), " - ", "") & """,""" & date & """,""" & _
+								rsRep("Language") & " - " & Replace(GetMyDept(rsRep("DeptID")), " - ", "") & """,""" & date & """,""" & _
 								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 					Else
 						If rsRep("myInstID") = 240 Then
@@ -284,7 +290,12 @@ If Not rsRep.EOF Then
 										rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 							Else
 								If rsRep("class") = 3 Then
-									If rsRep("emerFEE") = True Then tmpccode = "LB 60 Rate"
+									If rsRep("emerFEE") = True Then
+										tmpccode = "LB 60 Rate"
+
+										If (rsRep("langID")=52 Or rsRep("langID")=109 Or rsRep("langID")=81) Then tmpccode = "LB 70 Rate ASL"
+											
+									End if
 								End If
 								If rsRep("custID") = "UMass Community Serv" Or rsRep("custID") = "Seven Hills Found" Or _
 										rsRep("custID") = "Saint Vincent Hosp" Or rsRep("custID") = "Spear Management Grp" _
@@ -312,7 +323,7 @@ If Not rsRep.EOF Then
 									"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & _
 									" " & rsRep("Clname") & docnum & " – Interpretation" & " - " & rsRep("judge") & _
 									" - " & rsRep("claimant") & " - " & rsRep("appdate") & " - " & CTime(rsRep("appTimeFrom")) & _
-									" - " & CTime(rsRep("appTimeto")) & " - " & GetLang(rsRep("LangID")) & _
+									" - " & CTime(rsRep("appTimeto")) & " - " & rsRep("Language") & _
 									" - " & GetDept(rsRep("deptID")) & " - " & apptadr & " - " & CTime(rsRep("AStarttime")) & _
 									" - " & CTime(rsRep("AEndtime")) & """,""" & date & """,""" & _
 									rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
@@ -424,9 +435,9 @@ If Not rsRep.EOF Then
 				End If
 				CSVBody = CSVBody & CSVBodyLine & """" & vbCrLf
 			
-				'timestamp
-				rsRep("billingTrail") = rsRep("billingTrail") & "<br>Billed to Institution " & Date
-				rsRep("Processed") = Date
+				'TODO: reinstate the next 2 timestamps for live
+				'rsRep("billingTrail") = rsRep("billingTrail") & "<br>Billed to Institution " & Date
+				'rsRep("Processed") = Date
 
 				x = x + 1
 				rsRep.Update
