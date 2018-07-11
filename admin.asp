@@ -144,6 +144,7 @@ End If
 								</td>
 							</tr>
 							<tr><td align="center"><a href="admin_foi.asp" class="admin" target="_BLANK">[Consent Forms]</a></td></tr>
+							<tr><td align="center"><a href="survey2018.asp" class="admin" target="_BLANK">[Interpreter Survey]</a></td></tr>
 							<tr><td>&nbsp;</td></tr>
 							<tr><td>&nbsp;</td></tr>
 							<tr>

@@ -1,0 +1,78 @@
+img#logo {
+	text-align: center;
+	float: left;
+
+}
+div #logobar {
+	background-color: orange;
+}
+#logobar h1 {
+	float: right;
+	width: 50%;
+	margin: 5px 20px 0px 20px;
+	text-align: right;
+	color: #eff;
+	font-weight: bold;
+}
+input {
+	padding: 2px 4px 3px;
+}
+
+.container input:focus {
+	background-color: yellow;
+}
+
+input.fullwidth {
+	width: 90%;
+}
+h1 {
+	font-size: 2em;
+}
+h4 {
+	font-size: 1.1em;
+	font-weight: bold;
+}
+h5 {
+	font-size: 0.90em;
+	font-weight: bold;
+	display: inline-block;
+}
+
+div#ratingscale {
+	border: 1px dotted #444;
+	background-color: #eee;
+	border-radius: 5px;
+	padding: 10px;
+}
+
+div.rdoChoice {
+	margin: 0px 5px 0px 10px;
+	padding: 0px 3px;
+	display: inline-block;
+}
+
+#header {
+  background: #666;
+  padding: 3px;
+  padding: 10px 20px;
+  color: #fff;
+}
+.fixed {
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+body {
+  height: 5000px
+}
+div#intrbar{
+	background-color: #F7DC6F;
+	border: 1px solid #0E6251;
+	padding: 10px 20px;
+}
+.ui-autocomplete-loading {
+	background: white url("images/ui-anim_basic_16x16.gif") right center no-repeat;
+}
+.align-right {
+	text-align: right;
+}

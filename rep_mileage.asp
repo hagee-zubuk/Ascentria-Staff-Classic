@@ -98,7 +98,7 @@ RepCSV =  "Mileage" & tmpdate & "-" & tmpTime & ".csv"
 				tmpToll(lngIdx) = tmpToll(lngIdx) + strTol
 			End If
 
-			'rsRep("mileageproc") = Date ' TODO: put this back in effect!
+			rsRep("mileageproc") = Date ' TODO: put this back in effect!
 			rsRep.Update
 			rsRep.MoveNext
 		Loop
