@@ -342,6 +342,14 @@ Function Z_EmailInst(pcon, appid)
 	rsReq.Close
 	Set rsReq = Nothing
 	Set rsInst = Server.CreateObject("ADODB.RecordSet")
+	tmpIntrName = ""
+	sqlInst = "SELECT [First Name] + ' ' + [Last Name] AS [inter_name]" & _
+			"FROM interpreter_T WHERE [index] = " & tmpIntr
+	rsInst.Open sqlInst, g_strCONN, 3, 1
+	If Not rsInst.EOF Then
+		tmpIntrName = rsInst("inter_name")
+	End If
+	rsInst.Close
 	sqlInst = "SELECT * FROM institution_T WHERE [index] = " & InstID
 	rsInst.Open sqlInst, g_strCONN, 3, 1
 	If Not rsInst.EOF Then
@@ -408,6 +416,14 @@ Function Z_EmailInst(pcon, appid)
 						"</td>" & vbCrLf & _
 						"<td align='left'>" & vbCrLf & _
 							"<font size='2' face='trebuchet MS'>&nbsp;<b>" & tmpCon & "</b></font><br>" & vbCrLf & _
+						"</td>" & vbCrLf & _
+					"</tr>" & vbCrLf & _
+					"<tr>" & vbCrLf & _
+						"<td align='right'>" & vbCrLf & _
+							"<font size='2' face='trebuchet MS'>Interpreter:</font><br>" & vbCrLf & _
+						"</td>" & vbCrLf & _
+						"<td align='left'>" & vbCrLf & _
+							"<font size='2' face='trebuchet MS'>&nbsp;<b>" & tmpIntrName & "</b></font><br>" & vbCrLf & _
 						"</td>" & vbCrLf & _
 					"</tr>" & vbCrLf & _
 				"</table>" & vbCrLf & _
@@ -782,9 +798,6 @@ Function Z_EmailJob(AppID)
 									"Please log into the <a href='https://interpreter.thelanguagebank.org/interpreter/'>LB database</a> and let us know if you are available.</p>" & _
 									"<font size='1' face='trebuchet MS'>* Please do not reply to this email. This is a computer generated email." & appID & "</font>"
 
-							''	zSendMessage(Trim(rsIntr("e-mail")), "sysdump1@ascentria.org" _
-							''		, "[LBIS] " & Urgent & " New Appointment in the Database" _
-							''		, strBody)
 							End If
 						End If
 					End If
