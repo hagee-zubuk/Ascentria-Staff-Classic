@@ -83,7 +83,7 @@ sqlRep = "SELECT claimant, judge, meridian, nhhealth, wellsense" & _
 		", AStarttime, AEndtime, Billable, DOB, emerFEE" & _
 		", [class], TT_Inst, M_Inst, DeptID, LangID, appDate, InstRate" & _
 		", bilComment, custID, ccode, billgroup, IntrID, appTimeFrom, appTimeTo" & _
-		", l.[Language]" & _
+		", l.[Language], d.[Dept]" & _
 		", d.distcode, i.[Last Name], i.[First Name] " & _
 		"FROM [request_T] AS r " & _
 		"INNER JOIN [interpreter_T] AS i ON r.[IntrID]=i.[index] " & _
@@ -170,7 +170,7 @@ If Not rsRep.EOF Then
 			strBody = strBody & "<tr bgcolor='" & kulay & "' onclick='PassMe(" & rsRep("myindex") & ")'>" & _
 					"<td class='tblgrn2'><nobr>" & CB & rsRep("myindex") & "</td>" & vbCrLf & _
 					"<td class='tblgrn2'><nobr>" & GetInst2(rsRep("myinstID")) & "</td>" & vbCrLf & _
-					"<td class='tblgrn2'><nobr>" & Replace(GetMyDept(rsRep("DeptID")), " - ", "") & "</td>" & vbCrLf & _
+					"<td class='tblgrn2'><nobr>" & Replace(rsRep("Dept"), " - ", "") & "</td>" & vbCrLf & _
 					"<td class='tblgrn2'><nobr>" & rsRep("appDate") & "</td>" & vbCrLf & _
 					"<td class='tblgrn2'><nobr>" & strCliName & "</td>" & vbCrLf & _
 					"<td class='tblgrn2'><nobr>" & rsRep("Language") & "</td>" & vbCrLf & _
@@ -208,7 +208,7 @@ If Not rsRep.EOF Then
 			End If
 			
 			CSVBodyLine = CB & rsRep("myindex") & "," & GetInst2(rsRep("myinstID")) & "," & _
-					Replace(GetMyDept(rsRep("DeptID")), " - ", "") & "," & rsRep("appDate") & _
+					Replace(rsRep("Dept"), " - ", "") & "," & rsRep("appDate") & _
 					"," & rsRep("Clname") & "," & rsRep("Cfname") &  "," & _
 					rsRep("Language") & "," & rsRep("Last Name") & _
 					"," & rsRep("First Name") & ","  & cTime(rsRep("AStarttime")) & _
@@ -245,7 +245,7 @@ If Not rsRep.EOF Then
 						'DHMC and Elliot
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
 								rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - " & _
-								Replace(GetMyDept(rsRep("DeptID")), " - ", "") & """,""" & date & """,""" & _
+								Replace(rsRep("Dept"), " - ", "") & """,""" & date & """,""" & _
 								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 					ElseIf rsRep("myinstID") = 15 Or rsRep("myinstID") = 33 Or rsRep("myinstID") = 41 _
 							Or rsRep("myinstID") =  70 Or rsRep("DeptID") = 645 Then
@@ -260,12 +260,16 @@ If Not rsRep.EOF Then
 								rsRep("myindex") & """,""" & date & """,""" & _
 								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 					ElseIf rsRep("myinstID") = 39 Or rsRep("myinstID") = 52 Or rsRep("myinstID") = 168 _
-							Or rsRep("myinstID") = 199 Or rsRep("myinstID") = 724 Then
+							Or rsRep("myinstID") = 199 Or rsRep("myinstID") = 724 _
+							Or rsRep("myinstID") = 683 Or rsRep("myinstID") = 717 Then
 					' [39] SAU # 37 Manchester School District,
 					' [52] Exeter Hospital,
 					' [168] Concord Head Start,
 					' [199] Southern New Hampshire Services,
 					' [724] City of Worcester 
+					' added 180716:
+					' 		[683] Core Physicians with Exeter Hospital
+					' 		[717] Frisbie Memorial Hospital
 						reqp = GetReq(rsRep("reqID"))
 						If Z_Czero(rsRep("HPID")) > 0 Then reqp = reqp & " / " & GetReqHPID(rsRep("HPID"))
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
@@ -275,7 +279,7 @@ If Not rsRep.EOF Then
 					ElseIf rsRep("myinstID") = 860 Then 'umass med
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
 								rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - " & _
-								rsRep("Language") & " - " & Replace(GetMyDept(rsRep("DeptID")), " - ", "") & """,""" & date & """,""" & _
+								rsRep("Language") & " - " & Replace(rsRep("DeptID"), " - ", "") & """,""" & date & """,""" & _
 								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 					Else
 						If rsRep("myInstID") = 240 Then
@@ -294,7 +298,7 @@ If Not rsRep.EOF Then
 										tmpccode = "LB 60 Rate"
 
 										If (rsRep("langID")=52 Or rsRep("langID")=109 Or rsRep("langID")=81) Then tmpccode = "LB 70 Rate ASL"
-											
+
 									End if
 								End If
 								If rsRep("custID") = "UMass Community Serv" Or rsRep("custID") = "Seven Hills Found" Or _
