@@ -302,19 +302,37 @@ Function GetLangSurvey(lngID)
 		GetLangSurvey = "clientsurveyEnglish.pdf"
 	End If
 End Function
+
 Function Z_EmailInst(pcon, appid)
-	sqlSent = "UPDATE request_T SET SentReq = '" & Now & "' WHERE [index] = " & appid
-	Set rsSent = Server.CreateObject("ADODB.RecordSet")
-	rsSent.Open sqlSent, g_strCONN, 1, 3
-	Set rsSent = Nothing
 	'GET REQUEST INFO
 	Set rsReq = Server.CreateObject("ADODB.RecordSet")
-	sqlReq = "SELECT * FROM request_T WHERE [index] = " & appid
+sqlReq = "SELECT r.[CLname], r.[CFname], r.[IntrID], r.[LangID], r.[appDate], r.[appTimeFrom], r.[appTimeTo] " & _
+				", r.[InstID], r.[DeptID], r.[MRRec], r.[ReqID], r.[timestamp], r.[DocNum], r.[CrtRumNum] " & _
+				", r.[SentReq], r.[CliAdd], r.[CAddress], r.[CliAdrI], r.[CCity], r.[CState], r.[CZip] " & _
+				", r.[intrcomment], r.[HPID], r.[actTT], r.[actMil], r.[Claimant], r.[Judge] " & _
+				", l.[Language] " & _
+				", COALESCE(i.[First Name], '') + ' ' + COALESCE(i.[Last Name], '') AS [intr_nm] " & _
+				", COALESCE(q.[lname], '') + ', ' + COALESCE(q.[fname], '') AS [requester_nm] " & _
+				", d.[Dept] AS [department_nm] " & _
+				", n.[Facility] AS [inst_nm] " & _
+				", d.[Address] As [DepAddr], d.[InstAdrI] AS [InstAdrI], d.[City] As [DepCity]" & _
+				", d.[State] AS [DepState], d.[ZIP] AS [DepZIP]" & _
+				", d.[BAddress], d.[BCity], d.[BState], d.[BZip], d.[Blname], d.[Bfname]" & _
+				", COALESCE(a.[ReqName], '') AS [AppReqName] " & _
+			"FROM [request_T] AS r " & _
+				"INNER JOIN [language_T] AS l ON r.[langID]=l.[index] " & _
+				"INNER JOIN [dept_T] AS d ON r.[DeptID]=d.[index] " & _
+				"INNER JOIN [institution_T] AS n ON r.[InstID]=n.[index] " & _
+				"LEFT JOIN [interpreter_T] AS i ON r.[IntrID]=i.[index] " & _
+				"LEFT JOIN [requester_T] AS q ON r.[ReqID]=q.[index] " & _
+				"LEFT JOIN [interpretersql].[dbo].[appointment_T] AS a ON r.[HPID]=a.[index] " & _
+			"WHERE r.[index] = " & appid
 	rsReq.Open sqlReq, g_strCONN, 3, 1
 	If Not rsReq.EOF Then
 		CliName = rsReq("Clname") & ", " & rsReq("Cfname")
-		IntrName = GetIntr(rsReq("IntrID"))
-		LangName = GetLang(rsReq("LangID"))
+		IntrName = rsReq("Intr_nm")
+		tmpIntr = IntrName
+		LangName = rsReq("Language")
 		LangID = rsReq("LangID")
 		AppFrame = rsReq("appDate") & " (" & rsReq("appTimeFrom") & " - " & rsReq("appTimeTo") & ")" 
 		AppDate = rsReq("appDate")
@@ -323,11 +341,11 @@ Function Z_EmailInst(pcon, appid)
 		'tmpDOB = rsReq("DOB")
 		'tmpComment = rsReq("Comment")
 		mrrec = rsReq("mrrec")
-		ReqName = GetReq(rsReq("ReqID"))
+		ReqName = rsReq("requester_nm")
 		timestamp = rsReq("timestamp")
 		tmpOther = rsReq("DocNum") & ",  " & rsReq("CrtRumNum")
 	
-		tmpdept =  GetDept(rsReq("DeptID"))
+		tmpdept =  rsReq("department_nm")
 		tmpCon = rsReq("SentReq")
 		If rsReq("CliAdd") = True Then InstAddr =  rsReq("CAddress") & ", " & rsReq("CliAdrI") & ", " & rsReq("CCity") & ", " & rsReq("CState") & ", " & rsReq("CZip")
 		If rsReq("CliAdd") = True Then SubCity = rsReq("CCity")
@@ -337,49 +355,23 @@ Function Z_EmailInst(pcon, appid)
 		tmpDecMile = z_fixNull(rsReq("actMil"))
 		tmpclaim = rsReq("claimant")
 		tmpjudge = rsReq("judge")
-		tmpIntr = GetIntr(rsReq("IntrID"))
+		InstName = rsReq("inst_nm")
+		subInst = rsReq("inst_nm")
+
+		InstName = InstName & " - " & tmpdept
+		If InstAddr = "" Then _
+				InstAddr = rsReq("DepAddr") & ", " & rsReq("InstAdrI") & ", " & _
+						rsReq("DepCity") & ", " & rsReq("DepState") & ", " & rsReq("DepZIP")
+		If SubCity = "" Then SubCity = rsReq("DepCity")
+		BillAddr =  rsReq("BAddress") &", " & rsReq("BCity") & ", " & rsReq("BState") & ", " & rsReq("BZip")
+		tmpBContact = rsReq("Blname") & ", " & rsReq("Bfname")
+		If Z_CZero(tmpHPID) <> 0 Then
+			ReqName = rsReq("AppReqName")
+		End If
 	End If
 	rsReq.Close
 	Set rsReq = Nothing
-	Set rsInst = Server.CreateObject("ADODB.RecordSet")
-	tmpIntrName = ""
-	sqlInst = "SELECT [First Name] + ' ' + [Last Name] AS [inter_name]" & _
-			"FROM interpreter_T WHERE [index] = " & tmpIntr
-	rsInst.Open sqlInst, g_strCONN, 3, 1
-	If Not rsInst.EOF Then
-		tmpIntrName = rsInst("inter_name")
-	End If
-	rsInst.Close
-	sqlInst = "SELECT * FROM institution_T WHERE [index] = " & InstID
-	rsInst.Open sqlInst, g_strCONN, 3, 1
-	If Not rsInst.EOF Then
-		InstName = rsInst("Facility")
-		subInst = rsInst("Facility")
-	End If
-	rsInst.Close
-	Set rsInst = Nothing
-	Set rsDept= Server.CreateObject("ADODB.RecordSet")
-	sqlDept = "SELECT * FROM dept_T WHERE [index] = " & DeptID
-	rsDept.Open sqlDept, g_strCONN, 3, 1
-	If Not rsDept.EOF Then
-		InstName = InstName & " - " & rsDept("dept")
-		If InstAddr = "" Then InstAddr = rsDept("Address") & ", " & rsDept("InstAdrI") & ", " & rsDept("City") & ", " & rsDept("State") & ", " & rsDept("Zip")
-		If SubCity = "" Then SubCity = rsDept("City")
-		BillAddr =  rsDept("BAddress") &", " & rsDept("BCity") & ", " & rsDept("BState") & ", " & rsDept("BZip")
-		tmpBContact = rsDept("Blname") & ", " & rsDept("Bfname")
-	End If
-	rsDept.Close
-	Set rsDept = Nothing
-	If Z_CZero(tmpHPID) <> 0 Then
-		Set rsHP = Server.CreateObject("ADODB.RecordSet")
-		sqlHP = "SELECT * FROM Appointment_T WHERE [index] = " & tmpHPID
-		rsHP.Open sqlHP, g_strCONNHP, 3, 1
-		If Not rsHP.EOF Then
-			If rsHP("reqName") <> "" Then ReqName = rsHP("reqName")
-		End If
-		rsHP.CLose
-		Set rsHP = Nothing
-	End If
+
 	strTo = FixEmail(pcon)
 	strBCC = "language.services@thelanguagebank.org"
 	strSubject= "Interpreter Confirmation - The Language Bank"
@@ -423,7 +415,7 @@ Function Z_EmailInst(pcon, appid)
 							"<font size='2' face='trebuchet MS'>Interpreter:</font><br>" & vbCrLf & _
 						"</td>" & vbCrLf & _
 						"<td align='left'>" & vbCrLf & _
-							"<font size='2' face='trebuchet MS'>&nbsp;<b>" & tmpIntrName & "</b></font><br>" & vbCrLf & _
+							"<font size='2' face='trebuchet MS'>&nbsp;<b>" & IntrName & "</b></font><br>" & vbCrLf & _
 						"</td>" & vbCrLf & _
 					"</tr>" & vbCrLf & _
 				"</table>" & vbCrLf & _
@@ -568,6 +560,12 @@ Function Z_EmailInst(pcon, appid)
 		"</table>"
 	retErr = zSendMessage(strTo, strBCC, strSubject, strBody)
 	Call SaveHist(appID, "email.asp") 
+
+	sqlSent = "UPDATE request_T SET SentReq = '" & Now & "' WHERE [index] = " & appid
+	Set rsSent = Server.CreateObject("ADODB.RecordSet")
+	rsSent.Open sqlSent, g_strCONN, 1, 3
+	Set rsSent = Nothing
+
 	'CREATE LOG
 	Set fso = CreateObject("Scripting.FileSystemObject")
 	Set LogMe = fso.OpenTextFile(EmailLog, 8, True)
@@ -577,7 +575,8 @@ Function Z_EmailInst(pcon, appid)
 	LogMe.WriteLine strLog
 	Set LogMe = Nothing
 	Set fso = Nothing
-End Function
+End Function 	' Z_EmailInst
+
 Function FixEmail(stremail)
 	If stremail = "" Then Exit Function
 	notfixemail = trim(stremail)
