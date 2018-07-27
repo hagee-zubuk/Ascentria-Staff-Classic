@@ -6,6 +6,24 @@
 <%
 strMesg = Session("SURVEY")
 Session("SURVEY") = ""
+
+lngID = Z_CLng(Request("iid"))
+
+blnGotMed = TRUE
+If lngID > 0 Then
+	Set rsSurv = Server.CreateObject("ADODB.RecordSet")
+	strSQL = "SELECT COUNT([index]) AS [cnt] FROM [survey2018med] WHERE [iid]=" & lngIID ' UID doesn't matter in this case -- " AND [uid]=" & lngUID
+	rsSurv.Open strSQL, g_strCONN, 1, 3
+	blnGotMed = FALSE
+	If Not rsSurv.EOF Then
+		cnt = rsSurv("cnt")
+		If cnt > 0 Then
+			blnGotMed = TRUE
+		End If
+	End If
+	rsSurv.Close
+	Set rsSurv = Nothing
+End If
 %>
 <!doctype html>
 <html lang="en">
@@ -41,6 +59,13 @@ Session("SURVEY") = ""
 		<div class="twelve columns">
 			<p><%=strMesg%></p>
 			<h4>Thank you for your response. You may close this window or <a href="survey2018.asp">click here to fill in another one</a>.</h4>
+<%
+If Not blnGotMed Then
+%>
+<h4>No Medical Checklist form was found for this user. <a href="survey2018-medical.asp?iid=<%=lngID%>">Click here to fill one in</a>.</h4>
+<%
+End If
+%>
 		</div>
 	</div>
 </div>

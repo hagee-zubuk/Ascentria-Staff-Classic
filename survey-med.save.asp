@@ -8,11 +8,11 @@ lngIID = Z_CLng(Request("IID"))
 lngUID = Z_CLng(Request.Cookies("UID"))
 If lngIID < 1 or lngUID < 0 Then 
 	Session("MSG") = "an error occurred trying to save the survey. please try again."
-	Response.Redirect "survey2018.asp"
+	Response.Redirect "survey2018-medical.asp"
 End If
 
 Set rsSurv = Server.CreateObject("ADODB.RecordSet")
-strSQL = "SELECT * FROM [survey2018] WHERE [iid]=" & lngIID & " AND [uid]=" & lngUID
+strSQL = "SELECT * FROM [survey2018med] WHERE [iid]=" & lngIID ' UID doesn't matter in this case -- " AND [uid]=" & lngUID
 rsSurv.Open strSQL, g_strCONN, 1, 3
 If rsSurv.EOF Then
 	rsSurv.AddNew
@@ -22,10 +22,10 @@ If rsSurv.EOF Then
 End If
 
 For Each item In Request.Form
-	If (item <> "iid") And (item <> "uid") And (item <> "txtDate") Then
-		' Response.Write "Key: " & item & " --> "
+	If (item <> "iid") And (item <> "uid") And (item <> "txtDate") And (item <> "txtName") Then
+		Response.Write "Key: " & item & " --> "
 		rsSurv(item) = Request.Form(item)
-		' Response.Write Request.Form(item) & "<br />" & vbCrLf
+		Response.Write Request.Form(item) & "<br />" & vbCrLf
 	End If
 Next
 rsSurv.Update

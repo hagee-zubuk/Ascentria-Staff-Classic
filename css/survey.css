@@ -7,12 +7,13 @@ div #logobar {
 	background-color: orange;
 }
 #logobar h1 {
+	color: #eff;
 	float: right;
-	width: 50%;
+	font-size: 14pt;
+	font-weight: bold;
 	margin: 5px 20px 0px 20px;
 	text-align: right;
-	color: #eff;
-	font-weight: bold;
+	width: 60%;
 }
 input {
 	padding: 2px 4px 3px;
@@ -63,7 +64,7 @@ div.rdoChoice {
   width: 100%;
 }
 body {
-  height: 5000px
+  /* height: 5000px */
 }
 div#intrbar{
 	background-color: #F7DC6F;
@@ -71,8 +72,90 @@ div#intrbar{
 	padding: 10px 20px;
 }
 .ui-autocomplete-loading {
-	background: white url("images/ui-anim_basic_16x16.gif") right center no-repeat;
+	background: white url("../images/ui-anim_basic_16x16.gif") right center no-repeat;
 }
 .align-right {
 	text-align: right;
+}
+div.icon {
+	background-image: url("../images/ui-icons_444444_256x240.png");
+	display: inline-block;
+	height: 16px;
+	width: 16px;
+}
+
+.smallertable th {
+	font-size: 0.8em;
+	line-height: 0.95em;
+	padding: 4px 4px 2px;
+}
+.smallertable td {
+	font-size: 0.9em;
+	line-height: 0.95em;
+	padding: 4px 4px 2px;
+	/* border-right: 1px dotted #bbb; */
+}
+div.err {
+	background-color: yellow;
+	color: red;
+	font-size: 0.9em;
+	font-weight: bold;
+	text-align: center;
+	display: inline-block;
+	padding: 2px 10px 1px 15px;
+}
+th.yellow, tr.yellow, .yellow td {
+	background-color: #F9E79F;
+}
+div.resp {
+	display: inline-block;
+	font-weight: bold;
+	font-size: 140%;
+}
+td.resp {
+	font-size: 150%;
+	font-weight: bold;
+	text-align: center;
+}
+.rr4 { background-color: #FF8484; }
+.rr3 { background-color: #FF9984; }
+.rr2 { background-color: #FFBC84; }
+.rr1 { background-color: #FFF884; }
+pre.resp {
+	padding: 3px 10px;
+	border: 1px dotted #666;
+	border-radius: 3px;
+}
+.font-smaller {
+	font-size: 50%;
+}
+.font-small {
+	font-size: 60%;
+}
+
+@media print {
+	@page {
+		margin							: 1.0cm;
+	}
+	@page:left {
+		margin							: 3.0cm;
+	}
+	* {
+		font-family						: Georgia, "Times New Roman", Times, Serif;
+		font-size						: 10pt;
+		line-height						: 1.2;
+	}
+	.translated, .no-print, .no-print * {
+		display							: none !important;
+	}
+	h2 {
+		font-size						: 14pt;
+	}
+	h3 {
+		font-size						: 12pt;
+	}
+	label {
+		font-size						: 10pt;
+		font-weight						: bold;
+	}
 }

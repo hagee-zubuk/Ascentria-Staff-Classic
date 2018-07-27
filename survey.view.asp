@@ -58,6 +58,9 @@ End If
 			<h1>Interpreter Performance Evaluation</h1>
 		</div>
 	</div>
+			<div class="no-print u-full-width">
+				<a href="survey.list.asp" title="go back to the list of responses">&lt;&lt;&nbsp;back</a>
+			</div>
 	<div class="row" id="intrbar">
 		<div class="seven columns">
 			<label for="txtName">Interpreter Name</label><input name="txtName" id="txtName" readonly="true" value="<%=rsSurv("inter_name")%>"
