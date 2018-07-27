@@ -4,6 +4,12 @@
 <!-- #include file="_Utils.asp" -->
 <!-- #include file="_Security.asp" -->
 <%
+lngID = Request("ix")
+If lngID < 1 Then
+	Session("MSG") = "survey response index is missing"
+	Response.Redirect "survey.list.asp"
+End If
+
 Set rsSurv = Server.CreateObject("ADODB.RecordSet")
 strSQL = "SELECT y.[index]" & _
 	", y.[rdoPunct], y.[rdoProfb], y.[rdoProcG], y.[rdoTeamW], y.[rdoProDv], y.[rdoReliasTrng]" & _
