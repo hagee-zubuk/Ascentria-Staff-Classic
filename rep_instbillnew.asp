@@ -440,8 +440,8 @@ If Not rsRep.EOF Then
 				CSVBody = CSVBody & CSVBodyLine & """" & vbCrLf
 			
 				'TODO: reinstate the next 2 timestamps for live
-				'rsRep("billingTrail") = rsRep("billingTrail") & "<br>Billed to Institution " & Date
-				'rsRep("Processed") = Date
+				rsRep("billingTrail") = rsRep("billingTrail") & "<br>Billed to Institution " & Date
+				rsRep("Processed") = Date
 
 				x = x + 1
 				rsRep.Update
