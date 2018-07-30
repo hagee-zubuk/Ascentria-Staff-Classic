@@ -54,6 +54,7 @@ lngUID = Request.Cookies("UID")
 	<div class="row">
 		<div class="twelve columns">
 			<input type="hidden" name="IID" id="IID" readonly="true" value="" />
+			<input type="hidden" name="UID" id="UID" readonly="true" value="<%=lngUID%>" />
 			<p>It is required that the interpreter's job performance be evaluated annually.</p>
 			<p>The interpreter's performance is based on the following criteria and rating scale: <a href="#ratingscale" class="smaller" id="showhide" name="showhide">(hide this)</a> </p>
 		</div>

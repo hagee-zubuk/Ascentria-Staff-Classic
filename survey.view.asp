@@ -2,6 +2,31 @@
 <!-- #include file="_Files.asp" -->
 <!-- #include file="_Utils.asp" -->
 <%
+Function MkDropDown(zzName, oRec) 
+	val =  oRec(zzName).Value
+	strTmp = "<select id=""" & zzName & """ name=""" & zzName & """>" & vbCrLf
+	For i = 1 To 4
+		strTmp = strTmp & vbTab & "<option value=""" & i & """"
+		If i = val Then strTmp = strTmp & " selected"
+		strTmp = strTmp & ">" & i & "</option>" & vbCrLf
+	Next
+	strTmp = strTmp & "</select>" & vbCrLf
+	MkDropDown = strTmp
+End Function
+
+Function MkDD_YN(zzName, oRec) 
+	val =  oRec(zzName).Value
+	strTmp = "<select id=""" & zzName & """ name=""" & zzName & """>" & vbCrLf
+	strTmp = strTmp & vbTab & "<option value=""1"""
+	If val = "1" Then strTmp = strTmp & " selected"
+	strTmp = strTmp & ">Yes</option>" & vbCrLf
+	strTmp = strTmp & vbTab & "<option value=""0"""
+	If val = "0" Then strTmp = strTmp & " selected"
+	strTmp = strTmp & ">No</option>" & vbCrLf
+	strTmp = strTmp & "</select>" & vbCrLf
+	MkDD_YN = strTmp
+End Function
+
 lngID = Request("ix")
 If lngID < 1 Then
 	Session("MSG") = "survey response index is missing"
@@ -71,77 +96,97 @@ End If
 		<div class="five columns">
 			<label for="txtDate">Date</label><input name="txtDate" id="txtDate" tabstop="-1" readonly="true" value="<%=Z_MDYDate(rsSurv("txtDate"))%>" />
 			<p><b>&#x2605;</b>&nbsp;Higher values are better.</p>
+			<button type="button" class="button button-primary"id="btnSave" name="btnSave">Save</button>
+			&nbsp;&nbsp;
+			<button type="button" class="button button-secondary"id="btnClos2" name="btnClos2">Close</button>
 		</div>
 	</div>
+<form id="frmA" name="frmA" method="post" action="survey.save.asp">	
 	<div class="row">
 		<div class="twelve columns">
 			<table class="u-full-width">
   				<thead>
-    				<tr><th colspan="2" class="yellow">Performance Criteria</th></tr>
+    				<tr><th colspan="2" class="yellow">Performance Criteria
+    					<input type="hidden" name="IID" id="IID" value="<%=rsSurv("iid")%>" />
+    					<input type="hidden" name="UID" id="UID" value="<%=rsSurv("uid")%>" />
+    					</th></tr>
   				</thead>
   				<tbody>
   					<tr><td><h5>Punctuality</h5>
 							</td>
-						<td class="resp rr<%=rsSurv("rdoPunct")%>"><%=rsSurv("rdoPunct")%></td>
+						<td class="resp rr<%=rsSurv("rdoPunct")%>"><%=MkDropDown("rdoPunct", rsSurv) %></td>
 					</tr>
 					<tr><td><h5>Professional Behavior</h5>
 							</td>
-						<td class="resp rr<%=rsSurv("rdoProfb")%>"><%=rsSurv("rdoProfb")%></td>
+						<td class="resp rr<%=rsSurv("rdoProfb")%>"><%=MkDropDown("rdoProfb", rsSurv)%></td>
 					</tr>
 					<tr><td><h5>Adherence to LB Procedural Guidelines</h5>
 							</td>
-						<td class="resp rr<%=rsSurv("rdoProcG")%>"><%=rsSurv("rdoProcG")%></td>
+						<td class="resp rr<%=rsSurv("rdoProcG")%>"><%=MkDropDown("rdoProcG", rsSurv)%></td>
 					</tr>
 					<tr><td><h5>Team Work Ethics</h5>
 							</td>
-						<td class="resp rr<%=rsSurv("rdoTeamW")%>"><%=rsSurv("rdoTeamW")%></td>
+						<td class="resp rr<%=rsSurv("rdoTeamW")%>"><%=MkDropDown("rdoTeamW", rsSurv)%></td>
 					</tr>
 					<tr><td><h5>Professional Development</h5></td>
-						<td class="resp rr<%=rsSurv("rdoProDv")%>"><%=rsSurv("rdoProDv")%></td>
+						<td class="resp rr<%=rsSurv("rdoProDv")%>"><%=MkDropDown("rdoProDv", rsSurv)%></td>
 					</tr>
 				</tbody>
 			</table>
-			Completed the required trainings in Relias (Yes or No):  <div class="resp"><%=rsSurv("rdoReliasTrng")%></div>
+			Completed the required trainings in Relias (Yes or No):  <div class="resp"><%=MkDD_YN("rdoReliasTrng", rsSurv)%></div>
 			<br /><br />
 			<p>
 				<label>Goals:</label>
-				<pre class="resp"><%=rsSurv("txtGoals")%></pre>
+				<textarea class="u-full-width" name="txtGoals" id="txtGoals"><%=rsSurv("txtGoals")%></textarea>
 			</p>
 			<p>
 				<label>Existing Strengths:</label>
-				<pre class="resp"><%=rsSurv("txtStrengths")%></pre>
+				<textarea class="u-full-width" name="txtStrengths" id="txtStrengths"><%=rsSurv("txtStrengths")%></textarea>
 			</p>
 			<p>
 				<label>Areas Needing Improvement:</label>
-				<pre class="resp"><%=rsSurv("txtImprovement")%></pre>
+				<textarea class="u-full-width" name="txtImprovement" id="txtImprovement"><%=rsSurv("txtImprovement")%></textarea>
 			</p>
 			<p>
 				<label>Comments:</label>
-				<pre class="resp"><%=rsSurv("txtComments")%></pre>
+				<textarea class="u-full-width" name="txtComments" id="txtComments"><%=rsSurv("txtComments")%></textarea>
 			</p>
   		</div>
   	</div>
+</form>  	
   	<div class="row">
 		<div class="twelve columns align-right">
-  			<button type="button" class="button button-primary"id="btnClos" name="btnClos">Close</button>
+			<button type="button" class="button button-primary"id="btnSave2" name="btnSave2">Save</button>
+			&nbsp;&nbsp;
+  			<button type="button" class="button button-secondary"id="btnClos" name="btnClos">Close</button>
   		</div>
 	</div>
 </div>
 </body>
 </html>
 <script language="javascript" type="text/javascript"><!--
+function submitme() {
+	$('#frmA').submit();
+}
+
 $( document ).ready(function() {
 	$('#btnClos').click(function(){
 		document.location="survey.list.asp";
 	});
+	$('#btnClos2').click(function(){
+		document.location="survey.list.asp";
+	});
 	$('#intrbar').sticky({topSpacing:0});
-	console.log( "ready!" );
+	$('#btnSave').click(function(){ submitme(); });
+	$('#btnSave2').click(function(){ submitme(); });
+	console.log( "ready!" );	
 <%
 If Session("MSG") <> "" Then
 	tmpMSG = Replace(Session("MSG"), "<br>", "\n")
 %>
 	alert("<%=tmpMSG%>");
 <%
+	Session("MSG") = ""
 End If
 %>
 });

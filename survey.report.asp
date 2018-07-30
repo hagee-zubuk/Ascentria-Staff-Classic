@@ -128,7 +128,7 @@ End If
 	</div>
 	<div class="row">
 		<div class="twelve columns">
-			<table class="u-full-width">
+			<table class="u-full-width smaller">
   				<thead>
     				<tr><th colspan="2" class="yellow">Performance Criteria</th></tr>
   				</thead>
@@ -190,7 +190,6 @@ $( document ).ready(function() {
 	$('#btnMedFm').click(function() {
 		document.location="survey2018-medical.asp?iid=<%=lngID%>";
 	});
-	$('#intrbar').sticky({topSpacing:0});
 	console.log( "ready!" );
 <%
 If Session("MSG") <> "" Then

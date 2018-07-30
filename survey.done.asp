@@ -12,7 +12,7 @@ lngID = Z_CLng(Request("iid"))
 blnGotMed = TRUE
 If lngID > 0 Then
 	Set rsSurv = Server.CreateObject("ADODB.RecordSet")
-	strSQL = "SELECT COUNT([index]) AS [cnt] FROM [survey2018med] WHERE [iid]=" & lngIID ' UID doesn't matter in this case -- " AND [uid]=" & lngUID
+	strSQL = "SELECT COUNT([index]) AS [cnt] FROM [survey2018med] WHERE [iid]=" & lngID ' UID doesn't matter in this case -- " AND [uid]=" & lngUID
 	rsSurv.Open strSQL, g_strCONN, 1, 3
 	blnGotMed = FALSE
 	If Not rsSurv.EOF Then
@@ -66,6 +66,7 @@ If Not blnGotMed Then
 <%
 End If
 %>
+			<p>back to <a href="survey.list.asp">survey list</a></p>
 		</div>
 	</div>
 </div>

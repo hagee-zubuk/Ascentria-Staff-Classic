@@ -5,7 +5,7 @@
 <!-- #include file="_Security.asp" -->
 <%
 lngIID = Z_CLng(Request("IID"))
-lngUID = Z_CLng(Request.Cookies("UID"))
+lngUID = Z_CLng(Request("UID"))
 If lngIID < 1 or lngUID < 0 Then 
 	Session("MSG") = "an error occurred trying to save the survey. please try again."
 	Response.Redirect "survey2018.asp"
@@ -28,6 +28,7 @@ For Each item In Request.Form
 		' Response.Write Request.Form(item) & "<br />" & vbCrLf
 	End If
 Next
+
 rsSurv.Update
 rsSurv.Close
 Set rsSurv = Nothing
