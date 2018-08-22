@@ -16,6 +16,7 @@ strSQL = "SELECT y.[index]" & _
 		", COALESCE(r.[guid], '') AS [guid]" & _
 		", r.[generated], r.[viewed]" & _
 		", COALESCE(r.[release], 0) AS [release]" & _
+		", COALESCE(r.[signature], '') AS [signature]" & _
 		", COALESCE(m.[index], 0) AS [med_ix]" & _
 		", u.[Fname] + ' ' + u.[Lname] AS [reviewer] " & _
 	"FROM [survey2018] AS y " & _
@@ -31,12 +32,32 @@ lngIdx = 0
 Do While Not rsSurv.EOF
 	strTbl = "<tr><td>"
 	blnRel = rsSurv("release")
+	If (Z_CDate(rsSurv("signature"))>CDate("2018-01-01")) Then 
+		blnSigned = True
+	Else
+		blnSigned = False
+	End If
+	
 	If strLast <> rsSurv("inter_name") Then
+		If ( blnSigned ) Then
+			strTbl = strTbl & "<div class=""icon ui-icon-check"" title=""signed""></div></td><td>"
+		Else
+			strTbl = strTbl & "</td><td>"
+		End If
+	
 		strTbl = strTbl & rsSurv("inter_name")
 		strLast = rsSurv("inter_name")
 		lngIdx = lngIdx + 1
 		If ( blnRel ) Then strTbl = strTbl & " (released)"
-		strTbl = strTbl & "</td><td style=""text-align: center;""><a href=""survey.report.asp?ix=" & rsSurv("iid") & _
+		If ( blnSigned ) Then strTbl = strTbl & "<br />(signed: " & Z_MDYDate( rsSurv("signature")) & ")"
+		strTbl = strTbl & "</td><td style=""text-align: center;"">"
+
+		strTbl = strTbl & "<a href=""survey.print.asp?ix=" & rsSurv("iid") & _
+					""" title=""PDF summary""><img src=""images/pdf-dl.png"" " & _
+					"alt=""PDF"" /></a>"
+		
+		strTbl = strTbl & "</td><td style=""text-align: center;"">"
+		strTbl = strTbl & "<a href=""survey.report.asp?ix=" & rsSurv("iid") & _
 				""" title=""view summary""><div class=""icon ui-icon-note""></div></a>"
 		' check if released or not
 		strTbl = strTbl & "<div id=""divRel" & rsSurv("iid") & """>"
@@ -45,8 +66,10 @@ Do While Not rsSurv.EOF
 		Else
 			strTbl = strTbl & "<a href=""#"" class=""font-small"" id=""lnkRel"" onclick=""release('" & rsSurv("iid") & "')"">release</a></div>"
 		End If
-		strTbl = strTbl & "</td><td style=""text-align: center;""><a title=""Medical Checklist"" " & _
-				"href=""survey2018-medical.asp?iid=" & rsSurv("iid") & """>[med]<div class=""icon ui-icon-"
+		strTbl = strTbl & "</td><td style=""text-align: center;""><a title=""Medical Checklist"
+		If ( CLng(rsSurv("med_ix")) > 0 ) Then strTbl = strTbl & " completed"
+		strTbl = strTbl & """ href=""survey2018-medical.asp?iid=" & rsSurv("iid") & """><img src=""images/medical.png"" " & _
+				"alt=""Med"" /><div class=""icon ui-icon-"
 		If ( CLng(rsSurv("med_ix")) > 0 ) Then
 			strTbl = strTbl & "check"
 		Else
@@ -54,7 +77,7 @@ Do While Not rsSurv.EOF
 		End If
 		strTbl = strTbl &"""></div></a>"
 	Else
-		strTbl = strTbl & "&mdash;</td><td>&nbsp;</td><td>"
+		strTbl = strTbl & "</td><td>&mdash;</td><td colspan=""2"">&nbsp;</td><td>"
 	End If
 
 	If (Z_IsOdd(lngIdx)) Then
@@ -68,14 +91,12 @@ Do While Not rsSurv.EOF
 '	If (CLng(rsSurv("uid")) = lngUID) Then
 '		strTbl = strTbl & "<a href=""survey.edit.asp?ix=" & rsSurv("index") & """ title=""Edit""><div class=""icon ui-icon-pencil""></div></a>"
 '	End If
-	strTbl = strTbl & "</td><td><a href=""survey.view.asp?ix=" & rsSurv("index") & """ title=""View this entry""><div class=""icon ui-icon-document""></div></a></td>"
-	If ( blnRel ) Then
-		strTbl = strTbl & "<td></td>"
-	Else
-		strTbl = strTbl & "<td><a href=""survey.dele.asp?ix=" & rsSurv("index") & _
-				""" title=""Delete this entry""><div class=""icon ui-icon-trash""></div></a></td>"
+	strTbl = strTbl & "</td><td><a href=""survey.view.asp?ix=" & rsSurv("index") & """ title=""View this entry""><div class=""icon ui-icon-document""></div></a></td><td>"
+	If (Not blnRel ) Then
+		strTbl = strTbl & "<a href=""survey.dele.asp?ix=" & rsSurv("index") & _
+				""" title=""Delete this entry""><div class=""icon ui-icon-trash""></div></a>"
 	End If
-	strTbl = strTbl & "</tr>" & vbCrLF
+	strTbl = strTbl & "</td></tr>" & vbCrLF
 	rsSurv.MoveNext
 	strFulTbl = strFulTbl & strTbl
 Loop
@@ -119,8 +140,8 @@ End If
 %>
 			<table class="u-full-width smallertable">
   				<thead>
-    				<tr><th>Interpreter</th>
-    					<th colspan="2" style="text-align: center; font-size: 75%;">Summary</th>
+    				<tr><th colspan="2">Interpreter</th>
+    					<th colspan="3" style="text-align: center; font-size: 75%;">Summary</th>
     					<th>Date</th>
     					<th>Reviewer</th>
     					<th colspan="2">&nbsp;</th></tr>
