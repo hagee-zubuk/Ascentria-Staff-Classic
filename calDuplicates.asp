@@ -35,7 +35,8 @@ sqlDup = "SELECT z.[Clname], z.[Cfname], r.[appTimeFrom], r.[appTimeTo], r.[inde
 		") AS z " & _
 		"INNER JOIN [request_T] AS r ON z.[Clname]=r.[Clname] AND z.[Cfname]=r.[Cfname] AND [appDate]='" & txtDate & "' " & _
 		"INNER JOIN [language_T] AS l ON r.[langID]=l.[index] " & _
-		"WHERE qq > 1"
+		"WHERE qq > 1 " & _
+		"ORDER BY [clname], [cfname]"
 Set rsDup = Server.CreateObject("ADODB.Recordset")
 rsDup.Open sqlDup, g_strConn, 3, 1
 If Not rsDup.EOF Then
