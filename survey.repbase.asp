@@ -148,33 +148,58 @@ End If
 	</div>
 	<div class="row">
 		<div class="twelve columns">
-			<table class="u-full-width smaller">
+			<table class="u-full-width smallertable" style="width: 90%; margin-left: auto; margin-right: auto;">
+				<thead></thead><tbody>
+				</tbody>
+<tr><td colspan="2">Criteria</td><td colspan="2" style="border-left: 1px dotted #999;">Rating Scale</td></tr>
+<tr><td valign="top" colspan="2"><p>Punctuality</p>
+	<p>Professional&nbsp;Behavior</p>
+	<p>Adherence to LB Procedural Guidelines</p>
+<!-- /td><td valign="top" -->
+	<p>Team Work Ethics</p>
+	<p>Professional&nbsp;Development</p>
+</td><td colspan="2" style="border-left: 1px dotted #999;">
+	<p>Outstanding - 4<br />
+	Employee <i>consistently exceeds</i>the expectations of position. Their colleages recognize their exceelence and their unique contribution to the organization. They serve as a role model for others. They require little or no supervision and generate output that is exceptionally high in quality and quantity. They accept high level or responsibility for own performance.</p>
+	<p>Above Average - 3<br />
+	Employee <i>frequently exceeds</i> expectations, provides significant and measureable contribution well beyond their position responsibilities. The employee demonstrates a desire and ability to excel in performance.</p>
+	<p>Satisfactory - 2<br />
+	Employee <i>meets</i> expectations. The employee is a productive and valued member of the team.</p>
+	<p>Needs Improvement - 1<br />
+	Employee is <i>struggling</i> to meet the basic responsibilty of their position and is not meeting job expectations or the employee is new in their position and is still developing.</p>
+</td></tr>
+			</table>
+		</div>
+	</div>
+	<div class="row">
+		<div class="twelve columns">
+			<table class="u-full-width smallertable">
   				<thead>
-    				<tr><th colspan="2" class="yellow">Performance Criteria</th></tr>
+    				<tr><th colspan="2" class="yellow"><h4>Performance Criteria</h4></th></tr>
   				</thead>
   				<tbody>
-  					<tr><td><h5>Punctuality</h5>
+  					<tr><td><p style="font-size: 11pt; font-weight: bold; margin-left: 20px;">Punctuality</p>
 							</td>
 						<td class="resp rr<%=styPunct%>"><%=avgPunct%></td>
 					</tr>
-					<tr><td><h5>Professional Behavior</h5>
+					<tr><td><p style="font-size: 11pt; font-weight: bold; margin-left: 20px;">Professional Behavior</p>
 							</td>
 						<td class="resp rr<%=styProfb%>"><%=avgProfb%></td>
 					</tr>
-					<tr><td><h5>Adherence to LB Procedural Guidelines</h5>
+					<tr><td><p style="font-size: 11pt; font-weight: bold; margin-left: 20px;">Adherence to LB Procedural Guidelines</p>
 							</td>
 						<td class="resp rr<%=styProcG%>"><%=avgProcG%></td>
 					</tr>
-					<tr><td><h5>Team Work Ethics</h5>
+					<tr><td><p style="font-size: 11pt; font-weight: bold; margin-left: 20px;">Team Work Ethics</p>
 							</td>
 						<td class="resp rr<%=styTeamW%>"><%=avgTeamW%></td>
 					</tr>
-					<tr><td><h5>Professional Development</h5></td>
+					<tr><td><p style="font-size: 11pt; font-weight: bold; margin-left: 20px;">Professional Development</p></td>
 						<td class="resp rr<%=styProDv%>"><%=avgProDv%></td>
 					</tr>
 					<tr><td>Completed the required trainings in Relias:  <div class="resp"><%=avgReliasTrng%></div>
 						</td><td></td></tr>
-					<tr><td><h5>Overall Rating</h5></td>
+					<tr><td><p style="font-size: 11pt; font-weight: bold; margin-left: 20px;">Overall Rating</p></td>
 						<td class="resp" style="border: 1px solid #888 !important;"><%=avgOvral%></td>
 					</tr>
 				</tbody>
