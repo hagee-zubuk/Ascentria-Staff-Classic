@@ -145,32 +145,15 @@ End If
 							</tr>
 							<tr><td align="center"><a href="admin_foi.asp" class="admin" target="_BLANK">[Consent Forms]</a></td></tr>
 							<tr><td align="center"><a href="survey.list.asp" class="admin" target="_BLANK">[Interpreter survey2018]</a></td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
+							<tr style="height: 30px;"><td>&nbsp;</td></tr>
+							<tr><td align="center"><a href="rep.novform.asp" class="admin" >[Unsubmitted Verification Form Report]</a></td></tr>
+							<tr style="height: 30px;"><td>&nbsp;</td></tr>
 							<tr>
 								<td align='center'>
 									<a href="JavaScript: MyEdits();" class='admin'>[Download Edit Appointment log]</a>
 								</td>
 							</tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr>
+							<tr style="height: 200px;"><td>&nbsp;</td></tr>
 						</table>
 					</td>
 				</tr>
