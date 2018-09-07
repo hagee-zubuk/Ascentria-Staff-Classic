@@ -259,12 +259,14 @@ If Not rsRep.EOF Then
 								rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - MW" & _
 								rsRep("myindex") & """,""" & date & """,""" & _
 								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
-					ElseIf rsRep("myinstID") = 39 Or rsRep("myinstID") = 52 Or rsRep("myinstID") = 168 _
+					ElseIf rsRep("myinstID") = 39 Or rsRep("myinstID") = 52 _
+							Or rsRep("myinstID") = 168 Or rsRep("myinstID") = 130 _
 							Or rsRep("myinstID") = 199 Or rsRep("myinstID") = 724 _
 							Or rsRep("myinstID") = 683 Or rsRep("myinstID") = 717 Then
 					' [39] SAU # 37 Manchester School District,
 					' [52] Exeter Hospital,
 					' [168] Concord Head Start,
+					' [130] Child and Family Services,
 					' [199] Southern New Hampshire Services,
 					' [724] City of Worcester 
 					' added 180716:
@@ -440,8 +442,8 @@ If Not rsRep.EOF Then
 				CSVBody = CSVBody & CSVBodyLine & """" & vbCrLf
 			
 				'TODO: reinstate the next 2 timestamps for live
-				rsRep("billingTrail") = rsRep("billingTrail") & "<br>Billed to Institution " & Date
-				rsRep("Processed") = Date
+				'rsRep("billingTrail") = rsRep("billingTrail") & "<br>Billed to Institution " & Date
+				'rsRep("Processed") = Date
 
 				x = x + 1
 				rsRep.Update
