@@ -6,6 +6,20 @@ If lngID < 1 Then
 End If
 
 Set rsSurv = Server.CreateObject("ADODB.RecordSet")
+Set rsIdx = Server.CreateObject("ADODB.RecordSet")
+strSQL = "SELECT [index] AS [ix] FROM [survey2018] WHERE [iid]=" & lngID & " ORDER BY [ts] DESC"
+rsIdx.Open strSQL, g_strCONN, 3, 1
+If rsIdx.EOF Then
+	rsIdx.Close
+	Set rsIdx = Nothing
+	Session("MSG") = "survey response index missing"
+	Response.Write "survey.list.asp"
+	Response.End
+End If
+lngMIdx = rsIdx("ix")
+rsIdx.Close
+Set rsIdx = Nothing
+
 strSQL = "SELECT y.[index]" & _
 	", y.[rdoPunct], y.[rdoProfb], y.[rdoProcG], y.[rdoTeamW], y.[rdoProDv], y.[rdoReliasTrng]" & _
 	", y.[txtGoals], y.[txtStrengths], y.[txtImprovement], y.[txtComments]" & _
@@ -19,7 +33,7 @@ strSQL = "SELECT y.[index]" & _
 	"INNER JOIN [user_T]			AS u ON y.[uid]=u.[index] " & _
 	"LEFT JOIN  [survey2018med]		AS m ON y.[iid]=m.[iid] " & _
 	"LEFT JOIN  [surveyreports] 	AS r ON y.[iid]=r.[iid] " & _
-	"WHERE y.[iid]=" & lngID
+	"WHERE y.[iid]=" & lngID & " AND y.[index]=" & lngMIdx
 rsSurv.Open strSQL, g_strCONN, 3, 1
 If rsSurv.EOF Then
 	rsSurv.Close
@@ -28,11 +42,6 @@ If rsSurv.EOF Then
 	Response.Redirect "survey.list.asp"
 End If
 lngIdx = 0
-avgPunct = 0
-avgProfb = 0
-avgProcG = 0
-avgTeamW = 0
-avgProDv = 0
 txtGoals = ""
 txtStrng = ""
 txtImprv = ""
@@ -40,16 +49,16 @@ txtComnt = ""
 dtSig = ""
 avgReliasTrng = "N"
 blnRel = False
-Do While Not rsSurv.EOF
+If Not rsSurv.EOF Then
 	blnRel = CBool(rsSurv("release"))
 	dtSig = Z_MDYDate( rsSurv("signature") )
 	txtInterpreter = rsSurv("inter_name")
-	avgPunct = avgPunct + Z_CLng(rsSurv("rdoPunct"))
-	avgProfb = avgProfb + Z_CLng(rsSurv("rdoPunct"))
-	avgProcG = avgProcG + Z_CLng(rsSurv("rdoProcG"))
-	avgTeamW = avgTeamW + Z_CLng(rsSurv("rdoTeamW"))
-	avgProDv = avgProDv + Z_CLng(rsSurv("rdoProDv"))
-	If rsSurv("rdoReliasTrng") = "Y" Then avgReliasTrng = "Y"
+	avgPunct = Z_CLng(rsSurv("rdoPunct"))
+	avgProfb = Z_CLng(rsSurv("rdoProfb"))
+	avgProcG = Z_CLng(rsSurv("rdoProcG"))
+	avgTeamW = Z_CLng(rsSurv("rdoTeamW"))
+	avgProDv = Z_CLng(rsSurv("rdoProDv"))
+	If (rsSurv("rdoReliasTrng") = 1 Or rsSurv("rdoReliasTrng") = "Y") Then avgReliasTrng = "Y"
 	If Len(Z_FixNull(rsSurv("txtGoals"))) > 0 Then txtGoals = txtGoals & Z_FixNull(rsSurv("txtGoals") ) & vbCrLf
 	If Len(Z_FixNull(rsSurv("txtStrengths"))) > 0 Then txtStrng = txtStrng & Z_FixNull(rsSurv("txtStrengths") ) & vbCrLf
 	If Len(Z_FixNull(rsSurv("txtImprovement"))) > 0 Then txtImprv = txtImprv & Z_FixNull(rsSurv("txtImprovement") ) & vbCrLf
@@ -57,23 +66,12 @@ Do While Not rsSurv.EOF
 
 	lngMedIx = CLng(rsSurv("med_ix"))
 	' iterate!
-	rsSurv.MoveNext
-	lngIdx = lngIdx + 1
-Loop
+End If
 rsSurv.Close
 Set rsSurv = Nothing
 
-If lngIdx <= 0 Then
-	Session("MSG") = "not enough survey resources to create a report -- must have at least one!"
-	Response.Redirect "survey.list.asp"
-End If
-
-avgPunct = avgPunct / lngIdx
-avgProfb = avgProfb / lngIdx
-avgProcG = avgProcG / lngIdx
-avgTeamW = avgTeamW / lngIdx
-avgProDv = avgProDv / lngIdx
 avgOvral = (avgPunct + avgProfb + avgProcG + avgTeamW + avgProDv) / 5
+avgOvral = Round(avgOvral, 0)
 
 styPunct = Int(avgPunct)
 styProfb = Int(avgProfb)
@@ -197,8 +195,8 @@ End If
 					<tr><td><p style="font-size: 11pt; font-weight: bold; margin-left: 20px;">Professional Development</p></td>
 						<td class="resp rr<%=styProDv%>"><%=avgProDv%></td>
 					</tr>
-					<tr><td>Completed the required trainings in Relias:  <div class="resp"><%=avgReliasTrng%></div>
-						</td><td></td></tr>
+					<tr><td colspan="2">Completed the required trainings in Relias:  <b class="resp"><%=avgReliasTrng%></b>
+						</td></tr>
 					<tr><td><p style="font-size: 11pt; font-weight: bold; margin-left: 20px;">Overall Rating</p></td>
 						<td class="resp" style="border: 1px solid #888 !important;"><%=avgOvral%></td>
 					</tr>

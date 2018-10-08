@@ -95,6 +95,7 @@ If Session("MSG") <> "" Then
 	TypeSel70 = ""
 	TypeSel71 = ""
 	TypeSel72 = ""
+	TypeSel73 = ""
 
 	If tmpReport(0) = 1 Then TypeSel1 = "selected"
 	If tmpReport(0) = 2 Then TypeSel2 = "selected"
@@ -167,7 +168,8 @@ If Session("MSG") <> "" Then
 	If tmpReport(0) = 69 Then TypeSel69 = "selected"
 	If tmpReport(0) = 70 Then TypeSel70 = "selected"
 	If tmpReport(0) = 71 Then TypeSel71 = "selected"	
-	If tmpReport(0) = 72 Then TypeSel72 = "selected"	
+	If tmpReport(0) = 72 Then TypeSel72 = "selected"
+	If tmpReport(0) = 73 Then TypeSel73 = "selected"
 		
 	tmpRepFrom = tmpReport(1)
 	tmpRepTo = tmpReport(2)
@@ -296,7 +298,7 @@ todaydate = Cdate(date)
 				document.frmReport.selIntr.value = -1;
 				document.frmReport.selTown.value = -1;
 			}
-			else if (xxx == 17 || xxx == 3 ||xxx == 10 ||xxx == 15 || xxx == 16 ||xxx == 21 ||xxx == 22 || xxx == 19 || xxx == 23 || xxx == 28 || xxx == 29 ||xxx == 30 ||xxx == 32 ||xxx == 38 ||xxx == 39 ||xxx == 40 ||xxx == 41 || xxx == 42 || xxx == 44 || xxx == 45 || xxx == 46 || xxx == 48 || xxx == 49 || xxx == 50 || xxx == 51 || xxx == 52 || xxx == 57 || xxx == 58 || xxx == 64 || xxx == 65 || xxx == 66 || xxx == 67 || xxx == 68 || xxx == 69 || xxx == 71 || xxx == 72)
+			else if (xxx == 17 || xxx == 3 ||xxx == 10 ||xxx == 15 || xxx == 16 ||xxx == 21 ||xxx == 22 || xxx == 19 || xxx == 23 || xxx == 28 || xxx == 29 ||xxx == 30 ||xxx == 32 ||xxx == 38 ||xxx == 39 ||xxx == 40 ||xxx == 41 || xxx == 42 || xxx == 44 || xxx == 45 || xxx == 46 || xxx == 48 || xxx == 49 || xxx == 50 || xxx == 51 || xxx == 52 || xxx == 57 || xxx == 58 || xxx == 64 || xxx == 65 || xxx == 66 || xxx == 67 || xxx == 68 || xxx == 69 || xxx == 71 || xxx == 72 )
 			{
 				document.frmReport.txtRepFrom.disabled = false;
 				document.frmReport.txtRepTo.disabled = false;
@@ -328,7 +330,7 @@ todaydate = Cdate(date)
 					document.frmReport.selInst.disabled = false;
 				}
 			}
-			else if (xxx == 4 || xxx == 20 || xxx == 53 || xxx == 31)
+			else if (xxx == 4 || xxx == 20 || xxx == 53 || xxx == 31  || xxx == 73)
 			{
 				document.frmReport.txtRepFrom.disabled = false;
 				document.frmReport.txtRepTo.disabled = false;
@@ -451,7 +453,7 @@ todaydate = Cdate(date)
 				document.frmReport.txtZip.value = "";
 				document.frmReport.txtState.value = "";
 			}
-			document.frmReport.chkAddnl.disabled = (xxx == 47);
+			document.frmReport.chkAddnl.disabled = ( (xxx == 47) || (xxx == 73) );
 		}
 		
 		
@@ -485,7 +487,7 @@ todaydate = Cdate(date)
 						document.frmReport.selRep.value == 65 || document.frmReport.selRep.value == 66 ||
 						document.frmReport.selRep.value == 67 || document.frmReport.selRep.value == 68 ||
 						document.frmReport.selRep.value == 69 || document.frmReport.selRep.value == 71 ||
-						document.frmReport.selRep.value == 72
+						document.frmReport.selRep.value == 72 || document.frmReport.selRep.value == 73
 						)
 				{
 					alert("Error: Filter is not applicable with this report type.") 
@@ -501,7 +503,8 @@ todaydate = Cdate(date)
 					document.frmReport.selRep.value == 64 || document.frmReport.selRep.value == 65 ||
 					document.frmReport.selRep.value == 66 || document.frmReport.selRep.value == 67 ||
 					document.frmReport.selRep.value == 68 || document.frmReport.selRep.value == 69 ||
-					document.frmReport.selRep.value == 71 || document.frmReport.selRep.value == 72
+					document.frmReport.selRep.value == 71 || document.frmReport.selRep.value == 72 ||
+					document.frmReport.selRep.value == 73
 					)
 			{
 				if (document.frmReport.txtRepFrom.value == "" || document.frmReport.txtRepTo.value == "")
@@ -533,7 +536,10 @@ todaydate = Cdate(date)
 					return;
 				}
 			}
-			if (document.frmReport.selRep.value == 17 || document.frmReport.selRep.value == 25 || document.frmReport.selRep.value == 34 || document.frmReport.selRep.value == 35 || document.frmReport.selRep.value == 48 || document.frmReport.selRep.value == 56 || document.frmReport.selRep.value == 61)
+			if (document.frmReport.selRep.value == 17 || document.frmReport.selRep.value == 25 ||
+					document.frmReport.selRep.value == 34 || document.frmReport.selRep.value == 35 ||
+					document.frmReport.selRep.value == 48 || document.frmReport.selRep.value == 56 ||
+					document.frmReport.selRep.value == 61 || document.frmReport.selRep.value == 72 )
 			{
 				if (document.frmReport.txtRepFrom.value == "")
 				{
@@ -541,7 +547,9 @@ todaydate = Cdate(date)
 					return;
 				}
 			}
-			if (document.frmReport.selRep.value == 21 || document.frmReport.selRep.value == 22 || document.frmReport.selRep.value == 48)
+			if (document.frmReport.selRep.value == 21 || document.frmReport.selRep.value == 22 ||
+					document.frmReport.selRep.value == 48 || document.frmReport.selRep.value == 72
+				)
 			{
 					if (document.frmReport.txtRepTo.value == "")
 					{
@@ -887,6 +895,7 @@ todaydate = Cdate(date)
 			{
 				document.frmReport.tadef.value = "Creation of appointment";
 			}
+			if (xxx == 73) document.frmReport.tadef.value = "Pending Appointments with Medicaid information";
 		}
 		function CalendarView(strDate)
 		{
@@ -993,6 +1002,7 @@ todaydate = Cdate(date)
 											<option value='49' <%=TypeSel49%>>**Alen Report</option>
 											<option value='50' <%=TypeSel50%>>**Alen Report 2</option>
 											<option value='52' <%=TypeSel52%>>**Lynda Report</option>
+											<option value='73' <%=TypeSel73%>>* Pending Appts w/ Medicaid</option>
 											<!--<option value='21' <%=TypeSel21%>>Payroll Report</option>-->
 											<!--<option value='22' <%=TypeSel22%>>Pre-Payroll Report</option>-->
 										</select>
@@ -1082,7 +1092,7 @@ todaydate = Cdate(date)
 										Filter:
 									</td>
 									<td>
-										<input type='checkbox' name='chkAddnl' value='1' onclick='FilterMe();'>
+										<input type='checkbox' name='chkAddnl' id='chkAddnl' value='1' onclick='FilterMe();'>
 									</td>
 								</tr>
 								<tr>
@@ -1090,7 +1100,7 @@ todaydate = Cdate(date)
 										Language:
 									</td>
 									<td>
-										<select class='seltxt' name='selLang'  style='width:200px;' onchange=''>
+										<select class='seltxt' name='selLang' id='selLang' style='width:200px;' onchange=''>
 											<option value='0'>&nbsp;</option>
 											<%=strLang%>
 										</select>
@@ -1101,7 +1111,7 @@ todaydate = Cdate(date)
 										Client:
 									</td>
 									<td>
-										<select class='seltxt' name='selCli'  style='width:200px;' onchange=''>
+										<select class='seltxt' name='selCli' id='selCli'  style='width:200px;' onchange=''>
 											<option value='0'>&nbsp;</option>
 											<%=strCli%>
 										</select>
@@ -1112,7 +1122,7 @@ todaydate = Cdate(date)
 										Classification:
 									</td>
 									<td>
-										<select class='seltxt' style='width: 200px;' name='selClass'>
+										<select class='seltxt' style='width: 200px;' name='selClass' id='selClass'>
 											<option value='0'>&nbsp;</option>
 											<option value='1' <%=SocSer%>>Social Services</option>
 											<option value='2' <%=Priv%>>Private</option>

@@ -6,12 +6,14 @@
 <!-- #include file="_UtilsReport.asp" -->
 <%
 If Request.Cookies("LBUSERTYPE") <> 1 Then 
-	Session("MSG") = "Invalid account."
-	Response.Redirect "default.asp"
+''	Session("MSG") = "Invalid account."
+''	Response.Redirect "default.asp"
+'maybe just log it this time?
 End If
 tmpPage = "document.frmClient."
 intCli = 0
 If Request.ServerVariables("REQUEST_METHOD") = "POST" Or Request("cliid") <> "" Then
+	
 	If Request("cliid") <> "" Then
 		intCli = Request("cliid")
 	Else

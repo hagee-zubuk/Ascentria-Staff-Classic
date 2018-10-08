@@ -3,16 +3,14 @@
 %>
 <table cellSpacing='0' cellPadding='0' width="100%" border='0' align="center">
 	<tr>
-		<td valign='top' align="left" rowspan="2" width="75%" height="65px" colspan="16">
+		<td valign='top' align="left" rowspan="2" width="75%" height="65px" colspan="18">
 			<img src='images/LBISLOGO.jpg' border="0">
 		</td>
 		<td align="center" width="25%" class="tollnum">
 		Toll-Free 844.579.0610
 		</td>
 	</tr>
-	<tr>
-		<td>&nbsp;</td>
-	</tr>	
+	<tr><td>&nbsp;</td></tr>	
 	<tr bgcolor='#f68328'>
 		<td class="motto" align="center">
 			<nobr>Understand and Be Understood.</nobr>
@@ -25,6 +23,8 @@
 				<td align='center' width='90px'><a href='openappts.asp' class='link2'><nobr>Open Appointments</a></td>
 				<td align='center' class='head' width='10px'>&nbsp;|&nbsp;</td>  
 				<td align='center' width='90px'><a href='reqtable.asp' class='link2'>List</a></td>
+				<td align='center' class='head' width='10px'>&nbsp;|&nbsp;</td> 
+				<td align='center' width='90px'><a href='client.asp' class='link2'>Intr. Pref'd</a></td>
 			<% End If %>
 			<td align='center' class='head' width='10px'>&nbsp;|&nbsp;</td>
 			<% If Cint(Request.Cookies("LBUSERTYPE")) <> 5 Then %>

@@ -1,4 +1,9 @@
 <%@Language=VBScript%>
+<%
+Response.Expires = 0
+Response.CacheControl = "no-cache"
+Response.AddHeader "Pragma", "no-cache"
+%>
 <!-- #include file="_Files.asp" -->
 <!-- #include file="_Announce.asp" -->
 <!-- #include file="_Utils.asp" -->

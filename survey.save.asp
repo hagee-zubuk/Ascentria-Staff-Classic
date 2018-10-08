@@ -28,7 +28,7 @@ For Each item In Request.Form
 		' Response.Write Request.Form(item) & "<br />" & vbCrLf
 	End If
 Next
-
+rsSurv("ts") = Now
 rsSurv.Update
 rsSurv.Close
 Set rsSurv = Nothing

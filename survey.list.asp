@@ -13,6 +13,7 @@ strSQL = "SELECT y.[index]" & _
 		", i.[First Name] + ' ' + i.[Last Name] AS [inter_name]" & _
 		", y.[txtDate]" & _
 		", y.[uid]" & _
+		", y.[ts]" & _
 		", COALESCE(r.[guid], '') AS [guid]" & _
 		", r.[generated], r.[viewed]" & _
 		", COALESCE(r.[release], 0) AS [release]" & _
@@ -83,7 +84,7 @@ Do While Not rsSurv.EOF
 	If (Z_IsOdd(lngIdx)) Then
 		strTbl = Replace(strTbl, "tr", "tr class=""yellow""")
 	End If
-	strTbl = strTbl & "</td><td>" & rsSurv("txtDate") & "</td>"
+	strTbl = strTbl & "</td><td>" & rsSurv("ts") & "</td>"
 	
 	blnZZ =  CLng(rsSurv("uid"))'' - lngUID )
 	strTbl = strTbl & "<td>" & rsSurv("reviewer") '& " ([" & rsSurv("uid") & "] =? [" & lngUID & "]) ~~ " & blnZZ

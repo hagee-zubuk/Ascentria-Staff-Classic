@@ -5919,6 +5919,10 @@ ElseIf tmpReport(0) = 72 Then 'appointment creation
 	End If
 	rsRep.Close
 	Set rsRep = Nothing
+ElseIf tmpReport(0) = 73 Then ' Pending Appts w/ Medicaid
+	'Response.Write "<img src=""images/ajax-loader.gif"" title=""wait"" alt=""wait"" />"
+	Response.Redirect "rep_pendingapptsmed.asp"
+	Response.End
 End If
 tmpBills = Request("Bill")
 If Request("csv") <> 1 Then

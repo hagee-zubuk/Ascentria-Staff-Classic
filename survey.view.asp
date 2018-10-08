@@ -4,7 +4,8 @@
 <%
 Function MkDropDown(zzName, oRec) 
 	val =  oRec(zzName).Value
-	strTmp = "<select id=""" & zzName & """ name=""" & zzName & """>" & vbCrLf
+	strTmp = "<select id=""" & zzName & """ name=""" & zzName & """>" & vbCrLf & _
+		"<option value=""0"">0</option>" & vbCrLf
 	For i = 1 To 4
 		strTmp = strTmp & vbTab & "<option value=""" & i & """"
 		If i = val Then strTmp = strTmp & " selected"

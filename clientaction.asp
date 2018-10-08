@@ -5,10 +5,16 @@
 <!-- #include file="_Security.asp" -->
 <!-- #include file="_UtilsReport.asp" -->
 <%
-server.scripttimeout = 360000
+Server.ScriptTimeout = 360000
 
 If Request("selcli") > 0 Then
 	cliid = Request("selcli")
+
+	If Request.Cookies("LBUSERTYPE") <> 1 Then 
+		Session("MSG") = "Account cannot edit information"
+		Response.Redirect "client.asp?cliid=" & cliid
+	End If
+
 	Set rsCli = Server.CreateObject("ADODB.RecordSet")
 	sqlCli = "SELECT * FROM c_need_T WHERE UID = " & cliid
 	rsCli.Open sqlCli, g_strCONN, 1, 3

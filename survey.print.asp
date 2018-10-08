@@ -54,6 +54,9 @@ If Not rsSurv.EOF Then
 End If
 rsSurv.Close
 
+
+Randomize
+strUrl = strUrl & "&rnd=" & CLng(Rnd * 10000000)
 'blnRelease = True
 'If Not blnRelease Then
 ''	Response.Redirect "survey.list.asp"
@@ -71,7 +74,7 @@ theDoc.Pos.Y = 10
 theDoc.Rect.Inset 50, 50
 theDoc.Page = theDoc.AddPage()
 
-theID = theDoc.AddImageUrl(strUrl, True, 1200, True)
+theID = theDoc.AddImageUrl(strUrl, True, 950, True)
 
 Do
   theDoc.Framerect
