@@ -96,6 +96,7 @@ If Session("MSG") <> "" Then
 	TypeSel71 = ""
 	TypeSel72 = ""
 	TypeSel73 = ""
+	TypeSel74 = ""
 
 	If tmpReport(0) = 1 Then TypeSel1 = "selected"
 	If tmpReport(0) = 2 Then TypeSel2 = "selected"
@@ -170,6 +171,7 @@ If Session("MSG") <> "" Then
 	If tmpReport(0) = 71 Then TypeSel71 = "selected"	
 	If tmpReport(0) = 72 Then TypeSel72 = "selected"
 	If tmpReport(0) = 73 Then TypeSel73 = "selected"
+	If tmpReport(0) = 74 Then TypeSel74 = "selected"
 		
 	tmpRepFrom = tmpReport(1)
 	tmpRepTo = tmpReport(2)
@@ -330,7 +332,7 @@ todaydate = Cdate(date)
 					document.frmReport.selInst.disabled = false;
 				}
 			}
-			else if (xxx == 4 || xxx == 20 || xxx == 53 || xxx == 31  || xxx == 73)
+			else if (xxx == 4 || xxx == 20 || xxx == 53 || xxx == 31  || xxx == 73 || xxx == 74)
 			{
 				document.frmReport.txtRepFrom.disabled = false;
 				document.frmReport.txtRepTo.disabled = false;
@@ -453,27 +455,22 @@ todaydate = Cdate(date)
 				document.frmReport.txtZip.value = "";
 				document.frmReport.txtState.value = "";
 			}
-			document.frmReport.chkAddnl.disabled = ( (xxx == 47) || (xxx == 73) );
+			document.frmReport.chkAddnl.disabled = ( (xxx == 47) || (xxx == 73) || xxx == 74 );
 		}
 		
 		
-		function RepGen()
-		{
-			if (document.frmReport.selRep.value == -1)
-			{
+		function RepGen() {
+			if (document.frmReport.selRep.value == -1) {
 				alert("Error: Please select a report type.");
 				return;
 			}
-			if (document.frmReport.chkAddnl.checked == true)
-			{
-				if (document.frmReport.selLang.value == -1 && document.frmReport.selCli.value == -1 && document.frmReport.selClass.value == -1)
-				{
+			if (document.frmReport.chkAddnl.checked == true) {
+				if (document.frmReport.selLang.value == -1 && document.frmReport.selCli.value == -1 && document.frmReport.selClass.value == -1)	{
 					alert("Error: Please select a filter.");
 					return;
 				}
 			}
-			if (document.frmReport.chkAddnl.checked == true)
-			{
+			if (document.frmReport.chkAddnl.checked == true) {
 				if (document.frmReport.selRep.value == 7 || document.frmReport.selRep.value == 8 || 
 						document.frmReport.selRep.value == 11 || document.frmReport.selRep.value == 12 || 
 						document.frmReport.selRep.value == 13 || document.frmReport.selRep.value == 14 || 
@@ -488,8 +485,7 @@ todaydate = Cdate(date)
 						document.frmReport.selRep.value == 67 || document.frmReport.selRep.value == 68 ||
 						document.frmReport.selRep.value == 69 || document.frmReport.selRep.value == 71 ||
 						document.frmReport.selRep.value == 72 || document.frmReport.selRep.value == 73
-						)
-				{
+						) {
 					alert("Error: Filter is not applicable with this report type.") 
 					return;
 				}
@@ -505,10 +501,8 @@ todaydate = Cdate(date)
 					document.frmReport.selRep.value == 68 || document.frmReport.selRep.value == 69 ||
 					document.frmReport.selRep.value == 71 || document.frmReport.selRep.value == 72 ||
 					document.frmReport.selRep.value == 73
-					)
-			{
-				if (document.frmReport.txtRepFrom.value == "" || document.frmReport.txtRepTo.value == "")
-				{
+					) {
+				if (document.frmReport.txtRepFrom.value == "" || document.frmReport.txtRepTo.value == "") {
 					alert("Error: Timeframe is required.");
 					return;
 				}
@@ -519,9 +513,6 @@ todaydate = Cdate(date)
 				if (datefrom.getDay() != 0 || dateto.getDay() != 6) {
 					alert("Error: 'From' date needs to be a Sunday and/or 'To' date needs to be a Saturday.");
 					return;
-				}
-				if (document.frmReport.selRep.value == 71) {
-					
 				}
 			}
 			if (document.frmReport.selRep.value == 43) {
@@ -539,25 +530,19 @@ todaydate = Cdate(date)
 			if (document.frmReport.selRep.value == 17 || document.frmReport.selRep.value == 25 ||
 					document.frmReport.selRep.value == 34 || document.frmReport.selRep.value == 35 ||
 					document.frmReport.selRep.value == 48 || document.frmReport.selRep.value == 56 ||
-					document.frmReport.selRep.value == 61 || document.frmReport.selRep.value == 72 )
-			{
-				if (document.frmReport.txtRepFrom.value == "")
-				{
+					document.frmReport.selRep.value == 61 || document.frmReport.selRep.value == 72 ) {
+				if (document.frmReport.txtRepFrom.value == "") {
 					alert("Error: Timeframe is required.");
 					return;
 				}
 			}
 			if (document.frmReport.selRep.value == 21 || document.frmReport.selRep.value == 22 ||
 					document.frmReport.selRep.value == 48 || document.frmReport.selRep.value == 72
-				)
-			{
-					if (document.frmReport.txtRepTo.value == "")
-					{
+				) {
+					if (document.frmReport.txtRepTo.value == "") {
 						alert("Error: 'To:' date is required.")
 						return; 
-					}
-					else
-					{
+					} else {
 						var currentTime = new Date();
 						var month = currentTime.getMonth() + 1;
 						var day = currentTime.getDate();
@@ -568,8 +553,7 @@ todaydate = Cdate(date)
 						var todatemonth = todate.getMonth() + 1;
 						var todateday = todate.getDate();
 						var newtodate = new Date(todatemonth + "/" + todateday + "/" + todateyear);
- 						if (datetoday < newtodate)
- 						{
+ 						if (datetoday < newtodate) {
  							alert("Error: 'To:' date should be today or in the past");
  							return;
  						}
@@ -896,6 +880,7 @@ todaydate = Cdate(date)
 				document.frmReport.tadef.value = "Creation of appointment";
 			}
 			if (xxx == 73) document.frmReport.tadef.value = "Pending Appointments with Medicaid information";
+			if (xxx == 74) document.frmReport.tadef.value = "Interpreter responses to appointment availability";
 		}
 		function CalendarView(strDate)
 		{
@@ -1003,6 +988,7 @@ todaydate = Cdate(date)
 											<option value='50' <%=TypeSel50%>>**Alen Report 2</option>
 											<option value='52' <%=TypeSel52%>>**Lynda Report</option>
 											<option value='73' <%=TypeSel73%>>* Pending Appts w/ Medicaid</option>
+											<option value='74' <%=TypeSel74%>>Interpreter Appt Response</option>
 											<!--<option value='21' <%=TypeSel21%>>Payroll Report</option>-->
 											<!--<option value='22' <%=TypeSel22%>>Pre-Payroll Report</option>-->
 										</select>

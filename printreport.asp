@@ -5923,6 +5923,10 @@ ElseIf tmpReport(0) = 73 Then ' Pending Appts w/ Medicaid
 	'Response.Write "<img src=""images/ajax-loader.gif"" title=""wait"" alt=""wait"" />"
 	Response.Redirect "rep_pendingapptsmed.asp"
 	Response.End
+ElseIf tmpReport(0) = 74 Then ' Interpreter Appt Response
+	'Response.Write "<img src=""images/ajax-loader.gif"" title=""wait"" alt=""wait"" />"
+	Response.Redirect "rep_intrresp.asp"
+	Response.End	
 End If
 tmpBills = Request("Bill")
 If Request("csv") <> 1 Then
