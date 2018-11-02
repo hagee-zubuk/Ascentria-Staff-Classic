@@ -82,15 +82,17 @@ tmpPen = 0
 tmpCom = 0
 tmpEmer = 0
 
-DIM strClasses(3), strSeq(3)
+DIM strClasses(4), strSeq(4)
 strSeq(0) = " AND Class = 3 "
 strClasses(0) = "Court"
 strSeq(1) = " AND Class = 5 "
 strClasses(1) = "Legal"
 strSeq(2) = " AND Class = 4 "
 strClasses(2) = "Medical"
-strSeq(3) = " AND (Class = 1 OR Class = 2) "
-strClasses(3) = "Other"
+strSeq(3) = " AND (Class = 6) "
+strClasses(3) = "Mental Health"
+strSeq(4) = " AND (Class = 1 OR Class = 2) "
+strClasses(4) = "Other"
 strBody = ""
 CSVBody = ""
 
@@ -100,7 +102,7 @@ If tmpReport(1) <> "" Then sqlDT = sqlDT & " AND appDate >= '" & tmpReport(1) & 
 If tmpReport(2) <> "" Then sqlDT = sqlDT & " AND appDate <= '" & tmpReport(2) & "'"
 sqlDT = sqlDT & " "
 DIM lngReqs
-For lngI = 0 To 3
+For lngI = 0 To 4
 	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn2'><nobr>" & strClasses(lngI) & "</nobr></td>" & vbCrLf
 	CSVBody = CSVBody & strClasses(lngI) & ","
 	'REFERRALS
@@ -117,7 +119,6 @@ For lngI = 0 To 3
 	tmpRefMA = tmpRefMA + rsReqs("MACtr")
 	rsReqs.Close
 	Set rsReqs = Nothing
-
 	'CANCELLED
 	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Canceled Appointments,"
@@ -132,7 +133,6 @@ For lngI = 0 To 3
 	tmpCanMA = tmpCanMA + rsReqs("MACtr")
 	rsReqs.Close
 	Set rsReqs = Nothing
-
 	'CANCELLED BILLABLE
 	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Canceled Appointments (Billable)</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Canceled Appointments (Billable),"
@@ -147,7 +147,6 @@ For lngI = 0 To 3
 	tmpCanBMA = tmpCanBMA + rsReqs("MACtr")
 	rsReqs.Close
 	Set rsReqs = Nothing
-
 	'MISSED
 	strBody = strBody & "<tr><td class='tblgrn2'>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments Missed by Interpreter</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Appointments Missed by Interpreters,"
@@ -162,7 +161,6 @@ For lngI = 0 To 3
 	tmpMisMA = tmpMisMA + Z_CLng(rsReqs("MACtr"))
 	rsReqs.Close
 	Set rsReqs = Nothing
-	
 	'MISSED 2
 	strBody = strBody & "<tr  bgcolor='#F5F5F5'><td class='tblgrn2'>&nbsp;</td><td class='tblgrn3'><nobr># of Appointments LB Unable to Send Interpreter</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Appointments LB Unable to Send Interpreter,"
@@ -177,7 +175,6 @@ For lngI = 0 To 3
 	tmpMis2MA = tmpMis2MA + rsReqs("MACtr")
 	rsReqs.Close
 	Set rsReqs = Nothing
-	
 	'PENDING
 	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Pending Appointments</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Pending Appointments,"
@@ -192,7 +189,6 @@ For lngI = 0 To 3
 	tmpPenMA = tmpPenMA + rsReqs("MACtr")
 	rsReqs.Close
 	Set rsReqs = Nothing
-	
 	'EMERGENCY
 	strBody = strBody & "<tr bgcolor='#F5F5F5'><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Emergency Appointments</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Emergency Appointments,"
@@ -207,7 +203,6 @@ For lngI = 0 To 3
 	tmpEmerMA = tmpEmerMA + rsReqs("MACtr")
 	rsReqs.Close
 	Set rsReqs = Nothing
-
 	'COMLPETED
 	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Completed Appointments</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Completed Appointments,"
@@ -222,7 +217,6 @@ For lngI = 0 To 3
 	tmpComMA = tmpComMA + rsReqs("MACtr")
 	rsReqs.Close
 	Set rsReqs = Nothing
-	
 	' NEW ROW! 171204: Facilities Clients requesting appointments'
 	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Facilities Clients</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Facilities Clients,"
@@ -247,12 +241,10 @@ For lngI = 0 To 3
 	CSVBody = CSVBody &  rsRef("instcnt") & vbCrLf
 	rsRef.Close
 	Set rsRef = Nothing
-
 	' NEW ROW! 180117: How many distinct interpreters took appointments at this time
 	strBody = strBody & "<tr><td class='tblgrn3'>&nbsp;</td><td class='tblgrn3'><nobr># of Interpreters Involved</td>" & vbCrLf
 	CSVBody = CSVBody &  ",# of Interpreters Involved,"
 	Set rsRef = Server.CreateObject("ADODB.RecordSet")
-
 	sqlRef = "SELECT COUNT([II]) AS IntrCnt" & _
 			", SUM (CASE WHEN [NH]>0 THEN 1 ELSE 0 END) AS CntNH" & _
 			", SUM (CASE WHEN [MA]>0 THEN 1 ELSE 0 END) AS CntMA FROM (" & _

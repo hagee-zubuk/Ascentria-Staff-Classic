@@ -1493,52 +1493,52 @@ ElseIf Request("ctrl") = 11 Then 'SAVE ASSIGNED INTERPRETER
 	'End If
 	If Session("MSG") = "" Then
 		If Request("txtIntrLname") <> "" Or Request("txtIntrFname") <> "" Then
-				tmpIntr = Split(Z_DoDecrypt(Request.Cookies("LBINTR")), "|")
-				Set rsIntr = Server.CreateObject("ADODB.RecordSet")
-				sqlIntr = "SELECT * FROM interpreter_T"
-				rsIntr.Open sqlIntr, g_strCONN, 1, 3
-				rsIntr.AddNew
-				tmpIntrID = rsIntr("Index")
-				rsIntr("Last Name") = CleanMe(tmpIntr(0))
-				rsIntr("First Name") = CleanMe(tmpIntr(1))
-				rsIntr("E-mail") = tmpIntr(2)
-				rsIntr("Phone1") = tmpIntr(3)
-				rsIntr("P1Ext") = tmpIntr(13)
-				rsIntr("Fax") = tmpIntr(4)
-				rsIntr("Phone2") = tmpIntr(5)
-				rsIntr("Address1") = CleanMe(tmpIntr(6))
-				rsIntr("City") = tmpIntr(7)
-				rsIntr("State") = tmpIntr(8)
-				rsIntr("Zip Code") = tmpIntr(9)
-				rsIntr("IntrAdrI") = CleanMe(tmpIntr(15))
-				rsIntr("Rate") = tmpIntr(14)
-				newIntrRate = tmpIntr(14)
-				rsIntr("InHouse") = False
-				If tmpIntr(11) <> "" Then rsIntr("InHouse") = True
-				If IsNull(tmpIntr(12)) Then tmpIntr(12) = 3
-				rsIntr("prime") = tmpIntr(12)
-				LangKo = LangName(Request("LangID"))
-				If rsIntr("Language1") = "" Or IsNull(rsIntr("Language1")) Then 
-					rsIntr("Language1") = LangKo
+			tmpIntr = Split(Z_DoDecrypt(Request.Cookies("LBINTR")), "|")
+			Set rsIntr = Server.CreateObject("ADODB.RecordSet")
+			sqlIntr = "SELECT * FROM interpreter_T"
+			rsIntr.Open sqlIntr, g_strCONN, 1, 3
+			rsIntr.AddNew
+			tmpIntrID = rsIntr("Index")
+			rsIntr("Last Name") = CleanMe(tmpIntr(0))
+			rsIntr("First Name") = CleanMe(tmpIntr(1))
+			rsIntr("E-mail") = tmpIntr(2)
+			rsIntr("Phone1") = tmpIntr(3)
+			rsIntr("P1Ext") = tmpIntr(13)
+			rsIntr("Fax") = tmpIntr(4)
+			rsIntr("Phone2") = tmpIntr(5)
+			rsIntr("Address1") = CleanMe(tmpIntr(6))
+			rsIntr("City") = tmpIntr(7)
+			rsIntr("State") = tmpIntr(8)
+			rsIntr("Zip Code") = tmpIntr(9)
+			rsIntr("IntrAdrI") = CleanMe(tmpIntr(15))
+			rsIntr("Rate") = tmpIntr(14)
+			newIntrRate = tmpIntr(14)
+			rsIntr("InHouse") = False
+			If tmpIntr(11) <> "" Then rsIntr("InHouse") = True
+			If IsNull(tmpIntr(12)) Then tmpIntr(12) = 3
+			rsIntr("prime") = tmpIntr(12)
+			LangKo = LangName(Request("LangID"))
+			If rsIntr("Language1") = "" Or IsNull(rsIntr("Language1")) Then 
+				rsIntr("Language1") = LangKo
+			Else
+				If rsIntr("Language2") = ""  Or IsNull(rsIntr("Language2")) Then
+					rsIntr("Language2") = LangKo
 				Else
-					If rsIntr("Language2") = ""  Or IsNull(rsIntr("Language2")) Then
-						rsIntr("Language2") = LangKo
+					If rsIntr("Language3") = ""  Or IsNull(rsIntr("Language3")) Then
+						rsIntr("Language3") = LangKo
 					Else
-						If rsIntr("Language3") = ""  Or IsNull(rsIntr("Language3")) Then
-							rsIntr("Language3") = LangKo
+						If rsIntr("Language4") = "" Or IsNull(rsIntr("Language4")) Then
+							rsIntr("Language4") = LangKo
 						Else
-							If rsIntr("Language4") = "" Or IsNull(rsIntr("Language4")) Then
-								rsIntr("Language4") = LangKo
-							Else
-								If rsIntr("Language5") = "" Or IsNull(rsIntr("Language5")) Then rsIntr("Language5") = LangKo
-							End If
+							If rsIntr("Language5") = "" Or IsNull(rsIntr("Language5")) Then rsIntr("Language5") = LangKo
 						End If
-					End If 	
-				End If
-				rsIntr.Update
-				rsIntr.Close
-				Set rsIntr = Nothing
+					End If
+				End If 	
 			End If
+			rsIntr.Update
+			rsIntr.Close
+			Set rsIntr = Nothing
+		End If
 		Set rsAss = Server.CreateObject("ADODB.RecordSet")
 		sqlAss = "SELECT * FROM Request_T WHERE [index] = " & Request("ReqID")
 		rsAss.Open sqlAss,g_strCONN, 1, 3
