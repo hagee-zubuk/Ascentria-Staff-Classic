@@ -379,6 +379,8 @@ ElseIf tmpReport(0) = 3 Then
 	'INSTITUTION BILLING
 	Response.Redirect "rep_instbillnew.asp"
 	' moved to script file 
+ElseIf tmpReport(0) = 16 Then 'billing w/o tagging
+	Response.Redirect "rep_instbillnew.asp?NOTAG=1"
 ElseIf tmpReport(0) = 4 Then
 	RepCSV =  "PerInstReq" & tmpdate & ".csv" 
 	Set rsRep = Server.CreateObject("ADODB.RecordSet")
@@ -1232,374 +1234,6 @@ ElseIf tmpReport(0) = 14 Then 'canceled'
 ElseIf tmpReport(0) = 15 Then 'canceled- billable
 	Response.Redirect "rep_cancelledbillable.asp"
 	' moved to script file 
-ElseIf tmpReport(0) = 16 Then 'billing w/o tagging
-	'INSTITUTION BILLING
-	RepCSV =  "InstXBillReq" & tmpdate & "-" & tmpTime & ".csv" 
-	RepCSVBill = "InstXBillReqNew" & tmpdate & "-" & tmpTime & ".csv" 
-	RepCSVBillL = "InstXBillReqNewL" & tmpdate & "-" & tmpTime & ".csv"
-	RepCSVBillSigma = "InstXBillReqNewSigma" & tmpdate & "-" & tmpTime & ".csv"
-	RepCSVBillCourts = "InstXBillReqCourts"	& tmpdate & "-" & tmpTime & ".csv"
-	
-	Set rsRep = Server.CreateObject("ADODB.RecordSet")
-	strHead = "<td class='tblgrn'>Request ID</td>" & vbCrlf & _ 
-		"<td class='tblgrn'>Institution</td>" & vbCrlf & _
-		"<td class='tblgrn'>Department</td>" & vbCrlf & _
-		"<td class='tblgrn'>Appointment Date</td>" & vbCrlf & _
-		"<td class='tblgrn'>Client Name</td>" & vbCrlf & _
-		"<td class='tblgrn'>Language</td>" & vbCrlf & _
-		"<td class='tblgrn'>Interpreter Name</td>" & vbCrlf & _
-		"<td class='tblgrn'>Appointment Time</td>" & vbCrlf & _
-		"<td class='tblgrn'>Hours</td>" & vbCrlf & _
-		"<td class='tblgrn'>Rate</td>" & vbCrlf & _
-		"<td class='tblgrn'>Travel Time</td>" & vbCrlf & _
-		"<td class='tblgrn'>Mileage</td>" & vbCrlf & _
-		"<td class='tblgrn'>Emergency Surcharge</td>" & vbCrlf & _
-		"<td class='tblgrn'>Total</td>" & vbCrlf & _
-		"<td class='tblgrn'>Comment</td>" & vbCrlf & _
-		"<td class='tblgrn'>DOB</td>" & vbCrlf & _
-		"<td class='tblgrn'>Customer ID</td>" & vbCrlf & _
-		"<td class='tblgrn'>DHHS</td>" & vbCrlf 
-	
-	CSVHead = "Request ID,Institution, Department, Appointment Date, Client Last Name, Client First Name, Language, Interpreter Last Name, Interpreter First Name, Appointment Start Time, " & _
-		"Appointment End Time, Hours, Rate, Travel Time, Mileage, Emergency Surcharge, Total, Comments, DOB, Customer ID, DHHS, Requesting Person, User"	
-
-	'add  vermed = 0 AND  if medicaid billing is go
-	sqlRep = "SELECT claimant, judge, request_T.meridian AS meri, request_T.nhhealth AS NHH, request_T.wellsense AS WS, Docnum, billingTrail, ReqID, HPID, syscom, hasmed, outpatient, request_T.medicaid AS medi, vermed, autoacc, wcomp, drg, pid, request_T.[index] as myindex, status, [Last Name], [First Name], Clname, Cfname, AStarttime, AEndtime, " & _
-		"Billable, DOB, emerFEE, class, TT_Inst, M_Inst, request_T.InstID as myinstID, DeptID, LangID, appDate, InstRate, bilComment, custID, ccode, billgroup, IntrID, appTimeFrom, appTimeTo, distcode " & _ 
-		"FROM request_T, interpreter_T , dept_T WHERE request_T.[instID] <> 479 AND request_T.deptID =  dept_T.[index] AND IntrID = interpreter_T.[index]  AND " & _
-		"(Status = 1 OR Status = 4) AND Processed IS NULL AND ProcessedMedicaid IS NULL"
-	strMSG = "Institution Billing request report (simulated)"
-	
-	If tmpReport(1) <> "" Then
-		sqlRep = sqlRep & " AND appDate >= '" & tmpReport(1) & "'"
-		strMSG = strMSG & " from " & tmpReport(1)
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRep = sqlRep & " AND appDate <= '" & tmpReport(2) & "'"
-		strMSG = strMSG & " to " & tmpReport(2)
-	End If
-	strMSG = strMSG & ". * - Cancelled Billable."
-	If tmpReport(9) = "" Then tmpReport(9) = 0
-	If tmpReport(9) <> 0 Then
-		If tmpReport(6) = "" Then tmpReport(6) = 0
-		If tmpReport(6) <> 0 Then 
-			sqlRep = sqlRep & " AND LangID = " & tmpReport(6)
-		End If
-		If tmpReport(7) = "" Then tmpReport(7) = 0
-		If tmpReport(7) <> "0" Then
-			tmpCli = Split(tmpReport(7), ",")
-			sqlRep = sqlRep & " AND Clname = '" & Trim(tmpCli(0)) & "' AND Cfname = '" & Trim(tmpCli(1)) & "'"
-		End If
-		If tmpReport(8) = "" Then tmpReport(8) = 0
-		If tmpReport(8) <> 0 Then 
-			sqlRep = sqlRep & " AND Class = " & tmpReport(8)
-		End If
-	End If
-	sqlRep = sqlRep & " ORDER BY CustID ASC, AppDate DESC" '" ORDER BY AppDate DESC"
-	'response.write sqlRep
-	rsRep.Open sqlRep, g_strCONN, 1, 3
-	'EMERGENCY RATE
-	Set rsRate = Server.CreateObject("ADODB.RecordSet")
-	sqlRate = "SELECT * FROM EmergencyFee_T"
-	rsRate.Open sqlRate, g_strCONN, 3,1
-	If Not rsRate.EOF Then
-		tmpFeeL = rsRate("FeeLegal")
-		tmpFeeO = rsRate("FeeOther")
-	End If
-	rsRate.Close
-	Set rsRate = Nothing
-	If Not rsRep.EOF Then 
-		x = 0
-		tmpCID = ""
-		Do Until rsRep.EOF
-			BillHours = 0
-			IncludeReq = True
-			kulay = "#FFFFFF"
-			If Not Z_IsOdd(x) Then kulay = "#F5F5F5"
-			CB = ""
-			If rsRep("status") = 4 Then CB = "*"
-			strIntrName = rsRep("Last Name") & ",  " & rsRep("First Name")
-			strCliName =  rsRep("Clname") & ", " & rsRep("Cfname")
-			strATime =  cTime(rsRep("AStarttime")) & " -  " & cTime(rsRep("AEndtime"))
-			'totHrs =  DateDiff("n", CDate(rsRep("AStarttime")) , CDate(rsRep("AEndtime")))
-			BillHours =  rsRep("Billable")
-			'check if previously drg
-			If Not rsRep("drg") Then
-				deptdrg = False
-				If Z_PrevDRG(rsRep("DeptID")) Then deptdrg = True
-			Else
-				deptdrg = True
-			End If
-			PayMed = PaytoMedicaid(rsRep("outpatient"), rsRep("hasmed"), rsRep("vermed"), rsRep("autoacc"), rsRep("wcomp"), deptdrg, rsRep("IntrID"), rsRep("medi"), rsRep("meri"), rsRep("NHH"), rsRep("WS"))
-			'If PayMed And rsRep("vermed") = 0 Then IncludeReq = False
-			'If PayMed AND BillHours <= 4 Then IncludeReq = False 'causing LAG
-			'If PayMed AND BillHours > 4 Then 
-			'	BillHours = BillHours - 4
-			'	If Instr(BillHours, ".") > 0 Then
-			'		If Z_GetDec(BillHours) > 0 Then
-			'			tmpMin = CDbl("0." & Z_GetDec(billhours))
-			'			If tmpMin > 0 And tmpMin <= 0.25 Then billhours = Int(billhours) + 0.25
-      '      If tmpMin > 0.25 And tmpMin <= 0.5 Then billhours = Int(billhours) + 0.5
-      '      If tmpMin > 0.5 And tmpMin <= 0.75 Then billhours = Int(billhours) + 0.75
-      '      If tmpMin > 0.75 And tmpMin <= 0.99 Then billhours = Int(billhours) + 1
-			'		End If
-			'	End If
-			'End If
-			If PayMed Then IncludeReq = False
-			If PayMed And rsRep("vermed") = 0 Then IncludeReq = False
-			If IncludeReq Then
-				If rsRep("emerFEE") = True Then
-					If rsRep("class") = 3 Or rsRep("class") = 5 Then
-						tmpPay = (BillHours * tmpFeeL) + Z_CZero(rsRep("TT_Inst")) + Z_CZero(rsRep("M_Inst"))
-					ElseIf rsRep("class") = 1 Or rsRep("class") = 2 Or rsRep("class") = 4 Then
-						tmpPay = (BillHours * rsRep("InstRate")) + Z_CZero(rsRep("TT_Inst")) + Z_CZero(rsRep("M_Inst")) + tmpFeeO
-					End If
-				Else
-					tmpPay = (BillHours * rsRep("InstRate")) + Z_CZero(rsRep("TT_Inst")) + Z_CZero(rsRep("M_Inst"))
-				End If
-				totalPay = Z_FormatNumber(tmpPay, 2)
-				strBody = strBody & "<tr bgcolor='" & kulay & "' onclick='PassMe(" & rsRep("myindex") & ")'>" & _
-					"<td class='tblgrn2'><nobr>" & CB & rsRep("myindex") & "</td>" & vbCrLf & _
-					"<td class='tblgrn2'><nobr>" & GetInst2(rsRep("myinstID")) & "</td>" & vbCrLf & _
-					"<td class='tblgrn2'><nobr>" & Replace(GetMyDept(rsRep("DeptID")), " - ", "") & "</td>" & vbCrLf & _
-					"<td class='tblgrn2'><nobr>" & rsRep("appDate") & "</td>" & vbCrLf & _
-					"<td class='tblgrn2'><nobr>" & strCliName & "</td>" & vbCrLf & _
-					"<td class='tblgrn2'><nobr>" & GetLang(rsRep("LangID")) & "</td>" & vbCrLf & _
-					"<td class='tblgrn2'><nobr>" & strIntrName & "</td>" & vbCrLf & _
-					"<td class='tblgrn2'><nobr>" & strATime & "</td>" & vbCrLf & _
-					"<td class='tblgrn2'><nobr>" & BillHours & "</td>" & vbCrLf
-					If rsRep("emerFEE") = True Then 
-							If rsRep("class") = 3 Or rsRep("class") = 5 Then
-								strBody = strBody & "<td class='tblgrn2'><nobr>$" & tmpFeeL & "</td>" & vbCrLf
-							Else
-								strBody = strBody & "<td class='tblgrn2'><nobr>$" & rsRep("InstRate") & "</td>" & vbCrLf
-							End If
-					Else
-						strBody = strBody & "<td class='tblgrn2'><nobr>$" & rsRep("InstRate") & "</td>" & vbCrLf
-					End If
-					strBody = strBody & "<td class='tblgrn2'><nobr>$" & Z_CZero(rsRep("TT_Inst")) & "</td>" & vbCrLf & _
-					"<td class='tblgrn2'><nobr>$" & Z_CZero(rsRep("M_Inst")) & "</td>" & vbCrLf 
-					If rsRep("emerFEE") = True Then 
-						If rsRep("class") = 3 Or rsRep("class") = 5 Then
-							strBody = strBody & "<td class='tblgrn2'><nobr>$0.00</td>" & vbCrLf
-						ElseIf rsRep("class") = 1 Or rsRep("class") = 2 Or rsRep("class") = 4 Then
-							strBody = strBody & "<td class='tblgrn2'><nobr>$" & tmpFeeO & "</td>" & vbCrLf
-						End If
-					Else
-						strBody = strBody & "<td class='tblgrn2'><nobr>$0.00</td>" & vbCrLf
-					End If
-					bilcomment = Z_fixNull(rsRep("bilComment") & rsRep("syscom") & rsRep("billingTrail"))
-					strBody = strBody & "<td class='tblgrn2'><nobr><b>$" & totalPay & "</b></td>" & vbCrLf & _
-						"<td class='tblgrn2'><nobr>" & rsRep("bilComment") & "</td><td class='tblgrn2'><nobr>" & rsRep("DOB") & "</td>" & vbCrLf & _
-						"<td class='tblgrn2'><nobr>" & rsRep("CustID") & "</td>"
-					If rsRep("myinstID") = 108 Then
-						strBody = strBody & "<td class='tblgrn2'><nobr>" & GetUserID(rsRep("DeptID")) & "</td><tr>" & vbCrLf 
-					Else
-						strBody = strBody & "<td class='tblgrn2'><nobr>&nbsp;</td><tr>" & vbCrLf 
-					End If
-			
-				CSVBodyLine = CB & rsRep("myindex") & "," & GetInst2(rsRep("myinstID")) & "," &  Replace(GetMyDept(rsRep("DeptID")), " - ", "") & "," & rsRep("appDate") & "," & rsRep("Clname") & "," & rsRep("Cfname") &  "," & GetLang(rsRep("LangID")) & "," & rsRep("Last Name") & _
-					"," & rsRep("First Name") & ","  & cTime(rsRep("AStarttime")) & "," & cTime(rsRep("AEndtime")) & "," & BillHours
-					
-				'''''MIP IMPORT'''''
-				If rsRep("myinstID") <> 108 And rsRep("myinstID") <> 30 Then 'exclude DHHS and LSS
-					
-					'If rsRep("class") <> 3 Then
-					tmpCID = Trim(UCase(rsRep("custID")))
-					tmpccode = "LB " & rsRep("InstRate") & " Rate"
-					If tmpCID <> tmpCID2 Or tmpCID2 = "" Then
-						If rsRep("class") <> 5 Then
-							If rsRep("myInstID") = 240 Then
-								CSVBodyBillSigma = CSVBodyBillSigma & """" & "HOTC" & """,""" & rsRep("billgroup") & """,""" & rsRep("custID") & """" & vbCrLf
-							Else
-								CSVBodyBill = CSVBodyBill & """" & "HOTC" & """,""" & rsRep("billgroup") & """,""" & rsRep("custID") & """" & vbCrLf
-							End If
-						Else
-							CSVBodyBillL = CSVBodyBillL & """" & "HOTC" & """,""" & rsRep("billgroup") & """,""" & rsRep("custID") & """" & vbCrLf
-						End If
-					End If	
-					If rsRep("class") <> 5 Then
-						If rsRep("myinstID") = 229 Or rsRep("myinstID") = 27 Or rsRep("myinstID") = 273 Or rsRep("myinstID") = 308 Or rsRep("myinstID") = 19 _
-							Or rsRep("myinstID") = 300 Or rsRep("myinstID") = 427 Or rsRep("myinstID") = 289 Or rsRep("myinstID") = 268 Or rsRep("myinstID") = 265 _
-							Or rsRep("myinstID") = 22 Or rsRep("myinstID") = 398 Or rsRep("myinstID") = 269 Or rsRep("myinstID") = 431 Then 'DHMC and Elliot
-							CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""" & _
-								"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - " & Replace(GetMyDept(rsRep("DeptID")), " - ", "") & """,""" & date & """,""" & _
-								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
-						ElseIf rsRep("myinstID") =  41 Or rsRep("myinstID") =  15 Or rsRep("myinstID") =  70 Or rsRep("DeptID") = 645 Or rsRep("myinstID") =  33 Then 'concord hosp, fam and mchc and com council nashua, riverbend
-							CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""" & _
-								"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - " & GetLang(rsRep("LangID")) & """,""" & date & """,""" & _
-								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
-						ElseIf rsRep("deptID") = 1058 Then 'man welfare
-							CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""" & _
-								"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - MW" & rsRep("myindex") & """,""" & date & """,""" & _
-								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
-						ElseIf rsRep("myinstID") = 39 Or rsRep("myinstID") = 168 Or rsRep("myinstID") = 724 Or rsRep("myinstID") = 199 Then 'Manchester School district, con head start and City of Worcester, Southern NH Services 
-							reqp = GetReq(rsRep("reqID"))
-							If Z_Czero(rsRep("HPID")) > 0 Then reqp = reqp & " / " & GetReqHPID(rsRep("HPID"))
-							CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""" & _
-								"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " (Req: " & reqp & ")"",""" & date & """,""" & _
-								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
-						ElseIf rsRep("myinstID") = 860 Then 'umass med
-							CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""" & _
-								"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - " & _
-								GetLang(rsRep("LangID")) & " - " & Replace(GetMyDept(rsRep("DeptID")), " - ", "") & """,""" & date & """,""" & _
-								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
-						Else
-							If rsRep("myInstID") = 240 Then
-								CSVBodyBillSigma = CSVBodyBillSigma & """" & "DOTC" & """,""" & _
-									"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " – Interpretation" &  """,""" & date & """,""" & _
-									rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
-							Else
-								If rsRep("custID") = "New England Heart In" Then
-									CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""" & _
-										"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " " & rsRep("DOB") & """,""" & date & """,""" & _
-										rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
-								Else
-									If rsRep("class") = 3 Then
-										If rsRep("emerFEE") = True Then tmpccode = "LB 60 Rate"
-									End If
-									If rsRep("custID") = "UMass Community Serv" Or rsRep("custID") = "Seven Hills Found" Or rsRep("custID") = "Saint Vincent Hosp" _
-										Or rsRep("custID") = "Spear Management Grp" Or rsRep("custID") = "BayPath Elder Svc" Then
-										CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""" & _
-											"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " – Interpretation" &  """,""" & date & """,""" & _
-											rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
-									Else
-										CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""" & _
-											"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " – Interpretation" &  """,""" & date & """,""" & _
-											rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
-									End If
-								End If
-							End If
-						End If
-					Else
-						If rsRep("emerFEE") = True Then tmpccode = "LB 60 Rate"
-						docnum = ""
-						If Z_Fixnull(rsRep("docnum")) <> "" Then docnum = " - " & rsrep("docnum")
-						If rsRep("myinstID") = 757 Or rsRep("myinstID") = 777 Then 'SSA
-							apptadr = Z_GetApptAddr(rsRep("myindex"))
-							CSVBodyBillL = CSVBodyBillL & """" & "DOTC" & """,""" & _
-								"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & docnum & " – Interpretation" & " - " & rsRep("judge") & " - " & rsRep("claimant") & " - " & rsRep("appdate") & " - " & CTime(rsRep("appTimeFrom")) & " - " & CTime(rsRep("appTimeto")) & " - " & GetLang(rsRep("LangID")) & " - " & GetDept(rsRep("deptID")) & " - " & apptadr & " - " & CTime(rsRep("AStarttime")) & " - " & CTime(rsRep("AEndtime")) & """,""" & date & """,""" & _
-								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
-						ElseIf rsRep("myinstID") = 126 Then 'NH legal
-							CSVBodyBillL = CSVBodyBillL & """" & "DOTC" & """,""" & _
-								"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & docnum & " – Interpretation (" & strIntrName & ")" & """,""" & date & """,""" & _
-								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
-						Else
-							CSVBodyBillL = CSVBodyBillL & """" & "DOTC" & """,""" & _
-								"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & docnum & " – Interpretation" & """,""" & date & """,""" & _
-								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
-						End If
-					End If
-						
-					If Z_CZero(rsRep("TT_Inst")) <> 0 Then 'new billing rules for Travel
-						strTT = rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname")
-						If rsRep("class") <> 5 Then
-							If rsRep("myInstID") = 240 Then
-								CSVBodyBillSigma = CSVBodyBillSigma & """" & MyTravelTime(rsRep("IntrID"), rsRep("LangID"), rsRep("myinstID"), rsRep("DeptID"), rsRep("TT_Inst"), strTT, rsRep("distcode")) & """" & vbCrLf
-							Else
-								If rsRep("myInstID") = 273 Or _
-									ClassInt(rsRep("DeptID")) = 3 Then 'dart and court rsRep("myInstID") = 457 Or rsRep("myInstID") = 229 Or rsRep("myInstID") = 373 Or rsRep("myInstID") = 27 Or 
-										CSVBodyBill = CSVBodyBill & """" & MyTravelTimeDarthCourt(rsRep("IntrID"), rsRep("LangID"), rsRep("myinstID"), rsRep("TT_Inst"), strTT, rsRep("distcode")) & """" & vbCrLf
-								Else
-									CSVBodyBill = CSVBodyBill & """" & MyTravelTime(rsRep("IntrID"), rsRep("LangID"), rsRep("myinstID"), rsRep("DeptID"), rsRep("TT_Inst"), strTT, rsRep("distcode")) & """" & vbCrLf
-								End If
-							End If
-						Else
-							CSVBodyBillL = CSVBodyBillL & """" & MyTravelTime(rsRep("IntrID"), rsRep("LangID"), rsRep("myinstID"), rsRep("DeptID"), rsRep("TT_Inst"), strTT, rsRep("distcode")) & """" & vbCrLf
-						End If
-					End If
-					
-					If Z_CZero(rsRep("M_Inst")) <> 0 Then 'new billing rules for Mileage
-						strM = rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname")
-						If rsRep("class") <> 5 Then
-							If rsRep("myInstID") = 240 Then
-								CSVBodyBillSigma = CSVBodyBillSigma & """" & MyMileages(rsRep("IntrID"), rsRep("LangID"), rsRep("myinstID"), rsRep("DeptID"), rsRep("M_Inst"), strM, rsRep("distcode")) & """" & vbCrLf
-							Else
-								CSVBodyBill = CSVBodyBill & """" & MyMileages(rsRep("IntrID"), rsRep("LangID"), rsRep("myinstID"), rsRep("DeptID"), rsRep("M_Inst"), strM, rsRep("distcode")) & """" & vbCrLf
-							End If
-						Else
-							CSVBodyBillL = CSVBodyBillL & """" & MyMileages(rsRep("IntrID"), rsRep("LangID"), rsRep("myinstID"), rsRep("DeptID"), rsRep("M_Inst"), strM, rsRep("distcode")) & """" & vbCrLf
-						End If
-					End If
-					
-					If rsRep("emerFEE") = True Then 
-						If rsRep("class") <> 5 Then
-							If rsRep("myInstID") = 240 Then
-								CSVBodyBillSigma = CSVBodyBillSigma & """" & "DOTC" & """,""" & _
-									"0" & """,""" & "LB Emer Fee" & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - Emer Fee" & """,""" & date & """,""" & _
-									rsRep("distcode") & """,""" & "1" & """" & vbCrLf
-							Else 
-								If rsRep("class") = 1 Or rsRep("class") = 2 Or rsRep("class") = 4 Then
-									If rsRep("custID") = "UMass Community Serv" Then
-										CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""" & _
-											"0" & """,""" & "LB Emer Fee" & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - Emer Fee" & """,""" & date & """,""" & _
-											rsRep("distcode") & """,""" & "1" & """" & vbCrLf
-									Else
-										CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""" & _
-											"0" & """,""" & "LB Emer Fee" & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - Emer Fee" & """,""" & date & """,""" & _
-											rsRep("distcode") & """,""" & "1" & """" & vbCrLf
-									End If
-								End If
-							End If
-						'Else
-						'	CSVBodyBillL = CSVBodyBillL & """" & "DOTC" & """,""" & _
-						'		"0" & """,""" & "LB Emer Fee" & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - Emer Fee" & """,""" & date & """,""" & _
-						'		"rfglang2" & """,""" & "1" & """" & vbCrLf
-						End If
-					End If
-					tmpCID2 = tmpCID
-				End If
-				
-				'''''''''''''''''''
-				If rsRep("emerFEE") = True Then 
-					If rsRep("class") = 3 Or rsRep("class") = 5 Then
-						CSVBodyLine = CSVBodyLine & "," & tmpFeeL
-					Else
-						CSVBodyLine = CSVBodyLine & "," & rsRep("InstRate")
-					End If
-				Else
-					CSVBodyLine = CSVBodyLine & "," & rsRep("InstRate")
-				end if
-				
-				CSVBodyLine = CSVBodyLine & ",""" & Z_CZero(rsRep("TT_Inst")) & """,""" & Z_CZero(rsRep("M_Inst")) & ""","
-				
-				If rsRep("emerFEE") = True Then 
-					If rsRep("class") = 3 Or rsRep("class") = 5 Then
-						CSVBodyLine = CSVBodyLine & "0.00"
-					ElseIf rsRep("class") = 1 Or rsRep("class") = 2 Or rsRep("class") = 4 Then
-						CSVBodyLine = CSVBodyLine & tmpFeeO
-					End If
-				Else
-					CSVBodyLine = CSVBodyLine & "0.00"
-				end if
-				bilcommentcsv = Replace(Z_fixNull(rsRep("bilComment") & rsRep("syscom") & rsRep("billingTrail")), "<br>", " / ")
-				CSVBodyLine = CSVBodyLine & ",""" & totalPay & """,""" & bilcommentcsv & """,""" & rsRep("DOB") & """,""" & rsRep("CustID")
-
-				If rsRep("myinstID") = 108 Then
-					CSVBodyLine = CSVBodyLine & """,""" & GetUserID(rsRep("DeptID")) 
-				Else
-					CSVBodyLine = CSVBodyLine & """,""" & ""  
-				End If
-				If rsRep("class") = 3 Then
-					If Z_CZero(rsRep("HPID")) > 0 Then 
-						reqname = GetReqHPID(rsRep("HPID"))
-					Else
-						reqname = GetReq(rsRep("reqID"))
-					End If
-					CSVBodyCourt = CSVBodyCourt & CSVBodyLine & """,""" & reqname & """,""" & Z_GetLoginHP(Z_GetUIDHP(rsRep("HPID"))) & """" & vbCrLf
-				End If
-				CSVBody = CSVBody & CSVBodyLine & """" & vbCrLf
-				x = x + 1
-			End If
-			rsRep.MoveNext
-		Loop
-	Else
-		strBody = "<tr><td colspan='13' align='center'><i>&lt --- No records found --- &gt</i></td></tr>"
-		CSVBody = "< --- No records found --- >"
-	
-	End If
-	rsRep.Close
-	Set rsRep = Nothing	
 ElseIf tmpReport(0) = 17 Then 'KPI
 	Response.Redirect "rep_kpi.asp"
 	' KPI report
@@ -2687,7 +2321,67 @@ ElseIf tmpReport(0) = 30 Then 'activity report
 		"Appointment End Time, Hours, Rate, Travel Time, Mileage, Emergency Surcharge, Total, Comments, STATUS"	
 	
 	sqlRep = "SELECT request_T.[index] as myindex, status, [Last Name], [First Name], Clname, Cfname, AStarttime, AEndtime, " & _
-		"Billable, emerFEE, class, TT_Inst, M_Inst, request_T.InstID as myinstID, DeptID, LangID, appDate, InstRate, bilComment, Processed, ProcessedMedicaid FROM request_T, interpreter_T , dept_T WHERE request_T.[instID] <> 479 AND request_T.deptID =  dept_T.[index] AND IntrID = interpreter_T.[index]  AND (Status = 1 OR Status = 4 Or Status = 0)" 
+		"Billable, emerFEE, class, TT_Inst, M_Inst, request_T.InstID as myinstID, DeptID, LangID, appDate, InstRate, bilComment, Processed, ProcessedMedicaid FROM request_T, interpreter_T , dept_T WHERE request_T.[instID] <> 479 AND request_T.deptID =  dept_T.[index] AND IntrID = interpreter_T.[index]  AND (Status = 1 OR Status = 4 Or Status = 0)"
+	sqlRepNw = "SELECT r.[index] as [Request ID], n.[Facility] AS [Institution] d.[dept] AS [Department], FORMAT(r.[appDate], 'd') AS [Appointment Date]" & _
+			", r.[Clname] AS [Client Last Name], r.[Cfname] AS [Client First Name], l.[Language] AS [Language]" & _
+			", [Last Name] AS [Interpreter Last Name], [First Name] AS [Interpreter First Name]" & _ 
+			", FORMAT(r.[AStarttime], N'HH:mm') AS [Appointment Start Time]" & _
+			", FORMAT(r.[AEndtime], N'HH:mm') AS [Appointment End Time]" & _
+			", r.[Billable] AS [Hours], r.[TT_Inst] AS [Travel Time], r.[M_Inst] AS [Mileage]" & _
+			", CASE WHEN r.[emerFee] = 1 THEN " & _
+				"CASE " & _
+				"	WHEN d.[Class] = 3 OR d.[Class] = 5 THEN emf.[FeeLegal] " & _
+				"	ELSE r.[InstRate] " & _
+				"END ELSE r.[InstRate] " & _
+			"END " & _
+			"AS [Rate] " & _
+			", CASE WHEN r.[emerFee] = 1 THEN " & _
+				"CASE " & _
+					"WHEN d.[Class] = 3 OR d.[Class] = 5 THEN 0 " & _
+					"WHEN d.[Class] = 1 OR d.[Class] = 2 OR d.[Class] = 4 THEN emf.[FeeOther] " & _
+					"ELSE 0 " & _
+				"END " & _
+				"ELSE 0 " & _
+			"END AS [Emergency Surcharge] " & _
+			", CASE WHEN r.[emerFee] = 1 THEN " & _
+				"CASE WHEN d.[Class] = 3 OR d.[Class] = 5 THEN r.[Billable] * emf.[FeeLegal] + r.[TT_Inst] + r.[M_Inst] " & _
+				"WHEN d.[Class] = 1 OR d.[Class] = 2 OR d.[Class] = 4 THEN " & _
+				"	r.[Billable] * r.[InstRate] + r.[TT_Inst] + r.[M_Inst] + emf.[FeeOther] " & _
+				"ELSE r.[InstRate] " & _
+			"END " & _
+			"ELSE r.[Billable] * r.[InstRate] + r.[TT_Inst] + r.[M_Inst] " & _
+			"END AS [Total] " & _
+			", REPLACE(REPLACE(CAST(r.[bilComment] as NVARCHAR(MAX)), CHAR(10), ''),CHAR(13),'') AS [Comments] " & _
+			", CONCAT( " & _
+			"CASE WHEN (r.[Processed] IS NOT NULL) THEN 'Billed- ' " & _
+			"WHEN (r.[ProcessedMedicaid] IS NOT NULL) THEN 'Billed- ' " & _
+			"ELSE '' " & _
+			"END, " & _
+			"CASE WHEN (r.[Status]=0) THEN 'Pending' " & _
+			"WHEN (r.[Status]=1) THEN 'COMPLETED' " & _ 
+			"WHEN (r.[Status]=2) THEN 'Missed' " & _
+			"WHEN (r.[Status]=3) THEN 'Cancelled' " & _
+			"WHEN (r.[Status]=4) THEN 'Cancelled-Billable' " & _
+			"ELSE '-' " & _
+			"END ) AS [Status] " & _
+			", CASE WHEN (r.[Status]=0) THEN 1 " & _
+			"ELSE 0 " & _
+			"END AS [Pen] " & _
+			", CASE " & _
+			"WHEN (r.[Status]=1) THEN 1 " & _
+			" ELSE 0 " & _
+			"END AS [Com] " & _
+			", CASE WHEN (r.[Status]=4) THEN 1 " & _
+			"ELSE 0 " & _
+			"END AS [C-B] " & _
+			"FROM request_T AS r " & _
+			"INNER JOIN [dept_T] AS d ON r.[DeptID]=d.[index] " & _
+			"INNER JOIN [EmergencyFee_T]		AS emf ON r.[index]>0 " & _
+			"LEFT JOIN [interpreter_T] AS i ON r.[IntrID]=i.[index] " & _
+			"LEFT JOIN [institution_T] AS n ON r.[InstID]=n.[Index] " & _
+			"LEFT JOIN [language_T] AS l ON r.[LangID]=l.[index] " & _
+			"WHERE r.[instID] <> 479  " & _
+			"AND (r.[Status] = 1 OR r.[Status] = 4 Or r.[Status] = 0) "
 	strMSG = "All Activity Report"
 	
 	If tmpReport(1) <> "" Then
@@ -2768,7 +2462,8 @@ ElseIf tmpReport(0) = 30 Then 'activity report
 					strBody = strBody & "<td class='tblgrn2'><nobr>$" & rsRep("InstRate") & "</td>" & vbCrLf
 				End If
 				strBody = strBody & "<td class='tblgrn2'><nobr>$" & Z_CZero(rsRep("TT_Inst")) & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>$" & Z_CZero(rsRep("M_Inst")) & "</td>" & vbCrLf 
+						"<td class='tblgrn2'><nobr>$" & Z_CZero(rsRep("M_Inst")) & "</td>" & vbCrLf 
+
 				If rsRep("emerFEE") = True Then 
 					If rsRep("class") = 3 Or rsRep("class") = 5 Then
 						strBody = strBody & "<td class='tblgrn2'><nobr>$0.00</td>" & vbCrLf
