@@ -95,7 +95,8 @@ SELECT.seltxt{
 	height: 15px;
 	width: 250px;
 } 
-INPUT.btn{
+INPUT.btn,
+button.btn {
 	color:#787878;
 	font-family:'trebuchet ms',helvetica,sans-serif;
 	font-size:8pt;
@@ -107,7 +108,8 @@ INPUT.btn{
 	border-radius: 5px;	
 	border:2px solid #E8E8E8;
 }
-INPUT.hovbtn{
+INPUT.hovbtn,
+button.hovbtn {
 	color:#E8E8E8;
 	font-family:'trebuchet ms',helvetica,sans-serif;
 	font-size:8pt;
@@ -174,8 +176,8 @@ INPUT.main{
 	font-size:8pt;
 	font-weight:normal;
 	border:1px solid;
-	border-top-color:#F5F5F5;
-	border-left-color:#F5F5F5;
+	border-top-color:#11b1bf;
+	border-left-color:#11b1bf;
 	border-right-color:#01a1af;
 	border-bottom-color:#01a1af;
 	height: 18px; 
@@ -186,8 +188,8 @@ TEXTAREA.main{
 	font-size:8pt;
 	font-weight:normal;
 	border:1px solid;
-	border-top-color:#F5F5F5;
-	border-left-color:#F5F5F5;
+	border-top-color:#11b1bf;
+	border-left-color:#11b1bf;
 	border-right-color:#01a1af;
 	border-bottom-color:#01a1af;
 	width: 150px;

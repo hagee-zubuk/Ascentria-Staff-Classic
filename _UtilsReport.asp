@@ -306,11 +306,11 @@ End Function
 Function Z_EmailInst(pcon, appid)
 	'GET REQUEST INFO
 	Set rsReq = Server.CreateObject("ADODB.RecordSet")
-sqlReq = "SELECT r.[CLname], r.[CFname], r.[IntrID], r.[LangID], r.[appDate], r.[appTimeFrom], r.[appTimeTo] " & _
+	sqlReq = "SELECT r.[CLname], r.[CFname], r.[IntrID], r.[LangID], r.[appDate], r.[appTimeFrom], r.[appTimeTo] " & _
 				", r.[InstID], r.[DeptID], r.[MRRec], r.[ReqID], r.[timestamp], r.[DocNum], r.[CrtRumNum] " & _
 				", r.[SentReq], r.[CliAdd], r.[CAddress], r.[CliAdrI], r.[CCity], r.[CState], r.[CZip] " & _
 				", r.[intrcomment], r.[HPID], r.[actTT], r.[actMil], r.[Claimant], r.[Judge] " & _
-				", l.[Language] " & _
+				", l.[Language], r.[cc_addr] " & _
 				", COALESCE(i.[First Name], '') + ' ' + COALESCE(i.[Last Name], '') AS [intr_nm] " & _
 				", COALESCE(q.[lname], '') + ', ' + COALESCE(q.[fname], '') AS [requester_nm] " & _
 				", d.[Dept] AS [department_nm] " & _
@@ -344,7 +344,16 @@ sqlReq = "SELECT r.[CLname], r.[CFname], r.[IntrID], r.[LangID], r.[appDate], r.
 		ReqName = rsReq("requester_nm")
 		timestamp = rsReq("timestamp")
 		tmpOther = rsReq("DocNum") & ",  " & rsReq("CrtRumNum")
-	
+		
+		tmpCCAddr = Z_FixNull(rsReq("cc_addr"))
+		If (Not Z_Blank(tmpCCAddr)) Then
+			If  (InStr(tmpCCAddr, "@")<2) Then
+				' it's a fax!
+				tmpCCAddr = tmpCCAddr & "@emailfaxservice.com"
+			End If
+			tmpCCAddr = tmpCCAddr & ";"
+		End If
+
 		tmpdept =  rsReq("department_nm")
 		tmpCon = rsReq("SentReq")
 		If rsReq("CliAdd") = True Then InstAddr =  rsReq("CAddress") & ", " & rsReq("CliAdrI") & ", " & rsReq("CCity") & ", " & rsReq("CState") & ", " & rsReq("CZip")
@@ -366,14 +375,14 @@ sqlReq = "SELECT r.[CLname], r.[CFname], r.[IntrID], r.[LangID], r.[appDate], r.
 		BillAddr =  rsReq("BAddress") &", " & rsReq("BCity") & ", " & rsReq("BState") & ", " & rsReq("BZip")
 		tmpBContact = rsReq("Blname") & ", " & rsReq("Bfname")
 		If Z_CZero(tmpHPID) <> 0 Then
-			ReqName = rsReq("AppReqName")
+			ReqName = rsHP("AppReqName")
 		End If
 	End If
 	rsReq.Close
 	Set rsReq = Nothing
 
 	strTo = FixEmail(pcon)
-	strBCC = "language.services@thelanguagebank.org"
+	strBCC = tmpCCAddr & "language.services@thelanguagebank.org"
 	strSubject= "Interpreter Confirmation - The Language Bank"
 	strBody = "<table cellpadding='0' cellspacing='0' border='0' align='center'>" & vbCrLf & _
 			"<tr><td align='center'>" & vbCrLf & _
@@ -415,7 +424,7 @@ sqlReq = "SELECT r.[CLname], r.[CFname], r.[IntrID], r.[LangID], r.[appDate], r.
 							"<font size='2' face='trebuchet MS'>Interpreter:</font><br>" & vbCrLf & _
 						"</td>" & vbCrLf & _
 						"<td align='left'>" & vbCrLf & _
-							"<font size='2' face='trebuchet MS'>&nbsp;<b>" & IntrName & "</b></font><br>" & vbCrLf & _
+							"<font size='2' face='trebuchet MS'>&nbsp;<b>" & tmpIntrName & "</b></font><br>" & vbCrLf & _
 						"</td>" & vbCrLf & _
 					"</tr>" & vbCrLf & _
 				"</table>" & vbCrLf & _
@@ -558,7 +567,7 @@ sqlReq = "SELECT r.[CLname], r.[CFname], r.[IntrID], r.[LangID], r.[appDate], r.
 				"<font size='1' face='trebuchet MS'>* Please do not reply to this email. This is a computer generated email. Use the information above for questions.</font>" & vbCrLf & _
 			"</td></tr>" & vbCrLf & _
 		"</table>"
-	retErr = zSendMessage(strTo, strBCC, strSubject, strBody)
+	retErr = zSendMessage(strTo,  "hagee@philballoonfest.net", strSubject, strBody)	'strBCC, strSubject, strBody)
 	Call SaveHist(appID, "email.asp") 
 
 	sqlSent = "UPDATE request_T SET SentReq = '" & Now & "' WHERE [index] = " & appid
@@ -586,12 +595,14 @@ Function FixEmail(stremail)
 	If right(notfixemail, 1) = "'" Then
 		notfixemail = Mid(notfixemail, 1, Len(notfixemail) - 1)
 	End If
+	notfixemail = Replace(notfixemail,"'", "")
 	notfixemail = Replace(notfixemail," ", "")
 	notfixemail = Replace(notfixemail,"(", "")
 	notfixemail = Replace(notfixemail,")", "")
 	'notfixemail = Replace(notfixemail,"-", "")
 	FixEmail = notfixemail
 End Function
+
 Function GetPrime2(xxx)
 	GetPrime2 = ""
 	Set rsRP = Server.CreateObject("ADODB.RecordSet")

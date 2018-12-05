@@ -168,6 +168,7 @@ Function GetStatus(xxx)
 	Set rsHPI = Nothing
 End Function
 
+tmpCCAddr = ""
 If Request("ctrl") = 1 Then
 	
 ElseIf Request("ctrl") = 2 Then
@@ -205,6 +206,15 @@ ElseIf Request("ctrl") = 3 Then
 	rsTBL.Open sqlTBL, g_strCONN, 1, 3 
 	If Not rsTBL.EOF Then 
 		y = Request("Hctr")
+		tmpCCAddr = Z_FixNull(rsTBL("cc_addr"))
+		If (Not Z_Blank(tmpCCAddr)) Then
+			If  (InStr(tmpCCAddr, "@")<2) Then
+				' it's a fax!
+				tmpCCAddr = tmpCCAddr & "@emailfaxservice.com"
+			End If
+			tmpCCAddr = tmpCCAddr & ";"
+		End If
+
 		For ctr = 1 To y - 1
 			tmpID = Request("ID" & ctr)
 			tmpIndex = "Index= " & tmpID
@@ -1433,7 +1443,7 @@ ElseIf Request("ctrl") = 10 Then
 						 "Thanks,<br>" & _
 						 "Language Bank"
 
-					retErr = zSendMessage(GetEmailIntr(tmpIntr), "language.services@thelanguagebank.org" _
+					retErr = zSendMessage(GetEmailIntr(tmpIntr), tmpCCAddr & "language.services@thelanguagebank.org" _
 							, "Appointment Cancellation " & tmpDate & "; " & tmpTime & ", " & tmpCity & " - " &  tmpInst _
 							, strBody)
 					'save to notes
@@ -1460,7 +1470,7 @@ ElseIf Request("ctrl") = 10 Then
 						"Date: " & tmpDate & "<br>" & _
 						"Time: " & tmpTimeTo & "<br>" & _
 						"Reason: " & tmpReas
-				retErr = zSendMessage("language.services@thelanguagebank.org", GetPrime2(tmpIntr) _
+				retErr = zSendMessage("language.services@thelanguagebank.org", tmpCCAddr & GetPrime2(tmpIntr) _
 						, "Missed appointment " & tmpAppDate, strBody)
 				Session("MSG") = "Email Sent for Missed Appointment."
 			End If
@@ -2121,7 +2131,7 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 				strMSG = "<p>" & vbCrLf & GetIntr2(tmpIntrID) & " running " & Request("sellate") & _
 						" minutes late, " & GetInst(tmpInstID) & vbCrLf & "<br>Reason: " & _
 						GetReasonTardy(Request("sellateres")) & "</p>"
-				retErr = zSendMessage("language.services@thelanguagebank.org", GetPrime2(tmpIntrID) _
+				retErr = zSendMessage("language.services@thelanguagebank.org", tmpCCAddr & GetPrime2(tmpIntrID) _
 						, GetIntr2(tmpIntrID) & " running " & Request("sellate") & " minutes late, " & GetInst(tmpInstID) _
 						, strMSG)
 				Session("MSG") = "Email Sent for tardiness."
@@ -2975,7 +2985,7 @@ ElseIf Request("ctrl") = 28 Then 'cancel appt
 	 "<font size='2' face='trebuchet MS'>Client: " & tmpName & "<br><br>" & vbCrLf & _ 
 	 "<font size='1' face='trebuchet MS'>* Please do not reply to this email. This is a computer generated email.</font>" & vbCrLf
 	
-	retErr = zSendMessage("language.services@thelanguagebank.org", "", "Request Cancellation - Request ID: " & tmpLBID, strBody)	 
+	retErr = zSendMessage("language.services@thelanguagebank.org", tmpCCAddr, "Request Cancellation - Request ID: " & tmpLBID, strBody)	 
 	 If tmpIntr > 0  Then
 	 	' SEND EMAIL TO NOTIFY CANCEL TO INTR
 	 	strBody = "This is to let you know that appointment on " & _
@@ -2985,7 +2995,7 @@ ElseIf Request("ctrl") = 28 Then 'cancel appt
 			 "E-mail about this cancelation was initiated by " & Request.Cookies("LBUsrName") & ".<br><br>" & _
 			 "Thanks,<br>" & _
 			 "Language Bank"
-		retErr = zSendMessage(GetPrime2(tmpIntr), "language.services@thelanguagebank.org" _
+		retErr = zSendMessage(GetPrime2(tmpIntr), tmpCCAddr & "language.services@thelanguagebank.org" _
 				, "Appointment Cancellation " & tmpDate & "; " & tmpTime & ", " & tmpCity & " - " &  tmpInst _
 				, strBody)
 	End If

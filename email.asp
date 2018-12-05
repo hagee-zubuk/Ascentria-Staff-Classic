@@ -86,14 +86,20 @@ End If
 'SEND EMAIL
 
 Set mlMail = zSetEmailConfig()
-mlMail.To = FixEmail(Request("emailadd"))
-mlMail.Cc = "language.services@thelanguagebank.org"
-mlMail.Bcc = "sysdump1@ascentria.org"
-
+strBody = ""
+If Left(Request.ServerVariables("REMOTE_ADDR"), 11) = "192.168.111" Or _
+				Left(Request.ServerVariables("REMOTE_ADDR"), 3) = "::1" Then 
+	mlMail.To = "hagee@zubuk.com"
+	strBody = "<p>TO BE SENT TO: <b>" & FixEmail(Request("emailadd")) & "</b></p>" & vbCrLf
+Else
+	mlMail.To = FixEmail(Request("emailadd"))
+	mlMail.Cc = "language.services@thelanguagebank.org"
+	mlMail.Bcc = "sysdump1@ascentria.org"
+End If
 If Request("sino") = 0 Then 'FOR REQUESTOR
 	mlMail.From = "language.services@thelanguagebank.org"
 	mlMail.Subject= "Interpreter Confirmation - The Language Bank"
-	strBody = "<table cellpadding='0' cellspacing='0' border='0' align='center'>" & vbCrLf & _
+	strBody = strBody & "<table cellpadding='0' cellspacing='0' border='0' align='center'>" & vbCrLf & _
 			"<tr><td align='center'>" & vbCrLf & _
 				"<img src='https://languagebank.lssne.org/lsslbis/images/LBISLOGOBandW.jpg'>" & vbCrLf & _
 			"</td></tr>" & vbCrLf & _
@@ -410,6 +416,6 @@ LogMe.WriteLine strLog
 Set LogMe = Nothing
 Set fso = Nothing
 
-Session("MSG") = "E-Mail was sent to " &  Request("emailadd") & "."
+Session("MSG") = "E-Mail was sent to " &  Replace(Request("emailadd"), ";", " and " ) & "."
 Response.Redirect "reqconfirm.asp?ID=" & Request("HID")
 %>

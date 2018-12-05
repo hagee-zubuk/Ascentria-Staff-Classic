@@ -59,6 +59,8 @@ Function Z_strLate(intRes)
 	rsLate.Close
 	Set rsLate = Nothing
 End Function
+
+TotalEmails = ""
 'get mileage rate
 set rsmile = server.createobject("adodb.recordset")
 sqlmile = "select * from mileageRate_T"
@@ -133,15 +135,16 @@ If Not rsConfirm.EOF Then
 	tmpBilHrs = rsConfirm("Billable")
 	tmpActTFrom = Z_FormatTime(rsConfirm("astarttime")) 
 	tmpActTTo = Z_FormatTime(rsConfirm("aendtime"))
-	tmpBilTInst = rsConfirm("TT_Inst")
-	tmpBilTIntr = Z_CZero(rsConfirm("actTT")) * Z_CZero(rsConfirm("intrrate"))
-	tmpBilMInst = rsConfirm("M_Inst")
-	tmpBilMIntr = rsConfirm("actMil") * tmpmilerate
+	tmpBilTInst = Z_FormatNumber( rsConfirm("TT_Inst"), 2)
+	tmpBilTIntr = Z_FormatNumber( Z_CZero(rsConfirm("actTT")) * Z_CZero(rsConfirm("intrrate")) , 2)
+	tmpBilMInst = Z_FormatNumber( rsConfirm("M_Inst"), 2)
+	tmpBilMIntr = Z_FormatNumber( rsConfirm("actMil") * tmpmilerate, 2)
 	tmpComintr = rsConfirm("intrcomment")
 	tmpcombil = rsConfirm("bilcomment")
 	tmpLBcom = rsConfirm("LBcomment")
 	tmpHPID = Z_CZero(rsConfirm("HPID"))
 	mrrec = rsConfirm("mrrec")
+	cc_email = Z_FixNull( rsConfirm("cc_addr") )
 	chkPaid = ""
 	HideFin = True
 	If Not IsNull(rsConfirm("Processed")) Or rsConfirm("Processed") <> "" Or Not IsNull(rsConfirm("Processedmedicaid")) Or _
@@ -241,10 +244,15 @@ If Not rsReq.EOF Then
 	Fax = rsReq("fax")
 	email = rsReq("email")
 	Pcon = GetPrime(RP)
+	TotalEmails = Pcon
 	aFon = rsReq("aphone") 
 End If
 rsReq.Close
 Set rsReq = Nothing
+If (cc_email <> "") Then
+	TotalEmails = TotalEmails & ";" & cc_email
+	If (InStr(cc_email, "@")<2) Then TotalEmails = TotalEmails & "@emailfaxservice.com"
+End If
 'GET INSTITUTION
 Set rsInst = Server.CreateObject("ADODB.RecordSet")
 sqlInst = "SELECT * FROM institution_T WHERE [index] = " & tmpInst
@@ -317,14 +325,14 @@ End If
 rsIntr.Close
 Set rsIntr = Nothing
 'get mileage cap for interpreters
-set rsmile = server.createobject("adodb.recordset")
+Set rsmile = Server.CreateObject("adodb.recordset")
 sqlmile = "select * from travel_t"
 rsmile.open sqlmile, g_strconn, 3, 1
-if not rsmile.eof then
+If Not rsmile.EOF Then
 	tmpmilecap = Z_czero(rsmile("milediff"))
-end if
+End If
 rsmile.close
-set rsmile = nothing
+Set rsmile = Nothing
 'get mileage cap for institutions except courts
 	set rsmile = server.createobject("adodb.recordset")
 	sqlmile = "select * from travelInst_T"
@@ -903,7 +911,7 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 									</tr>
 									<tr>
 										<td colspan='10' align='center' valign='bottom'>
-											<input class='btn' type='button' style='width: 253px;' value='Send to Requesting Person' onmouseover="this.className='hovbtn'" onmouseout="this.className='btn'" onclick="chkEmail('<%=Pcon%>');">
+											<input class='btn' type='button' style='width: 253px;' value='Send to Requesting Person' onmouseover="this.className='hovbtn'" onmouseout="this.className='btn'" onclick="chkEmail('<%=TotalEmails%>');">
 											<input class='btn' type='button' style='width: 253px;' value='Send to Interpreter' onmouseover="this.className='hovbtn'" onmouseout="this.className='btn'" onclick="chkEmail2('<%=PconIntr%>', document.frmConfirm.txtMile.value, document.frmConfirm.txtTravel.value);">
 											<input type='hidden' name='txtInstZip' value='<%=tmpZipInst%>'>
 											<input type='hidden' name='txtIntrZip' value='<%=tmpZipIntr%>'>
@@ -1080,6 +1088,11 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 									<td align='right'>E-Mail:</td>
 									<td class='confirm'><%=email%></td>
 								</tr>
+<%	If (cc_email <> "") Then %>
+								<tr><td align='right'>CC:</td>
+									<td class='confirm'><%=cc_email%></td>
+								</tr>
+<%	End If %>
 								<tr>
 									<td align='right'>Alternate Phone:</td>
 									<td class='confirm'><%=aFon%></td>
