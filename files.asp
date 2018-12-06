@@ -1,10 +1,11 @@
+<%language=vbscript%>
+<!-- #include file="_Files.asp" -->
+<!-- #include file="_Utils.asp" -->
 <%
-'<html>
-'<body>
-
 If Trim(Request("fpath")) <> "" Then
 	Set fso = CreateObject("Scripting.FileSystemObject")
 	strPath = Request("fpath")
+	strExt = LCase(Z_GetExt(strPath))
 	If fso.FileExists(strPath) Then	
 		Set oFileStream = Server.CreateObject("ADODB.Stream")
 		oFileStream.Open
@@ -15,12 +16,17 @@ If Trim(Request("fpath")) <> "" Then
 			Response.Write "Error: " & Err.Number & " [" & Err.Message & "]"
 		End If
 		Response.Clear
-		Response.ContentType = "application/pdf"
-		Response.AddHeader "Content-Disposition", "inline; filename=v-form.pdf"
+		If (strExt = "pdf") Then
+			Response.ContentType = "application/pdf"
+			Response.AddHeader "Content-Disposition", "inline; filename=v-form.pdf"
+		Else
+			Response.ContentType = "image/" & strExt
+			Response.AddHeader "Content-Disposition", "inline; filename=v-form." & strExt
+		End If
 
 		Dim lSize, lBlocks
 		'Const CHUNK = 2048
-		Const CHUNK = 2048000
+		Const CHUNK = 204800
 		lSize = oFileStream.Size
 		Response.AddHeader "Content-Size", lSize
 		lBlocks = 1
@@ -36,8 +42,5 @@ If Trim(Request("fpath")) <> "" Then
 		Response.Write "<h1>Oops</h1><p>Unable to find the file, or access is denied accessing the file.</p>"
 	End If
 	Set fso = Nothing
-end if
-
-'</body>
-'</html>
+End If
 %>

@@ -375,7 +375,7 @@ Function Z_EmailInst(pcon, appid)
 		BillAddr =  rsReq("BAddress") &", " & rsReq("BCity") & ", " & rsReq("BState") & ", " & rsReq("BZip")
 		tmpBContact = rsReq("Blname") & ", " & rsReq("Bfname")
 		If Z_CZero(tmpHPID) <> 0 Then
-			ReqName = rsHP("AppReqName")
+			ReqName = rsReq("AppReqName")
 		End If
 	End If
 	rsReq.Close
