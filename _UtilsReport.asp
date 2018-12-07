@@ -567,7 +567,7 @@ Function Z_EmailInst(pcon, appid)
 				"<font size='1' face='trebuchet MS'>* Please do not reply to this email. This is a computer generated email. Use the information above for questions.</font>" & vbCrLf & _
 			"</td></tr>" & vbCrLf & _
 		"</table>"
-	retErr = zSendMessage(strTo,  "hagee@philballoonfest.net", strSubject, strBody)	'strBCC, strSubject, strBody)
+	retErr = zSendMessage(strTo, strBCC, strSubject, strBody)
 	Call SaveHist(appID, "email.asp") 
 
 	sqlSent = "UPDATE request_T SET SentReq = '" & Now & "' WHERE [index] = " & appid
