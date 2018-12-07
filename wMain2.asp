@@ -292,11 +292,11 @@ Set rsDept = Nothing
 									</tr>
 									<tr><td>&nbsp;</td></tr>
 									<% If tmpInst = 479 Then %>
-									<tr>
-										<td align='right'>Training:</td>
-										<td><input type='checkbox' name='chkTrain' value='1'></td>
-									</tr>
-									<tr><td>&nbsp;</td></tr>
+	<tr>
+		<td align='right'>Training:</td>
+		<td><input type='checkbox' name='chkTrain' value='1'></td>
+	</tr>
+	<tr><td>&nbsp;</td></tr>
 									<% End If %>
 									<tr>
 										<td align='right'>Institution:</td>

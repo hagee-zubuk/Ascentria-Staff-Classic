@@ -1117,13 +1117,13 @@ End If
 											<input class='main' size='20' maxlength='25' name='txtClilname' <%=hpid%> value="<%=tmplname%>" onkeyup='bawal2(this);'>&nbsp;First Name:
 											<input class='main' size='20' maxlength='25' name='txtClifname' <%=hpid%> value="<%=tmpfname%>" onkeyup='bawal2(this);'>
 											<% If tmpInst = 479 Then %>
-												&nbsp;&nbsp;&nbsp;&nbsp;Training:
-												<select name='selTrain' class='seltxt' style='width:150px;'>
-													<option value='0' <%=train0%>>Regular</option>
-													<option value='1' <%=train1%>>MIT Interpreter 1</option>
-													<option value='2' <%=train2%>>Continuing Education Hours</option>
-													<option value='3' <%=train3%>>Trainers Hours</option>
-												</select>
+	&nbsp;&nbsp;&nbsp;&nbsp;Training:
+	<select name='selTrain' class='seltxt' style='width:150px;'>
+		<option value='0' <%=train0%>>Regular</option>
+		<option value='1' <%=train1%>>MIT Interpreter 1</option>
+		<option value='2' <%=train2%>>Continuing Education Hours</option>
+		<option value='3' <%=train3%>>Trainers Hours</option>
+	</select>
 											<% End If %>
 										</td>
 									</tr>
