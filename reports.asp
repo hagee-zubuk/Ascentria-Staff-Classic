@@ -97,6 +97,7 @@ If Session("MSG") <> "" Then
 	TypeSel72 = ""
 	TypeSel73 = ""
 	TypeSel74 = ""
+	TypeSel75 = ""
 
 	If tmpReport(0) = 1 Then TypeSel1 = "selected"
 	If tmpReport(0) = 2 Then TypeSel2 = "selected"
@@ -172,6 +173,7 @@ If Session("MSG") <> "" Then
 	If tmpReport(0) = 72 Then TypeSel72 = "selected"
 	If tmpReport(0) = 73 Then TypeSel73 = "selected"
 	If tmpReport(0) = 74 Then TypeSel74 = "selected"
+	If tmpReport(0) = 75 Then TypeSel75 = "selected"
 		
 	tmpRepFrom = tmpReport(1)
 	tmpRepTo = tmpReport(2)
@@ -332,8 +334,7 @@ todaydate = Cdate(date)
 					document.frmReport.selInst.disabled = false;
 				}
 			}
-			else if (xxx == 4 || xxx == 20 || xxx == 53 || xxx == 31  || xxx == 73 || xxx == 74)
-			{
+			else if (xxx == 4 || xxx == 20 || xxx == 53 || xxx == 31  || xxx == 73 || xxx == 74 || xxx == 75) {
 				document.frmReport.txtRepFrom.disabled = false;
 				document.frmReport.txtRepTo.disabled = false;
 				document.frmReport.cal1.disabled = false;
@@ -347,9 +348,7 @@ todaydate = Cdate(date)
 				document.frmReport.selTown.value = -1;
 				document.frmReport.txtZip.value = "";
 				document.frmReport.txtState.value = "";
-			}
-			else if (xxx == 5)
-			{
+			} else if (xxx == 5) {
 				document.frmReport.txtRepFrom.disabled = false;
 				document.frmReport.txtRepTo.disabled = false;
 				document.frmReport.cal1.disabled = false;
@@ -363,9 +362,7 @@ todaydate = Cdate(date)
 				document.frmReport.selIntr.value = -1;
 				document.frmReport.txtZip.value = "";
 				document.frmReport.txtState.value = "";
-			}
-			else if(xxx == 7 || xxx == 18)
-			{
+			} else if(xxx == 7 || xxx == 18) {
 				document.frmReport.txtRepFrom.disabled = true;
 				document.frmReport.txtRepTo.disabled = true;
 				document.frmReport.cal1.disabled = true;
@@ -455,7 +452,7 @@ todaydate = Cdate(date)
 				document.frmReport.txtZip.value = "";
 				document.frmReport.txtState.value = "";
 			}
-			document.frmReport.chkAddnl.disabled = ( (xxx == 47) || (xxx == 73) || xxx == 74 );
+			document.frmReport.chkAddnl.disabled = ( (xxx == 47) || (xxx == 73) || xxx == 74 || xxx == 75 );
 		}
 		
 		
@@ -881,6 +878,7 @@ todaydate = Cdate(date)
 			}
 			if (xxx == 73) document.frmReport.tadef.value = "Pending Appointments with Medicaid information";
 			if (xxx == 74) document.frmReport.tadef.value = "Interpreter responses to appointment availability";
+			if (xxx == 75) document.frmReport.tadef.value = "Interpreter Frequency";
 		}
 		function CalendarView(strDate)
 		{
@@ -989,6 +987,7 @@ todaydate = Cdate(date)
 											<option value='52' <%=TypeSel52%>>**Lynda Report</option>
 											<option value='73' <%=TypeSel73%>>* Pending Appts w/ Medicaid</option>
 											<option value='74' <%=TypeSel74%>>Interpreter Appt Response</option>
+											<option value='75' <%=TypeSel75%>>Interpreter Appt Count</option>
 											<!--<option value='21' <%=TypeSel21%>>Payroll Report</option>-->
 											<!--<option value='22' <%=TypeSel22%>>Pre-Payroll Report</option>-->
 										</select>

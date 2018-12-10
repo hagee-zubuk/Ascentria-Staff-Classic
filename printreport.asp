@@ -1970,97 +1970,7 @@ ElseIf tmpReport(0) = 25 Then 'weekly report
 ElseIf tmpReport(0) = 26 Then 'mileage report
 	Response.Redirect "rep_mileage.asp"
 ElseIf tmpReport(0) = 27 Then 'timsheet report
-	RepCSV =  "Timesheet" & tmpdate & ".csv"
-	tmpMonthYear = MonthName(Month(tmpReport(1))) & " - " & Year(tmpReport(1))
-	mysundate = GetSun(tmpReport(1))
-	mysatdate = GetSat(tmpReport(1))
-	strMSG = "Timsheet report "'for the week of " & mysundate & " - " & mysatdate
-	strHead = "<td class='tblgrn'>Date</td>" & vbCrlf & _
-		"<td class='tblgrn'>Interpreter</td>" & vbCrlf & _
-		"<td class='tblgrn'>Activity</td>" & vbCrlf & _
-		"<td class='tblgrn'>Travel Time</td>" & vbCrlf & _
-		"<td class='tblgrn'>Appt. Start Time</td>" & vbCrlf & _
-		"<td class='tblgrn'>Appt. End Time</td>" & vbCrlf & _
-		"<td class='tblgrn'>Total Hours</td>" & vbCrlf & _
-		"<td class='tblgrn'>Payable Hours</td>" & vbCrlf & _
-		"<td class='tblgrn'>Final Payable Hours</td>" & vbCrlf 
-	CSVHead = "Date,Last Name,First Name,Activity, Travel Time, Appt. Start Time,Appt. End Time,Total Hours, Payable Hours, Final Payable Hours"
-	Set rsRep = Server.CreateObject("ADODB.RecordSet")
-	sqlRep = "SELECT [Last Name], [First Name], InstID, Cfname, totalhrs, actTT, overpayhrs, AStarttime, AEndtime, appDate, payhrs, Interpreter_T.[index] as myintrID " & _
-		"FROM Request_T, Interpreter_T WHERE IntrID = Interpreter_T.[index]" ' AND appDate >= '" & mysundate & "' AND appDate <= '" & _
-		'mysatdate & "' "
-	If tmpReport(1) <> "" Then
-		sqlRep = sqlRep & " AND appDate >= '" & tmpReport(1) & "'"
-		strMSG = strMSG & " from " & tmpReport(1)
-	End If
-	If tmpReport(2) <> "" Then
-		sqlRep = sqlRep & " AND appDate <= '" & tmpReport(2) & "'"
-		strMSG = strMSG & " to " & tmpReport(2)
-	End If
-	If Z_CZero(tmpReport(4)) > 0 Then
-		sqlRep = sqlRep & "AND IntrID = " & tmpReport(4) & " "
-		strMSG = strMSG & " for " & GetIntr(tmpReport(4)) & "."
-	End If
-	sqlRep = sqlRep & "AND [LBconfirm] = 1 And showintr = 1 ORDER BY [last name], [first name], appDate" '06162015 edit
-	rsRep.Open sqlRep, g_strCONN, 3, 1
-	y = 0
-	IntrID2 = ""
-	totHrs = 0
-	Do Until rsRep.EOF
-		kulay = "#FFFFFF"
-		If Not Z_IsOdd(y) Then kulay = "#F5F5F5"
-		IntrName = rsRep("Last Name") & ", " & rsRep("First Name")
-		CliName = GetInst(rsRep("InstID")) & " - " & rsRep("Cfname")
-		tmpAMTs = rsRep("totalhrs")
-		TT = Z_FormatNumber(rsRep("actTT"), 2)
-		If rsRep("overpayhrs") Then 
-			PHrs = Z_FormatNumber(rsRep("payhrs"), 2)
-			OvrHrs = "*"
-		Else
-			PHrs = Z_FormatNumber(IntrBillHrs(rsRep("AStarttime"), rsRep("AEndtime")), 2)
-			OvrHrs = ""
-		End If
-		FPHrs = Z_Czero(PHrs) + Z_Czero(TT)
-		If Z_CZero(tmpReport(4)) > 0 Then
-			strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & rsRep("appDate") & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & IntrName & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & CliName & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & TT & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & CTime(rsRep("AStarttime")) & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & CTime(rsRep("AEndtime")) & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & tmpAMTs & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(PHrs, 2) & OvrHrs & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(FPHrs, 2) & "</td></tr>" & vbCrLf 
-		Else
-			IntrID = rsRep("myintrID")
-			
-			If IntrID <> IntrID2 And IntrID2 <> "" Then
-				strBody = strBody & "<tr bgcolor='#FFFFCE'><td colspan='8' class='tblgrn2'>&nbsp;</td><td class='tblgrn2'>" & Z_FormatNumber(totHrs,2) & "</td></tr>"
-				If IntrID2 <> "" Then strBody = strBody & "<P CLASS='pagebreakhere'>"
-				totHrs = 0
-			End If
-			strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & rsRep("appDate") & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & IntrName & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & CliName & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & TT & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & CTime(rsRep("AStarttime")) & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & CTime(rsRep("AEndtime")) & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & tmpAMTs & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(PHrs, 2) & OvrHrs & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(FPHrs, 2) & "</td></tr>" & vbCrLf 
-			IntrID2 = IntrID
-		End If
-		totHrs = totHrs + Z_CZero(FPHrs)
-		CSVBody = CSVBody & ",""" & rsRep("appDate") & """,""" & rsRep("Last Name") & """,""" & rsRep("First Name") & """,""" & _
-				CliName & """,""" & TT & """,""" & CTime(rsRep("AStarttime")) & """,""" & CTime(rsRep("AEndtime")) & _
-				""",""" & tmpAMTs & """,""" & Z_FormatNumber(PHrs, 2) & OvrHrs & """,""" & Z_FormatNumber(FPHrs, 2) & """" & vbCrLf
-		y = y + 1
-		rsRep.MoveNext
-	Loop
-	rsRep.Close
-	Set rsRep = Nothing
-	strBody = strBody & "<tr bgcolor='#FFFFCE'><td colspan='8' class='tblgrn2'>&nbsp;</td><td class='tblgrn2'>" & Z_FormatNumber(totHrs,2) & "</td></tr>"
-	
+	Response.Redirect "rep_timesheet.asp"
 ElseIf tmpReport(0) = 28 Then 'Total hours report
 	RepCSV =  "TotalHours" & tmpdate & ".csv"
 	strMSG = "Total Hours report"
@@ -5621,7 +5531,10 @@ ElseIf tmpReport(0) = 73 Then ' Pending Appts w/ Medicaid
 ElseIf tmpReport(0) = 74 Then ' Interpreter Appt Response
 	'Response.Write "<img src=""images/ajax-loader.gif"" title=""wait"" alt=""wait"" />"
 	Response.Redirect "rep_intrresp.asp"
-	Response.End	
+	Response.End
+ElseIf tmpReport(0) = 75 Then ' Interpreter Frequency
+	Response.Redirect "rep_intrfreq.asp"
+	Response.End
 End If
 tmpBills = Request("Bill")
 If Request("csv") <> 1 Then
