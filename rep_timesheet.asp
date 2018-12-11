@@ -68,7 +68,7 @@ RepCSV =  "Timesheet" & tmpdate & ".csv"
 tmpMonthYear = MonthName(Month(tmpReport(1))) & " - " & Year(tmpReport(1))
 mysundate = GetSun(tmpReport(1))
 mysatdate = GetSat(tmpReport(1))
-strMSG = "Timsheet report "'for the week of " & mysundate & " - " & mysatdate
+strMSG = "Timesheet report "'for the week of " & mysundate & " - " & mysatdate
 strHead = "<td class='tblgrn'>Date</td>" & vbCrlf & _
 	"<td class='tblgrn'>Interpreter</td>" & vbCrlf & _
 	"<td class='tblgrn'>Rate</td>" & vbCrlf & _
@@ -79,12 +79,12 @@ strHead = "<td class='tblgrn'>Date</td>" & vbCrlf & _
 	"<td class='tblgrn'>Appt. End Time</td>" & vbCrlf & _
 	"<td class='tblgrn'>Total Hours</td>" & vbCrlf & _
 	"<td class='tblgrn'>Payable Hours</td>" & vbCrlf & _
-	"<td class='tblgrn'>Final Payable Hours</td>" & vbCrlf 
-CSVHead = """Date"",""Last Name"",""First Name"",""Rate"",""Language"",""Activity"",""Travel Time""" & _
-		",""Appt. Start Time"",""Appt. End Time"",""Total Hours"",""Payable Hours"",""Final Payable Hours"""
+	"<td class='tblgrn'>Final Payable Hours</td>" & vbCrlf & _
+	"<td class='tblgrn'>TOTAL</td>" & vbCrlf 
+
 Set rsRep = Server.CreateObject("ADODB.RecordSet")
 strPD = ""
-sqlRep = "SELECT lan.[Language], ins.[Facility], itr.[Last Name], itr.[First Name], itr.[Rate]" & _
+sqlRep = "SELECT lan.[Language], ins.[Facility], itr.[Last Name], itr.[First Name], itr.[Rate], req.[IntrRate]" & _
 		", req.[AStarttime], req.[AEndtime], req.[appDate], req.[Cfname], req.[totalhrs], req.[actTT], req.[overpayhrs]" & _
 		", req.[payhrs], itr.[index] as myintrID, req.InstID " & _
 		"FROM [Request_T] AS req " & _
@@ -101,9 +101,14 @@ If tmpReport(2) <> "" Then
 	sqlRep = sqlRep & " AND req.[appDate] <= '" & tmpReport(2) & "'"
 	strMSG = strMSG & " to " & tmpReport(2)
 End If
+
 If Z_CZero(tmpReport(4)) > 0 Then
 	sqlRep = sqlRep & " AND req.[IntrID] = " & tmpReport(4) & " "
 	strMSG = strMSG & " for " & GetIntr(tmpReport(4)) & "."
+	CSVHead = """Date"",""Travel Time"",""Appt. Start Time"",""Appt. End Time"",""Total Hours"",""Payable Hours"",""Rate"",""Final Payable Hours"",""Total"""
+Else
+	CSVHead = """Date"",""Last Name"",""First Name"",""Travel Time"",""Appt. Start Time"",""Appt. End Time"",""Total Hours""," & _
+			"""Payable Hours"",""Final Payable Hours"",""Rate"",""Total"",""Intr Total hrs"",""Intr Total payable"""	
 End If
 sqlRep = sqlRep & " ORDER BY itr.[last name], itr.[first name], req.[appDate]"
 
@@ -111,7 +116,7 @@ sqlRep = sqlRep & " ORDER BY itr.[last name], itr.[first name], req.[appDate]"
 Set fso = CreateObject("Scripting.FileSystemObject")
 Set Prt = fso.CreateTextFile(RepPath &  RepCSV, True)
 Prt.WriteLine "LANGUAGE BANK - REPORT"
-Prt.WriteLine strMSG
+Prt.WriteLine """" & strMSG & """"
 Prt.WriteLine CSVHead
 %>
 		<form method="post" name="frmResult" id="frmResult">
@@ -119,7 +124,7 @@ Prt.WriteLine CSVHead
 				<tr><td valign="top" >
 							<table bgColor="white" border="0" cellSpacing="2" cellPadding="0" align="center">
 								<tr bgcolor="#f58426">
-									<td colspan="11" align="center">
+									<td colspan="12" align="center">
 <b><%=strMSG%></b>
 									</td>
 								</tr>
@@ -129,7 +134,10 @@ rsRep.Open sqlRep, g_strCONN, 3, 1
 
 y = 0
 IntrID2 = ""
+totHrA = 0
 totHrs = 0
+tot_aA = 0 
+tot_al = 0 
 Do Until rsRep.EOF
 	kulay = "#FFFFFF"
 	If Not Z_IsOdd(y) Then kulay = "#F5F5F5"
@@ -145,10 +153,12 @@ Do Until rsRep.EOF
 		OvrHrs = ""
 	End If
 	FPHrs = Z_Czero(PHrs) + Z_Czero(TT)
+	Rate = Z_CDbl(rsRep("IntrRate"))
+	CSVBody = """" & rsRep("appDate") & """," 
 	If Z_CZero(tmpReport(4)) > 0 Then
 		strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'>" & rsRep("appDate") & "</td>" & vbCrLf & _
 				"<td class='tblgrn2'><nobr>" & IntrName & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(rsRep("Rate"), 2) & "</td>" & vbCrLf & _
+				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(Rate, 2) & "</td>" & vbCrLf & _
 				"<td class='tblgrn2'><nobr>" & rsRep("Language") & "</td>" & vbCrLf & _
 				"<td class='tblgrn2'><nobr>" & CliName & "</td>" & vbCrLf & _
 				"<td class='tblgrn2'><nobr>" & TT & "</td>" & vbCrLf & _
@@ -156,19 +166,23 @@ Do Until rsRep.EOF
 				"<td class='tblgrn2'><nobr>" & CTime(rsRep("AEndtime")) & "</td>" & vbCrLf & _
 				"<td class='tblgrn2'><nobr>" & tmpAMTs & "</td>" & vbCrLf & _
 				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(PHrs, 2) & OvrHrs & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(FPHrs, 2) & "</td></tr>" & vbCrLf 
+				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(FPHrs, 2) & "</td>" & _
+				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(FPHrs * Rate, 2) & "</td>" & _
+				"</tr>" & vbCrLf 
 	Else
 		IntrID = rsRep("myintrID")
 			
 		If IntrID <> IntrID2 And IntrID2 <> "" Then
 			strBody = strBody & "<tr bgcolor='#FFFFCE'><td colspan='10' class='tblgrn2'>&nbsp;</td><td class='tblgrn2'>" & _
-					Z_FormatNumber(totHrs,2) & "</td></tr>"
+					Z_FormatNumber(totHrs,2) & "</td><td class='tblgrn2'>" & Z_FormatNumber(tot_al,2) & "</td></tr>" & vbCrLf
 			If IntrID2 <> "" Then strBody = strBody & "<P CLASS='pagebreakhere'>"
+			Prt.WriteLine ",,,,,,,,,,," & totHrs & "," & tot_al
 			totHrs = 0
+			tot_al = 0
 		End If
 		strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'>" & rsRep("appDate") & "</td>" & vbCrLf & _
 				"<td class='tblgrn2'><nobr>" & IntrName & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(rsRep("Rate"), 2) & "</td>" & vbCrLf & _
+				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(Rate, 2) & "</td>" & vbCrLf & _
 				"<td class='tblgrn2'><nobr>" & rsRep("Language") & "</td>" & vbCrLf & _
 				"<td class='tblgrn2'><nobr>" & CliName & "</td>" & vbCrLf & _
 				"<td class='tblgrn2'><nobr>" & TT & "</td>" & vbCrLf & _
@@ -176,14 +190,19 @@ Do Until rsRep.EOF
 				"<td class='tblgrn2'><nobr>" & CTime(rsRep("AEndtime")) & "</td>" & vbCrLf & _
 				"<td class='tblgrn2'><nobr>" & tmpAMTs & "</td>" & vbCrLf & _
 				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(PHrs, 2) & OvrHrs & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(FPHrs, 2) & "</td></tr>" & vbCrLf 
+				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(FPHrs, 2) & "</td>" & _
+				"<td class='tblgrn2'><nobr>" & Z_FormatNumber(FPHrs * Rate, 2) & "</td>" & _
+				"</tr>" & vbCrLf 
 		IntrID2 = IntrID
+		CSVBody = CSVBody & """" & rsRep("Last Name") & """,""" & rsRep("First Name") & ""","
 	End If
+	CSVBody = CSVBody &	"""" & TT & """,""" & CTime(rsRep("AStarttime")) & """,""" & CTime(rsRep("AEndtime")) & _
+				""",""" & tmpAMTs & """,""" & Z_FormatNumber(PHrs, 2) & """,""" & Z_FormatNumber(FPHrs, 2) & """," & _
+				Z_FormatNumber(Rate, 2) & "," & Z_FormatNumber(FPHrs * Rate, 2) & vbCrLf
+	totHrA = totHrA + Z_CZero(FPHrs)
 	totHrs = totHrs + Z_CZero(FPHrs)
-	CSVBody = CSVBody & """" & rsRep("appDate") & """,""" & rsRep("Last Name") & """,""" & rsRep("First Name") & """," & _
-			Z_FormatNumber(rsRep("Rate"), 2) & ",""" & rsRep("Language") & """,""" & _
-			CliName & """,""" & TT & """,""" & CTime(rsRep("AStarttime")) & """,""" & CTime(rsRep("AEndtime")) & _
-			""",""" & tmpAMTs & """,""" & Z_FormatNumber(PHrs, 2) & OvrHrs & """,""" & Z_FormatNumber(FPHrs, 2) & """" & vbCrLf
+	tot_al = tot_al + (Rate * Z_CDbl(FPHrs))
+	tot_aA = tot_aA + (Rate * Z_CDbl(FPHrs))
 	y = y + 1
 	rsRep.MoveNext
 
@@ -201,9 +220,17 @@ Do Until rsRep.EOF
 Loop
 rsRep.Close
 Set rsRep = Nothing
-strBody = strBody & "<tr bgcolor='#FFFFCE'><td colspan='10' class='tblgrn2'>&nbsp;</td><td class='tblgrn2'>" & Z_FormatNumber(totHrs,2) & "</td></tr>"
-
-Prt.WriteLine CSVBody
+strBody = strBody & "<tr bgcolor='#FFFFCE'><td colspan='10' class='tblgrn2'>&nbsp;</td><td class='tblgrn2'>" & _
+		Z_FormatNumber(totHrs,2) & "</td><td class='tblgrn2'>" & Z_FormatNumber(tot_al,2) & "</td></tr>" & vbCrLf
+Prt.Write CSVBody
+If Z_CZero(tmpReport(4)) <= 0 Then		
+	strBody = strBody & "<tr bgcolor='#FFFFCE'><td colspan='10' class='tblgrn2'>Grand Total:&nbsp;</td><td class='tblgrn2'>" & _
+			Z_FormatNumber(totHrA,2) & "</td><td class='tblgrn2'>" & Z_FormatNumber(tot_aA,2) & "</td></tr>" & vbCrLf
+	Prt.WriteLine ",,,,,,,,,,," & totHrs & "," & tot_al & vbCrLf
+	Prt.Write ",,"
+End If
+Prt.Write ",,,,,"
+Prt.WriteLine "Total," & totHrA & ",," & tot_aA
 Prt.Close	
 Set Prt = Nothing
 
