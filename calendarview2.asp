@@ -374,6 +374,14 @@ Set rsReq = Nothing
 			document.frmCal.action = "action.asp?ctrl=15&tmpDate=" + '<%=tmpDate%>';
 			document.frmCal.submit();	
 		}
+<%	If blnDup Then %>		
+		function chkDuplicates() {
+			dupwin = window.open("calDuplicates.asp?dt=<%=tmpDate%>","WinDup",
+							"channelmode=0,directories=0,fullscreen=0,height=400," + 
+							"left=100,location=0,menubar=0,resizable=1,scrollbars=1" +
+							"status=0,titlebar=0,toolbar=0,top=100,width=600");
+		}
+<%	End If %>		
 		function PublishMe3()
 		{
 			document.frmCal.action = "action.asp?ctrl=26&tmpDate=" + '<%=tmpDate%>';
@@ -445,13 +453,6 @@ Set rsReq = Nothing
 			else {
 				document.frmCal.btnFIND.disabled = false;
 			}
-<% If (blnDup) Then %>
-			dupwin = window.open("calDuplicates.asp?dt=<%=tmpDate%>","WinDup",
-							"channelmode=0,directories=0,fullscreen=0,height=400," + 
-							"left=100,location=0,menubar=0,resizable=1,scrollbars=1" +
-							"status=0,titlebar=0,toolbar=0,top=100,width=600");
-			//alert("possible duplicate appointment found");
-<% End If %>
 		}
 		//-->
 		</script>
@@ -828,6 +829,10 @@ Set rsReq = Nothing
 																		<td align='center'>		
 																			<input class='btn' type='button' value='Print Today' style='width: 100px;' onmouseover="this.className='hovbtn'" onmouseout="this.className='btn'" onclick='PublishMe2();'>
 																			<input class='btn' type='button' value='Assigned Appts.' style='width: 100px;' onmouseover="this.className='hovbtn'" onmouseout="this.className='btn'" onclick='PublishMe3();'>
+<% If blnDup Then %>																			
+																			<br />
+																			<input class='btn' type='button' value='Review Duplicates' style='width: 180px; margin-top: 20px;' onmouseover="this.className='hovbtn'" onmouseout="this.className='btn'" onclick='chkDuplicates();'>
+<% End If %>																			
 																		</td>
 																	</tr>
 																<% End If %>
