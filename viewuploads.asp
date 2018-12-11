@@ -91,13 +91,13 @@
 							<tr><td align="left"><nobr><%=strVform%></td>
 							</tr>
 							<tr><td>&nbsp;</td></tr>
-							<tr><td align="left"><b><u>Tolls and Parking Receipts</u></b></td>
-							</tr>
-							<tr><td align="left"><nobr><%=strTolls%></td>
-							</tr>
+							<tr><td align="left"><b><u>Tolls and Parking Receipts</u></b></td></tr>
+							<tr><td align="left"><nobr><%=strTolls%></td></tr>
+<%	If False Then %>
 							<tr><td align="left" style="height: 100px;">&nbsp;</td></tr>
 							<tr><td align="left"><button type="button" class="btn" name="btnUp" id="btnUp" value="">Upload File</button></td>
-							</tr>
+								</tr>
+<%	End If %>								
 						</table>
 					</td>
 					<td>
@@ -151,13 +151,14 @@ $( document ).ready(function() {
 	$("#btnClose").on("mouseover", function() {
 		$("#btnUp").toggleClass("hovbtn");
 	});
+/*
 	$("#btnUp").click(function () {
 		console.log( "upload" );
 		//document.location = "vf_upload.asp?";
 		$("#viewer").attr("src", "vf_upload.asp?rid=<%=strRID%>");
 		$("#btnUp").hide();
 	});
-
+*/
 	console.log( "ready!" );
 });
 

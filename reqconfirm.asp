@@ -812,6 +812,10 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 			newwindow = window.open('viewuploads.asp?ftype=0&reqid=' + xxx,'name','height=750,width=1000,scrollbars=0,directories=0,status=0,toolbar=0,resizable=0');
 			if (window.focus) {newwindow.focus()}
 		}
+		function DoUpload(xxx) {
+			newwindow = window.open('vf_upload.asp?rid=' + xxx,'name','height=750,width=1000,scrollbars=0,directories=0,status=0,toolbar=0,resizable=0');
+			if (window.focus) {newwindow.focus()}
+		}
 		function removeme(xxx) {
 			var ans = window.confirm("Remove Interpreter? Click Cancel to stop.");
 			if (ans){
@@ -937,7 +941,8 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 									<% If Request.Cookies("LBUSERTYPE") = 1 Then %>
 										<tr>
 											<td colspan='10' align='center' valign='bottom'>
-												<input class='btn' type='button' style='width: 510px;' value='View Uploads' onmouseover="this.className='hovbtn'" onmouseout="this.className='btn'" onclick='ViewUploads(<%=Request("ID")%>);'>
+												<input class='btn' type='button' style='width: 253px;' value='View Uploads' onmouseover="this.className='hovbtn'" onmouseout="this.className='btn'" onclick='ViewUploads(<%=Request("ID")%>);'>
+												<input class='btn' type='button' style='width: 253px;' value='Upload Files' onmouseover="this.className='hovbtn'" onmouseout="this.className='btn'" onclick='DoUpload(<%=Request("ID")%>);'>												
 											</td>	
 										</tr>
 										<tr><td>&nbsp;</td></tr>

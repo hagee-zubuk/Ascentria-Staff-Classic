@@ -33,20 +33,23 @@ lngRID = Z_CLng(Request("rid"))
 		<div style="margin: 100px auto;">
 			<form id="frmUpload" name="frmUpload" method="POST" enctype="multipart/form-data" action="vf_upload_do.asp">
 				<div style="margin-left: 50px;">
+					<p>Request ID: <%=lngRID%></p>
 					<input type="hidden" name="rid" id="rid" value="<%=lngRID%>" />
 					<label for="ufile"><strong>Choose a file</strong></label>
 					<input type="file" name="ufile" id="ufile" />
 					<br />
 					<table><tbody>
 						<tr><td>
-						<label for="type"><strong>Upload type:</strong></label></td>
+						<label for="utype"><strong>Upload type:</strong></label></td>
 						<td>
-						<input type="radio" value="0" name="type" id="type_v" />&nbsp;Verification Form<br />
-						<input type="radio" value="1" name="type" id="type_t" />&nbsp;Toll and Parking Receipt<br />
+						<input type="radio" value="0" name="utype" id="type_v" checked="checked" />&nbsp;Verification Form<br />
+						<input type="radio" value="1" name="utype" id="type_t" />&nbsp;Toll and Parking Receipt<br />
 						</td></tr>
 					</tbody></table>
 					<br />
 					<input type="submit" class="btn" name="btnUpld" id="btnUpld" value="Upload File" />
+					<br /><br />
+					<button type="button" class="btn" name="btnDn" id="btnDn" value="" onclick="self.close();">Close</button>
 				</div>
 			</form>
 		</div>
