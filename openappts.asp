@@ -29,8 +29,8 @@ Set rsLang = Nothing
 If Request.ServerVariables("REQUEST_METHOD") = "POST" Or Request("reload") = 1 Then
 	'get open appt
 	Set rsApp = Server.CreateObject("ADODB.RecordSet")
-	sqlApp = "SELECT r.[index] AS myID, [appdate], [timestamp], r.[instID], [deptID], [LangID], [apptimeFROM], [apptimeTo]" & _
-			", [spec_cir], [clname], [cfname], [lbcomment], [comment], [cliadd], [ccity], [HPID], [emergency], [emerfee], [class] " & _
+	sqlApp = "SELECT r.[index] AS myID, [appdate], [timestamp], r.[instID], [deptID], [LangID], [apptimeFROM], [apptimeTo], [city], [state]" & _
+			", [spec_cir], [clname], [cfname], [lbcomment], [comment], [cliadd], [ccity], [cstate], [HPID], [emergency], [emerfee], [class] " & _
 			"FROM request_T AS r INNER JOIN language_T AS t ON r.[langID]=t.[index] INNER JOIN dept_T AS d ON r.DeptId = d.[index] " & _
 			"WHERE [IntrID] <= 0 " & _
 			"AND [status] <> 2 " & _
@@ -109,8 +109,14 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Or Request("reload") = 1 T
 			tmpSalita = GetLang(rsApp("langID"))
 			timeframe = Z_FormatTime(rsApp("appTimeFrom"), 4) & " - " & Z_FormatTime(rsApp("appTimeTo"), 4)
 			clntname = rsApp("clname") & ", " & rsApp("cfname")
-			tmpcity = GetCity(rsApp("deptID"))
-			If rsApp("cliAdd") Then tmpcity = rsApp("ccity")
+			
+			If rsApp("cliAdd") Then
+				tmpcity = Trim(rsApp("ccity"))
+				If Z_FixNull(rsApp("cstate")) <> "" Then tmpCity = tmpCity & ", " & rsApp("cstate")
+			Else
+				tmpcity = Trim(rsApp("city"))
+				If Z_FixNull(rsApp("state")) <> "" Then tmpCity = tmpCity & ", " & rsApp("state")
+			End If
 			tmpHPID = Z_CZero(rsApp("HPID"))
 			IntrCommentTitle = ""
 			IntrComment = ""
