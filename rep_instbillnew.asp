@@ -204,7 +204,7 @@ If Not rsRep.EOF Then
 				'If rsRep("class") <> 3 Then
 				tmpCID = Trim(UCase(rsRep("custID")))
 				If (rsRep("langID")=52 Or rsRep("langID")=109 Or rsRep("langID")=81) Then
-					tmpccode = "LB 70 Rate ASL"
+					tmpccode = "LB 75 Rate ASL"
 				Else
 					tmpccode = "LB " & rsRep("InstRate") & " Rate"
 				End If
@@ -229,19 +229,19 @@ If Not rsRep.EOF Then
 							Or rsRep("myinstID") = 427 Or rsRep("myinstID") = 431 Then
 						'DHMC and Elliot
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
-								rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - " & _
+								rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & " - " & _
 								Replace(rsRep("Dept"), " - ", "") & """,""" & date & """,""" & _
 								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 					ElseIf rsRep("myinstID") = 15 Or rsRep("myinstID") = 33 Or rsRep("myinstID") = 41 _
 							Or rsRep("myinstID") =  70 Or rsRep("DeptID") = 645 Then
 						'concord hosp, fam and mchc and com council nashua, riverbend
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
-								rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - " & _
+								rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & " - " & _
 								rsRep("Language") & """,""" & date & """,""" & _
 								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 					ElseIf rsRep("deptID") = 1058 Then 'man welfare
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
-								rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - MW" & _
+								rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & " - MW" & _
 								rsRep("myindex") & """,""" & date & """,""" & _
 								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 					ElseIf rsRep("myinstID") = 39 Or rsRep("myinstID") = 52 _
@@ -260,30 +260,30 @@ If Not rsRep.EOF Then
 						reqp = GetReq(rsRep("reqID"))
 						If Z_Czero(rsRep("HPID")) > 0 Then reqp = reqp & " / " & GetReqHPID(rsRep("HPID"))
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
-								rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & _
+								rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & _
 								" (Req: " & reqp & ")"",""" & date & """,""" & _
 								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 					ElseIf rsRep("myinstID") = 860 Then ' UMass Med
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
-								rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " - " & _
+								rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & " - " & _
 								rsRep("Language") & " - " & Replace(rsRep("DeptID"), " - ", "") & """,""" & date & """,""" & _
 								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 					Else
 						If rsRep("myInstID") = 240 Then
 							CSVBodyBillSigma = CSVBodyBillSigma & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
-									rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " – Interpretation" & _
+									rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & " -Interpretation" & _
 									""",""" & date & """,""" & rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 						Else 
 							If rsRep("custID") = "New England Heart In" Then
 								CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
-										rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & " " & _
+										rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & " " & _
 										rsRep("DOB") & """,""" & date & """,""" & _
 										rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 							Else
 								If rsRep("class") = 3 Then
 									If rsRep("emerFEE") = True Then
 										tmpccode = "LB 60 Rate"
-										If (rsRep("langID")=52 Or rsRep("langID")=109 Or rsRep("langID")=81) Then tmpccode = "LB 70 Rate ASL"
+										If (rsRep("langID")=52 Or rsRep("langID")=109 Or rsRep("langID")=81) Then tmpccode = "LB 75 Rate ASL"
 
 									End if
 								End If
@@ -291,13 +291,13 @@ If Not rsRep.EOF Then
 										rsRep("custID") = "Saint Vincent Hosp" Or rsRep("custID") = "Spear Management Grp" _
 										Or rsRep("custID") = "BayPath Elder Svc" Then
 									CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
-											rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & _
-											" – Interpretation" &  """,""" & date & """,""" & _
+											rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & _
+											" -Interpretation" &  """,""" & date & """,""" & _
 											"langbankma" & """,""" & BillHours & """" & vbCrLf
 								Else
 									CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
-											rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & _
-											" – Interpretation" &  """,""" & date & """,""" & _
+											rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & _
+											" -Interpretation" &  """,""" & date & """,""" & _
 											rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 								End If
 							End If
@@ -310,8 +310,9 @@ If Not rsRep.EOF Then
 						If rsRep("myinstID") = 757 Or rsRep("myinstID") = 777 Then 'SSA
 							apptadr = Z_GetApptAddr(rsRep("myindex"))
 							CSVBodyBillL = CSVBodyBillL & """" & "DOTC" & """,""" & _
-									"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & _
-									" " & rsRep("Clname") & docnum & " – Interpretation" & " - " & rsRep("judge") & _
+									"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & _
+									Trim(rsRep("Cfname") & " " & rsRep("Clname")) & _
+									docnum & " -Interpretation" & " - " & rsRep("judge") & _
 									" - " & rsRep("claimant") & " - " & rsRep("appdate") & " - " & CTime(rsRep("appTimeFrom")) & _
 									" - " & CTime(rsRep("appTimeto")) & " - " & rsRep("Language") & _
 									" - " & GetDept(rsRep("deptID")) & " - " & apptadr & " - " & CTime(rsRep("AStarttime")) & _
@@ -319,11 +320,11 @@ If Not rsRep.EOF Then
 									rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 						ElseIf rsRep("myinstID") = 126 Then 'NH legal
 							CSVBodyBillL = CSVBodyBillL & """" & "DOTC" & """,""" & _
-								"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & docnum & " – Interpretation (" & strIntrName & ")" & """,""" & date & """,""" & _
+								"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & docnum & " -Interpretation (" & strIntrName & ")" & """,""" & date & """,""" & _
 								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 						Else
 							CSVBodyBillL = CSVBodyBillL & """" & "DOTC" & """,""" & _
-								"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & docnum & " – Interpretation" & """,""" & date & """,""" & _
+								"0" & """,""" & tmpccode & """,""" & rsRep("appDate") & " " & rsRep("Cfname") & " " & rsRep("Clname") & docnum & " -Interpretation" & """,""" & date & """,""" & _
 								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
 						End If
 					End If
