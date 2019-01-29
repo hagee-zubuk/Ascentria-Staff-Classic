@@ -511,7 +511,7 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 				{
 					<% If tmpDecTT <> "" Or tmpDecMile <> "" Then %>
 						var MileTT = tmpM + "|" + tmpTT;
-						<% If tmpSent = "" Then %>	
+						<% If tmpSent = "" Then %>
 							var ans = window.confirm("This action will send an email/fax to the interpreter.\nClick Cancel to stop.");
 							if (ans)
 							{
@@ -631,12 +631,27 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 		  		}
 		  	}
 		}
+		function OvrdTTM(xxx) {
+			document.frmConfirm.action = "ovrd_ttm.asp?ReqID=" + xxx;
+			<% If tmpDecTT <> "" And tmpDecMile <> "" Then %>
+				var ans = window.confirm("Travel Time and Mileage has been saved already. Do you want to save it again?\n\n" + 
+						"Click Cancel to stop.\n\n" + 
+						"*Travel Time and Mileage may change from time to time which may cause a different value to be produced when saved again.\n\n" + 
+						"*Monetary values to be paid for travel time and mileage will be reset to zero(0)."
+					);
+				if (ans) {
+					document.frmConfirm.submit();
+				}
+			<% Else %>
+			document.frmConfirm.submit();
+			<% End If %>
+		}
 		function SaveTTM(xxx)
 		{
 			<% If tmpDecTT = "" Or tmpDecMile = "" Then %>
 				document.frmConfirm.action = "action.asp?ctrl=18&ReqID=" + xxx;
 				document.frmConfirm.submit();
-				//alert('actual travel: ' + document.getElementById('txtRTravel').value + '\nactual mileage: ' + document.getElementById('txtRMile').value);
+				// alert('actual travel: ' + document.getElementById('txtRTravel').value + '\nactual mileage: ' + document.getElementById('txtRMile').value);
 			<% Else %>
 				var ans = window.confirm("Travel Time and Mileage has been saved already. Do you want to save it again?\nClick Cancel to stop.\n\n*Travel Time and Mileage may change from time to time which may cause a different value to be produced when saved again.\n*Monetary values to be paid for travel time and mileage will be reset to zero(0).");
 				if (ans)
@@ -684,6 +699,7 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 		}
 		function enablebutton() {
 			document.frmConfirm.btnSaveTTM.disabled = false;
+			document.frmConfirm.btnSaveTTM2.disabled = false;
 		}
 		<% If Not HideFin Then %>
 		function financeonly() {
@@ -897,7 +913,7 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 								<% Else %>
 									<tr>
 										<td colspan='10' align='center' height='30px' valign='bottom'>
-											<input class='btn' type='button' id='btnSaveTTM' name='btnSaveTTM' disabled='disabled' style='width: 253px;' <%=TTM%> value='Save Travel Time and Mileage' onmouseover="this.className='hovbtn'" onmouseout="this.className='btn'" onclick="SaveTTM('<%=Request("ID")%>');">
+											<input class='btn' type='button' id='btnSaveTTM' name='btnSaveTTM' disabled='disabled' style='width: 253px;' <%=TTM%> value='Overwrite Travel Time and Mileage' onmouseover="this.className='hovbtn'" onmouseout="this.className='btn'" onclick="OvrdTTM('<%=Request("ID")%>');">
 											<script>
 												document.frmConfirm.btnSaveTTM.disabled = true;
 											</script>
@@ -1358,7 +1374,19 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 											<td class='confirm'><%=tmpActTFrom%> - <%=tmpActTTo%></td>
 										</tr>
 										<tr>
-											<td align='right'>&nbsp;</td>
+											<td align='right'>
+<% If tmpIntr > 0 Then %>
+												<input class='btnLnk' type='button' id='btnSaveTTM2' name='btnSaveTTM2' disabled='disabled'
+														style='width: 120px;' value='EDIT Mileage'
+														onmouseover="this.className='hovbtnLnk'"
+														onmouseout="this.className='btnLnk'"
+														onclick="OvrdTTM('<%=Request("ID")%>');"
+														<%=TTM%> />
+												<script>
+													document.frmConfirm.btnSaveTTM2.disabled = true;
+												</script>
+<% End If %>
+											</td>
 											<td rowspan='3' valign='top'>
 												<table cellSpacing='2' cellPadding='0' border='0'>
 													<tr>
