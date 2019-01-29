@@ -11,8 +11,7 @@ End Function
 Function Z_YMDDate(dtDate)
 	DIM lngTmp, strDay, strTmp
 	If Not IsDate(dtDate) Then Exit Function
-	strTmp = DatePart("yyyy", dtDate)
-	Z_YMDDate = Z_YMDDate & "-"
+	Z_YMDDate = DatePart("yyyy", dtDate) & "-"
 	lngTmp = Z_CLng(DatePart("m", dtDate))
 	If lngTmp < 10 Then Z_YMDDate = Z_YMDDate & "0"
 	Z_YMDDate = Z_YMDDate & lngTmp & "-"
@@ -42,44 +41,34 @@ End Function
 		If Z_FixNull(Request("txtFromd8")) <> "" Then
 			tmpFromd8 = Z_CDate(Z_FixNull(Request("txtFromd8")))
 			If tmpFromd8 > Z_CDate("1/1/2010") Then
-				If Z_FixNull(Request("tmpTod8")) = "" Then
-					tmpTod8 = DateAdd("d", 1, tmpFromd8)
-				Else
+				If Z_FixNull(Request("tmpTod8")) <> "" Then
 					tmpTod8 = Z_CDate(Z_FixNull(Request("txtTod8")))
-					tmpTod8 = DateAdd("d", 1, tmpTod8)
+					strFilt = strFilt & " AND req.[appDate] <= '" & Z_YMDDate(tmpTod8) & "' "
 				End If
 				strFilt = strFilt & " AND req.[appDate] >= '" & Z_YMDDate(tmpFromd8) & "' "
-				strFilt = strFilt & " AND req.[appDate] < '" & Z_YMDDate(tmpTod8) & "' "
 			End If
 		Else
 			If Z_FixNull(Request("tmpTod8")) <> "" Then 'tmpFromd8 is empty
-				tmpFromd8 = Z_CDate(Z_FixNull(Request("tmpTod8")))
-				If tmpFromd8 > Z_CDate("1/1/2010") Then
-					strTmp2 = DateAdd("d", 1, tmpFromd8)
-					strFilt = strFilt & " AND req.[appDate] >= '" & Z_YMDDate(tmpFromd8) & "' "
-					strFilt = strFilt & " AND req.[appDate] < '" & Z_YMDDate(tmpFromd8) & "' "
+				tmpTod8 = Z_CDate(Z_FixNull(Request("txtTod8")))
+				If tmpTod8 > Z_CDate("1/1/2010") Then
+					strFilt = strFilt & " AND req.[appDate] <= '" & Z_YMDDate(tmpTod8) & "' "
 				End If
 			End If
 		End If
 		If Z_FixNull(Request("txtUFromd8")) <> "" Then
 			tmpUFromd8 = Z_CDate(Z_FixNull(Request("txtUFromd8")))
 			If tmpUFromd8 > Z_CDate("1/1/2010") Then
-				If Z_FixNull(Request("tmpUTod8")) = "" Then
-					tmpUTod8 = DateAdd("d", 1, tmpUFromd8)
-				Else
-					tmpUTod8 = Z_CDate(Z_FixNull(Request("txtUTod8")))
-					tmpUTod8 = DateAdd("d", 1, tmpUTod8)
-				End If
 				strFilt = strFilt & " AND upl.[timestamp] >= '" & Z_YMDDate(tmpUFromd8) & "' "
-				strFilt = strFilt & " AND upl.[timestamp] < '" & Z_YMDDate(tmpUTod8) & "' "
+				If Z_FixNull(Request("tmpUTod8")) <> "" Then
+					tmpUTod8 = Z_CDate(Z_FixNull(Request("txtUTod8")))
+					strFilt = strFilt & " AND upl.[timestamp] <= '" & Z_YMDDate(tmpUTod8) & "' "
+				End If	
 			End If
 		Else
 			If Z_FixNull(Request("tmpUTod8")) <> "" Then 'tmpFromd8 is empty
-				tmpUFromd8 = Z_CDate(Z_FixNull(Request("tmpUTod8")))
-				If tmpUFromd8 > Z_CDate("1/1/2010") Then
-					strTmp2 = DateAdd("d", 1, tmpUFromd8)
-					strFilt = strFilt & " AND upl.[timestamp] >= '" & Z_YMDDate(tmpUFromd8) & "' "
-					strFilt = strFilt & " AND upl.[timestamp] < '" & Z_YMDDate(tmpUFromd8) & "' "
+				tmpUTod8 = Z_CDate(Z_FixNull(Request("txtUTod8")))
+				If tmpUTod8 > Z_CDate("1/1/2010") Then
+					strFilt = strFilt & " AND upl.[timestamp] <= '" & Z_YMDDate(tmpUTod8) & "' "
 				End If
 			End If
 		End If
@@ -134,21 +123,22 @@ End Function
 			"INNER JOIN [langbank].dbo.[language_T] AS lan ON req.[langid] = lan.[index] " & _
 			"WHERE upl.[uid]>0 " & strFilt  & _
 			" ORDER BY " & strSCol & " " & strSDir
+	'Response.Write strSQL
 	Set rsUploads = Server.CreateObject("ADODB.Recordset")			
 	rsUploads.Open strSQL, g_strCONNupload, 3, 1
 	lngC = 0
-	Do Until (rsUploads.EOF) And (lngC < 50)
+	Do While (Not rsUploads.EOF) And (lngC < 50)
 		strVform = strVform & "<tr><td>&nbsp;&nbsp;&nbsp;<img src=""images/zoom.gif"" alt=""Q"" title=""view files"" " & _
-				"onclick=""listfiles(" & rsUploads("rid") & ");"" />" & rsUploads("rid") & "</td>" & _
-				"<td style=""text-align: center;""><div id=""vw" & rsUploads("uid") & _
+				"onclick=""listfiles(" & rsUploads("rid") & ");"" />" & rsUploads("rid") & "</td>" 
+		strVform = strVform & "<td style=""text-align: center;""><div id=""vw" & rsUploads("uid") & _
 				""" class=""ico_view"" onclick=""viewfile(" & rsUploads("uid") & ");"">" &  _
-				"<img src=""images/zzz-dl.png"" title=""view " & rsUploads("uid") & """ " & _
-				"alt=""[]"" /></div>" & FormatDateTime(rsUploads("timestamp"), 2) & "<br />" & _
+				"<img src=""images/zzz-dl.png"" title=""view " & rsUploads("uid") & """ "
+		strVform = strVform & "alt=""[]"" /></div>" & FormatDateTime(rsUploads("timestamp"), 2) & "<br />" & _
 				FormatDateTime(rsUploads("timestamp"), 4) & "</td>" & _
-				"<td>" & rsUploads("first name") & " " & rsUploads("last name") & "/ " & _
-				rsUploads("language") & "</td>" & _
-				"<td>" & rsUploads("institution") & "<br />" & rsUploads("dept") & "</td>" & _
-				"<td>" & UCase(rsUploads("cfname") & " " & rsUploads("clname")) & "</td>" & _
+				"<td>" & rsUploads("first name") & " " & rsUploads("last name") & "/ "
+		strVform = strVform & rsUploads("language") & "</td>" & _
+				"<td>" & rsUploads("institution") & "<br />" & rsUploads("dept") & "</td>" 
+		strVform = strVform & "<td>" & UCase(rsUploads("cfname") & " " & rsUploads("clname")) & "</td>" & _
 				"<td>" & FormatDateTime(rsUploads("appdate"), 2) & " " & FormatDateTime(rsUploads("apptimefrom"), 4) & "</td>" & _
 				"</tr>" & vbCrLf
 		rsUploads.MoveNext
@@ -157,7 +147,7 @@ End Function
 	rsUploads.Close
 	Set rsUploads = Nothing
 
-strDebug = "" 'strSQL
+strDebug = ""'strSQL
 
 ' ******  initialize lookups '
 	Set rsTmp = Server.CreateObject("ADODB.Recordset")

@@ -7,7 +7,6 @@
 strVForm = ""
 strTolls = ""
 viewpath = ""
-strRID = Z_CLng(Request("reqid"))
 lngUID = Z_CLng(Request("uid"))
 strSQL = "SELECT [timestamp], [filename], [rid], [type], [uid] FROM uploads WHERE [uid]=" & lngUID
 Set rsUploads = Server.CreateObject("ADODB.RecordSet")
@@ -15,6 +14,7 @@ rsUploads.Open strSQL, g_strCONNupload, 3, 1
 If rsUploads.EOF Then
 	'shit! your file's missing
 Else
+	strRID = rsUploads("rid")
 	If ( rsUploads("type") = 0 ) Then
 		subfold = "\vform\"
 		msgtype = "Verification form"
