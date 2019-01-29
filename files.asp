@@ -39,7 +39,7 @@ If Trim(Request("fpath")) <> "" Then
 		oFileStream.Close
 		Set oFileStream= Nothing
 	Else
-		Response.Write "<h1>Oops</h1><p>Unable to find the file, or access is denied accessing the file.</p>"
+		Response.Write "<h1>Oops</h1><p>Unable to find the file, or access is denied accessing the file.</p><code>" & Request("fpath") & "</code>"
 	End If
 	Set fso = Nothing
 End If
