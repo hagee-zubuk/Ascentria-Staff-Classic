@@ -2313,18 +2313,18 @@ ElseIf Request("ctrl") = 16 Then 'edit notes
 	Response.Redirect "reqconfirm.asp?ID=" & Request("ReqID")
 ElseIf Request("ctrl") = 17 Then'timsheet/mileage
 	Set rsTBL = Server.CreateObject("ADODB.RecordSet")
-	sqlTBL = "SELECT * FROM request_T WHERE NOT timestamp IS NULL"
+	sqlTBL = "SELECT * FROM request_T WHERE timestamp IS NOT NULL"
 	If Request("selIntr") > 0 Then
-		sqlTBL = sqlTBL & " AND IntrID = " & Request("selIntr")
+		sqlTBL = sqlTBL & " AND [IntrID] = " & Request("selIntr")
 	End If
 	If Request("txtFromd8") <> "" Then
 		If IsDate(Request("txtFromd8")) Then
-			sqlTBL = sqlTBL & " AND appdate >= '" & Request("txtFromd8") & "'"
+			sqlTBL = sqlTBL & " AND [appdate] >= '" & Request("txtFromd8") & "'"
 		End If
 	End If
 	If Request("txtTod8") <> "" Then
 		If IsDate(Request("txtTod8")) Then
-			sqlTBL = sqlTBL & " AND appdate <= '" & Request("txtTod8") & "'"
+			sqlTBL = sqlTBL & " AND [appdate] <= '" & Request("txtTod8") & "'"
 		End If
 	End If
 	rsTBL.Open sqlTBL, g_strCONN, 1, 3 
@@ -2332,7 +2332,7 @@ ElseIf Request("ctrl") = 17 Then'timsheet/mileage
 		y = Request("Hctr")
 		For ctr = 1 To y - 1
 			tmpID = Request("ID" & ctr)
-			tmpIndex = "Index= " & tmpID
+			tmpIndex = "[Index]= " & tmpID
 			rsTBL.MoveFirst
 			rsTBL.Find(tmpIndex)
 			If Not rsTBL.EOF Then

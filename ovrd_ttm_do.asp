@@ -36,7 +36,7 @@ If Not rsMain.EOF Then
 	
 	rsMain("Billinst") = Request("BillInst")
 	rsMain("PayIntr") = Request("PayIntr")
-	rsMain("LBconfirmToll") = Request("LBconfirmToll")
+	'rsMain("LBconfirmToll") = Request("LBconfirmToll")
 	tmpToll = Z_CZero(Request("Toll"))
 	If tmpToll = 0 Then tmpToll = Null
 	rsMain("Toll") = tmpToll

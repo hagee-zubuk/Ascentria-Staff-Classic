@@ -362,7 +362,7 @@ End If
 					<tr><td>Tolls &amp; Parking:</td>
 							<td colspan='2'>$<input type="text" maxlength="8" name="toll" id="toll" value='<%=tmpToll%>' style="width: 100px;" />
 								&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-								<input type='checkbox' name='LBconfirmToll' id='LBconfirmToll' value='1' <%=tmpChkLBconfirmToll%> /> Approve
+								<!-- input type='checkbox' name='LBconfirmToll' id='LBconfirmToll' value='1' <%=tmpChkLBconfirmToll%> /> Approve -->
 							</td></tr>
 								
 					<tr><td>&nbsp;</td>

@@ -8,7 +8,21 @@ If Request.Cookies("LBUSERTYPE") <> 1 Then
 	Session("MSG") = "Invalid account."
 	Response.Redirect "default.asp"
 End If
+Function Z_YMDDate(dtDate)
+DIM lngTmp, strDay, strTmp
+	If Not IsDate(dtDate) Then Exit Function
+	lngTmp = Z_CLng(DatePart("m", dtDate))
+	If lngTmp < 10 Then Z_YMDDate = "0"
+	Z_YMDDate = Z_YMDDate & lngTmp & "-"
+	lngTmp = Z_CLng(DatePart("d", dtDate))
+	If lngTmp < 10 Then Z_YMDDate = Z_YMDDate & "0"
+	Z_YMDDate = Z_YMDDate & lngTmp
+	strTmp = DatePart("yyyy", dtDate)
+	Z_YMDDate = strTmp & "-" & Z_YMDDate
+End Function
+
 Function Z_hoursAfter(rid, intrid, InstID, adate, timeto)
+	' Z_hoursAfter(rsReq("Index"), rsReq("IntrID"), rsReq("myInstID"), rsReq("appdate"), rsReq("apptimeto")) Or _
 	Z_hoursAfter = False
 	Set rsApp = Server.CreateObject("ADODB.RecordSet")
 	sqlApp = "SELECT [index] AS myid FROM request_T WHERE [index] <> " & rid & " AND intrID = " & intrID & " AND InstID = " & InstID & " AND " & _
@@ -19,6 +33,7 @@ Function Z_hoursAfter(rid, intrid, InstID, adate, timeto)
 	Set rsApp = Nothing
 End Function
 Function Z_hoursBefore(rid, intrid, InstID, adate, timefrom)
+	' Z_hoursBefore(rsReq("Index"), rsReq("IntrID"), rsReq("myInstID"), rsReq("appdate"), rsReq("apptimefrom")) Or _
 	Z_hoursBefore = False
 	Set rsApp = Server.CreateObject("ADODB.RecordSet")
 	sqlApp = "SELECT [index] AS myid FROM request_T WHERE [index] <> " & rid & " AND intrID = " & intrID & " AND InstID = " & InstID & " AND " & _
@@ -29,6 +44,7 @@ Function Z_hoursBefore(rid, intrid, InstID, adate, timefrom)
 	Set rsApp = Nothing
 End Function
 Function Z_hoursSame(rid, intrid, InstID, adate, timefrom)
+	' Z_hoursSame(rsReq("Index"), rsReq("IntrID"), rsReq("myInstID"), rsReq("appdate"), rsReq("apptimefrom")) Or _
 	Z_hoursSame = False
 	Set rsApp = Server.CreateObject("ADODB.RecordSet")
 	sqlApp = "SELECT [index] AS myid FROM request_T WHERE [index] <> " & rid & " AND intrID = " & intrID & " AND InstID = " & InstID & " AND " & _
@@ -39,6 +55,7 @@ Function Z_hoursSame(rid, intrid, InstID, adate, timefrom)
 	Set rsApp = Nothing
 End Function
 Function Z_hoursOverFrom(rid, intrid, InstID, adate, timefrom)
+	' Z_hoursOverFrom(rsReq("Index"), rsReq("IntrID"), rsReq("myInstID"), rsReq("appdate"), rsReq("apptimefrom")) Or _
 	Z_hoursOverFrom = False
 	Set rsApp = Server.CreateObject("ADODB.RecordSet")
 	sqlApp = "SELECT [index] AS myid FROM request_T WHERE [index] <> " & rid & " AND intrID = " & intrID & " AND InstID = " & InstID & " AND " & _
@@ -49,6 +66,7 @@ Function Z_hoursOverFrom(rid, intrid, InstID, adate, timefrom)
 	Set rsApp = Nothing
 End Function
 Function Z_hoursOverTo(rid, intrid, InstID, adate, timeto)
+	' Z_hoursOverTo(rsReq("Index"), rsReq("IntrID"), rsReq("myInstID"), rsReq("appdate"), rsReq("apptimeto")) Then 
 	Z_hoursOverTo = False
 	Set rsApp = Server.CreateObject("ADODB.RecordSet")
 	sqlApp = "SELECT [index] AS myid FROM request_T WHERE [index] <> " & rid & " AND intrID = " & intrID & " AND InstID = " & InstID & " AND " & _
@@ -115,25 +133,36 @@ End If
 x = 0
 If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 Then
 
-		sqlReq = "SELECT phoneappt, showintr, payintr, overmile, payhrs, overpayhrs, request_T.InstID AS myInstID, IntrID, LangID, InstRate, SentReq, Processed, Status, DeptID, request_T.[index]," & _
-			" clname, cfname, appDate, actTT, actMil, astarttime, aendtime, toll, LBconfirm, LbconfirmToll, apptimefrom, apptimeto " & _
-			"FROM request_T, institution_T, language_T, interpreter_T, dept_T " & _
-			"WHERE request_T.InstID = institution_T.[index] " & _
-			"AND LangId = language_T.[index] " & _
-			"AND IntrId = interpreter_T.[index] " & _
-			"AND request_T.DeptId = dept_T.[index] " & _
-			"AND showintr = 1 " & _
-			"AND status <> 2 AND status <> 3 " 
-		If Request("ctrlX") = 1 Then
-			If Request("radioAss") = 0 Then	
-				sqlReq = sqlReq & "AND lbconfirm = 0 "
+		sqlReq = "SELECT req.[index]" & _
+				", req.[appDate], req.[apptimefrom], req.[apptimeto], req.[astarttime], req.[aendtime]" & _
+				", req.[phoneappt], req.[showintr], req.[payintr], req.[overmile], req.[payhrs], req.[overpayhrs]" & _
+				", req.InstID AS myInstID, req.[IntrID], req.[LangID], req.[InstRate], req.[SentReq]" & _
+				", req.[Processed], req.[Status], req.[DeptID], req.[clname], req.[cfname]" & _
+				", req.[actTT], req.[actMil], req.[toll]" & _
+				", req.[LBconfirm], req.[LbconfirmToll] " & _
+				", ins.[Facility], lan.[language], dep.[dept]" & _
+				", CASE WHEN itr.[last name] IS NOT NULL THEN itr.[last name] " & _
+				"ELSE 'N/A' " & _
+				"END AS [last name] " & _
+				", CASE WHEN itr.[first name] IS NOT NULL THEN itr.[first name] " & _
+				"ELSE 'N/A' " & _
+				"END AS [first name] " & _
+				"FROM [request_T] AS req " & _
+				"INNER JOIN [institution_T] AS ins	ON req.[InstID]=ins.[index] " & _
+				"INNER JOIN [dept_T] AS dep			ON req.[DeptID]=dep.[index] " & _
+				"INNER JOIN [language_T] AS lan		ON req.[LangId]=lan.[index] " & _
+				"LEFT JOIN [interpreter_T] AS itr	ON req.[IntrId]=itr.[index] " & _
+				"WHERE req.[showintr] = 1 " 
+		If Request("ctrlX") = 1 Then 			' TIMESHEET'
+			If Request("radioAss") = 0 Then	' unapproved '
+				sqlReq = sqlReq & "AND req.[lbconfirm] = 0 "
 				radioAss = "checked"
 				radioUnass = ""
 				radioUnass2 = ""
 				radioall = ""
 				btnSave = ""
 			ElseIf Request("radioAss") = 1 Then	
-				sqlReq = sqlReq & "AND lbconfirm = 1 "
+				sqlReq = sqlReq & "AND req.[lbconfirm] = 1 "
 				radioAss = ""
 				radioUnass = "checked"
 				radioUnass2 = ""
@@ -146,28 +175,27 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 				radioappall = "disabled"
 				btnSave = "disabled"
 			End If
-		Else
-			sqlReq = sqlReq & "AND request_T.[instID] <> 479 "
-			If Request("radioAss") = 0 Then	
-				sqlReq = sqlReq & "AND LbconfirmToll = 0 "
+		Else 									' MILEAGE
+			sqlReq = sqlReq & "AND req.[instID] <> 479 "
+			If Request("radioAss") = 0 Then			' Unapproved
+				sqlReq = sqlReq & "AND req.[LbconfirmToll] = 0 "
 				radioAss = "checked"
 				radioUnass = ""
 				radioUnass2 = ""
 				btnSave = ""
-			ElseIf Request("radioAss") = 1 Then	
-				sqlReq = sqlReq & "AND LbconfirmToll = 1 "
+			ElseIf Request("radioAss") = 1 Then 	' Approved
+				sqlReq = sqlReq & "AND req.[LbconfirmToll] = 1 "
 				radioAss = ""
 				radioUnass = "checked"
 				radioUnass2 = ""
 				btnSave = "disabled"
-			Else
+			Else 									' ALL
 				radioAss = ""
 				radioUnass = ""
 				radioUnass2 = "checked"
 				btnSave = "disabled"
 			End If
 		End If
-	
 	'FIND
 	If Request("radioStat") = 0 Then
 		radioApp = "checked"
@@ -175,7 +203,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 		radioAll = ""
 		If Request("txtFromd8") <> "" Then
 			If IsDate(Request("txtFromd8")) Then
-				sqlReq = sqlReq & " AND appDate >= '" & Request("txtFromd8") & "' "
+				sqlReq = sqlReq & " AND req.[appDate] >= '" & Z_YMDDate(Request("txtFromd8")) & "' "
 				tmpFromd8 = Request("txtFromd8") 
 			Else
 				Session("MSG") = "ERROR: Invalid Appointment Date Range (From)."
@@ -184,7 +212,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 		End If
 		If Request("txtTod8") <> "" Then
 			If IsDate(Request("txtTod8")) Then
-				sqlReq = sqlReq & " AND appDate <= '" & Request("txtTod8") & "' "
+				sqlReq = sqlReq & " AND req.[appDate] <= '" & Z_YMDDate(Request("txtTod8")) & "' "
 				tmpTod8 = Request("txtTod8")
 			Else
 				Session("MSG") = "ERROR: Invalid Appointment Date Range (To)."
@@ -197,7 +225,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 		radioAll = ""
 		If Request("txtFromID") <> "" Then
 			If IsNumeric(Request("txtFromID")) Then
-				sqlReq = sqlReq & " AND request_T.[index] >= " & Request("txtFromID")
+				sqlReq = sqlReq & " AND req.[index] >= " & Request("txtFromID") & " "
 				tmpFromID = Request("txtFromID")
 			Else
 				Session("MSG") = "ERROR: Invalid Appointment ID Range (From)."
@@ -206,7 +234,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 		End If
 		If Request("txtToID") <> "" Then
 			If IsNumeric(Request("txtToID")) Then
-				sqlReq = sqlReq & " AND request_T.[index] <= " & Request("txtToID")
+				sqlReq = sqlReq & " AND req.[index] <= " & Request("txtToID") & " "
 				tmpToID = Request("txtToID")
 			Else
 				Session("MSG") = "ERROR: Invalid Appointment ID Range (To)."
@@ -219,115 +247,85 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 		radioAll = "checked"
 	End If
 	'FILTER
-	xInst = Cint(Request("selInst"))
+	xInst = Z_CLng(Request("selInst"))
 	If xInst <> -1 Then 
-		sqlReq = sqlReq & " AND "
-		sqlReq = sqlReq & "request_T.InstID = " & xInst
+		sqlReq = sqlReq & " AND req.[InstID] = " & xInst & " "
 	End If
-	xLang = Cint(Request("selLang"))
+	xLang = Z_CLng(Request("selLang"))
 	If xLang <> -1 Then 
-		sqlReq = sqlReq & " AND "
-		sqlReq = sqlReq & "LangID = " & xLang
+		sqlReq = sqlReq & " AND req.[LangID] = " & xLang & " "
 	End If
 	If Cint(Request.Cookies("LBUSERTYPE")) <> 4 Then
-			If Trim(Request("txtclilname")) <> "" Then
-				sqlReq = sqlReq & " AND Upper(Clname) LIKE '" & CleanMe2(Ucase(Trim(Request("txtclilname")))) & "%'"
-			End If
-			If Trim(Request("txtclifname")) <> "" Then
-				sqlReq = sqlReq & " AND Upper(Cfname) LIKE '" & CleanMe2(Ucase(Trim(Request("txtclifname")))) & "%'"
-			End If
-
+		If Trim(Request("txtclilname")) <> "" Then
+			sqlReq = sqlReq & " AND Upper(req.[Clname]) LIKE '" & CleanMe2(Ucase(Trim(Request("txtclilname")))) & "%' "
+		End If
+		If Trim(Request("txtclifname")) <> "" Then
+			sqlReq = sqlReq & " AND Upper(req.[Cfname]) LIKE '" & CleanMe2(Ucase(Trim(Request("txtclifname")))) & "%' "
+		End If
 	End If
 	xIntr = Cint(Request("selIntr"))
 	If xIntr <> -1 Then 
-		sqlReq = sqlReq & " AND "
-		sqlReq = sqlReq & "IntrID = " & xIntr
+		sqlReq = sqlReq & " AND req.[IntrID] = " & xIntr & " "
 	End If
 	xClass = Cint(Request("selClass"))
 	If xClass <> -1 Then 
-		sqlReq = sqlReq & " AND "
-		sqlReq = sqlReq & "Class = " & xClass
+		sqlReq = sqlReq & " AND dep.[Class] = " & xClass & " "
 	End If
 	'ADMIN ONLY
 	xAdmin = Z_CZero(Request("selAdmin"))
 	If xAdmin = 1 Then
-		sqlReq = sqlReq & " AND (Status = 1) AND Processed IS NULL"
+		sqlReq = sqlReq & " AND (req.[Status] = 1) AND req.[Processed] IS NULL "
 		meUnBilled = "selected"
 	ElseIf xAdmin = 2 Then
-		sqlReq = sqlReq & " AND (Status = 1 OR Status = 4) AND NOT Processed IS NULL"
+		sqlReq = sqlReq & " AND (req.[Status] = 1 OR req.[Status] = 4) AND NOT req.[Processed] IS NULL "
 		meBilled = "selected"
 	ElseIf xAdmin = 3 Then
-		sqlReq = sqlReq & " AND (Status = 2)"
+		sqlReq = sqlReq & " AND (req.[Status] = 2) "
 		meMisded = "selected"
 	ElseIf xAdmin = 4 Then
-		sqlReq = sqlReq & " AND (Status = 3)"
+		sqlReq = sqlReq & " AND (req.[Status] = 3) "
 		meCanceled = "selected"
 	ElseIf xAdmin = 5 Then
-		sqlReq = sqlReq & " AND (Status = 4)"
+		sqlReq = sqlReq & " AND (req.[Status] = 4) "
 		meCanceledBill = "selected"
 	ElseIf xAdmin = 6 Then
-		sqlReq = sqlReq & " AND (Status = 0)"
+		sqlReq = sqlReq & " AND (req.[Status] = 0) "
 		mePending = "selected"
 	Else
-		'sqlReq = sqlReq & " AND IsNull(Processed)"
+		sqlReq = sqlReq & "AND req.[status] NOT IN (2,3) "
 	End If
-	sqlReq = sqlReq & " ORDER BY [last name], [first name], appDate, appTimeFrom, appTimeto, Facility"
+	sqlReq = sqlReq & " ORDER BY itr.[last name], itr.[first name], req.[appDate], req.[appTimeFrom], req.[appTimeto], ins.[Facility]"
 'End If
 'GET REQUESTS
-'response.write sqlReq
+'Response.write "<code>" & vbCrLf & sqlReq & vbCrLf & "</code>"
 Set rsReq = Server.CreateObject("ADODB.RecordSet")
 rsReq.Open sqlReq, g_strCONN, 3, 1
 x = 1
 totFPHours = 0
 If Not rsReq.EOF Then
 	Do Until rsReq.EOF
-		b2b = false
-		If Z_hoursAfter(rsReq("Index"), rsReq("IntrID"), rsReq("myInstID"), rsReq("appdate"), rsReq("apptimeto")) Or _
-			Z_hoursBefore(rsReq("Index"), rsReq("IntrID"), rsReq("myInstID"), rsReq("appdate"), rsReq("apptimefrom")) Or _
-			Z_hoursSame(rsReq("Index"), rsReq("IntrID"), rsReq("myInstID"), rsReq("appdate"), rsReq("apptimefrom")) Or _
-			Z_hoursOverFrom(rsReq("Index"), rsReq("IntrID"), rsReq("myInstID"), rsReq("appdate"), rsReq("apptimefrom")) Or _
-			Z_hoursOverTo(rsReq("Index"), rsReq("IntrID"), rsReq("myInstID"), rsReq("appdate"), rsReq("apptimeto")) Then b2b = true
 		kulay = ""
 		If Not Z_IsOdd(x) Then kulay = "#FBEEB7"
 		If rsReq("phoneappt") Then kulay = "#99ff99" 'Phone Call Appt
-		If b2b Then kulay = "#ff9999"
+		If Z_hoursAfter(rsReq("Index"), rsReq("IntrID"), rsReq("myInstID"), rsReq("appdate"), rsReq("apptimeto")) Or _
+				Z_hoursBefore(rsReq("Index"), rsReq("IntrID"), rsReq("myInstID"), rsReq("appdate"), rsReq("apptimefrom")) Or _
+				Z_hoursSame(rsReq("Index"), rsReq("IntrID"), rsReq("myInstID"), rsReq("appdate"), rsReq("apptimefrom")) Or _
+				Z_hoursOverFrom(rsReq("Index"), rsReq("IntrID"), rsReq("myInstID"), rsReq("appdate"), rsReq("apptimefrom")) Or _
+				Z_hoursOverTo(rsReq("Index"), rsReq("IntrID"), rsReq("myInstID"), rsReq("appdate"), rsReq("apptimeto")) Then 
+			b2b = true
+			kulay = "#ff9999"
+		Else
+			b2b = false
+		End If
 		'GET INSTITUTION
-		Set rsInst = Server.CreateObject("ADODB.RecordSet")
-		sqlInst = "SELECT Facility FROM institution_T WHERE [index] = " & rsReq("myInstID")
-		rsInst.Open sqlInst, g_strCONN, 3, 1
-		If Not rsInst.EOF Then
-			tmpIname = rsInst("Facility")  
-			'If rsInst("Department") <> "" Then tmpIname = tmpIname & " <br> " & rsInst("Department")
-		Else
-			tmpIname = "N/A"
-		End If
-		rsInst.Close
-		Set rsInst = Nothing 
+		tmpIname = rsReq("Facility")
+		myDept = " - " & rsReq("dept") ' GetMyDept(rsReq("DeptID"))
 		'GET INTERPRETER INFO
-		Set rsIntr = Server.CreateObject("ADODB.RecordSet")
-		sqlIntr = "SELECT [last name], [first name] FROM interpreter_T WHERE [index] = " & rsReq("IntrID")
-		rsIntr.Open sqlIntr, g_strCONN, 3, 1
-		If Not rsIntr.EOF Then
-			tmpInName = rsIntr("last name") & ", " & rsIntr("first name")
-		Else
-			tmpInName = "N/A"
-		End If
-		rsIntr.Close
-		Set rsIntr = Nothing
+		tmpInName = rsReq("last name") & ", " & rsReq("first name")
 		'GET LANGUAGE
-		Set rsLang = Server.CreateObject("ADODB.RecordSet")
-		sqlLang  = "SELECT [language] FROM language_T WHERE [index] = " & rsReq("LangID")
-		rsLang.Open sqlLang , g_strCONN, 3, 1
-		If Not rsLang.EOF Then
-			tmpSalita = rsLang("language") 
-		Else
-			tmpSalita = "N/A"
-		End If
-		rsLang.Close
-		Set rsLang = Nothing 
-	
+		tmpSalita = rsReq("Language")
 		Stat = MyStatus(rsReq("Status") )
-		myDept =  GetMyDept(rsReq("DeptID"))
+		
 		TT = Z_FormatNumber(rsReq("actTT"), 2)
 		If rsReq("overpayhrs") Then 
 			BlnOver = "checked"
@@ -348,91 +346,102 @@ If Not rsReq.EOF Then
 			tmpPayHrs = MakeTime(Z_CZero(minTime))
 		End If
 		FPHrs = Z_Czero(PHrs) + Z_Czero(TT)
-		BlnOver2 = ""
-		If rsReq("overmile") Then BlnOver2 = "checked"
 		tmpAMT = Z_FormatNumber(rsReq("actMil"), 2)
-		LBcon = ""
-		LBconx = ""
-		LBconxx = ""
-		LBconxxx = ""
+
+		If rsReq("overmile") Then
+			BlnOver2 = "checked"
+		Else
+			BlnOver2 = ""
+		End If
 		If rsReq("LBconfirm") = True Then 
 			LBcon = "Checked disabled"
 			LBconx = "readonly"
 			LBconxx = "disabled"
 			LBconxxx = "readonly"
+		Else
+			LBcon = ""
+			LBconx = ""
+			LBconxx = ""
+			LBconxxx = ""
 		End If
-		LBcon2 = ""
-		LBconx2 = ""
-		LBconxx2 = ""
 		If rsReq("LBconfirmToll") = True Then 
-			LBcon2 = "Checked disabled"
+			LBcon2 = "checked disabled"
 			LBconx2 = "readonly"
 			LBconxx2 = "disabled"
+		Else
+			LBcon2 = ""
+			LBconx2 = ""
+			LBconxx2 = ""
 		End If
 		showintr = ""
 		showintr2 = ""
 		If rsReq("showintr") Then 
-			showintr = "Checked"
+			showintr = "checked"
 			showintr2 = "X"
 		End If
 		payintr = ""
 		if rsReq("payintr") Then payintr = "Checked"
-			strtbl = strtbl & "<tr bgcolor='" & kulay & "'>" & vbCrLf & _ 
+		strtbl = strtbl & "<tr bgcolor='" & kulay & "'>" & vbCrLf & _ 
 				"<td class='tblgrn2' width='10px'>" & Stat & "</td>" & vbCrLf & _
 				"<td class='tblgrn2' ><input type='hidden' name='ID" & x & "' value='" & rsReq("Index") & "'><a class='link2' href='reqconfirm.asp?ID=" & rsReq("Index") & "'><b>" & rsReq("Index") & "</b></a></td>" & vbCrLf & _
-				"<td class='tblgrn2' ><nobr>" & tmpIname & myDept & "</td>" & vbCrLf & _
+				"<td class='tblgrn2' ><nobr>" & tmpIname & myDept
+		If (b2b) Then strtbl = strtbl & " <b>(b2b)</b>"
+		strtbl = strtbl & "</td>" & vbCrLf & _
 				"<td class='tblgrn2' >" & tmpSalita & "</td>" & vbCrLf & _
 				"<td class='tblgrn2' >" & rsReq("clname") & ", " & rsReq("cfname") & "</td>" & vbCrLf & _
 				"<td class='tblgrn2' >" & tmpInName & "</td>" & vbCrLf & _
 				"<td class='tblgrn2' >" & rsReq("appDate") & "</td>" & vbCrLf & _
 				"<td class='tblgrn2' >" & Z_FormatTime(rsReq("apptimefrom")) & " - " & Z_FormatTime(rsReq("apptimeto")) & "</td>" & vbCrLf & _
-				"<td class='tblgrn2' ><input class='main2' name='txtstime" & x & "' maxlength='5' size='7' " & LBconx & " value='" & Z_FormatTime(rsReq("astarttime")) & "' onKeyUp=""javascript:return maskMe(this.value,this,'2,6',':');"" onBlur=""javascript:return maskMe(this.value,this,'2,6',':');""></td>" & vbCrLf & _
-				"<td class='tblgrn2' ><input class='main2' name='txtetime" & x & "' maxlength='5' size='7' " & LBconx & " value='" & Z_FormatTime(rsReq("aendtime")) & "' onKeyUp=""javascript:return maskMe(this.value,this,'2,6',':');"" onBlur=""javascript:return maskMe(this.value,this,'2,6',':');""></td>" & vbCrLf 
-				If Request("ctrlX") = 1 Then
-					kulay2 = "#080F0D"
-					If Z_CZero(Phrs) > 6 Then kulay2 = "#FF0000"
-					strtbl = strtbl & "<td class='tblgrn2' >" & tmpPayHrs & "</td><td class='tblgrn2' ><nobr><input class='main2' name='txtTT" & x & "' maxlength='6' size='7' " & LBconxxx & " value='" & TT & "'></td>" & vbCrLf & _
-						"<td class='tblgrn2' ><nobr><input class='main2' name='txtPhrs" & x & "' maxlength='6' size='7' " & LBconx & " style=""color:" & kulay2 & ";"" value='" & PHrs & "'>" & vbCrLf
-					If LBconxx = "" Then
-						strtbl = strtbl & "<input type='checkbox' name='chkOverPhrs" & x & "' value='1' " & LBconxx & " " & BlnOver & " ></td>" & vbCrLf
-					Else
-						strtbl = strtbl & "<input type='checkbox' value='1' " & LBconxx & " " & BlnOver & " ><input type='hidden' name='chkOverPhrs" & x & "' value='1' " & BlnOver & "></td>" & vbCrLf
-					End If
-					strtbl = strtbl & "<td class='tblgrn2' >" & FPHrs & "</td>" & vbCrLf & _
-						"<td class='tblgrn2' ><input type='checkbox' ID='chkshow" & x & "' name='chkshow" & x & "' value='1' " & showintr & "></td>" & vbCrLf
-					if PHrs > 0 Then
-						strtbl = strtbl & "<td class='tblgrn2' ><input type='checkbox' ID='chkTS" & x & "' name='chkTS" & x & "' value='1' " & LBcon & "></td>" & vbCrLf
-					Else
-						strtbl = strtbl & "<td class='tblgrn2' ><input type='checkbox' ID='chkTS" & x & "' name='chkTS" & x & "' value='1' disabled ></td>" & vbCrLf
-					End If
-					csvHEAD = "ID,Institution,Department,Language,Client Last Name, Client First Name, Interpreter,Date," & _
-						"Actual Time (from), Actual Time (to), Total Time, Travel Time, Payable Hours, Final Payable Hours, Show to Interpreter"
-					csvTBL = csvTBL & """" & rsReq("Index") & """,""" & tmpIname & """,""" & myDept & """,""" & tmpSalita & """,""" & rsReq("clname") & """,""" & rsReq("cfname") & _
-						""",""" & tmpInName & """,""" & rsReq("appDate") & """,""" & Z_FormatTime(rsReq("astarttime")) & """,""" & Z_FormatTime(rsReq("aendtime")) & """,""" & Z_FormatNumber(tmpPayHrs, 2) & """,""" & Z_FormatNumber(TT, 2) & _
-						""",""" & Z_FormatNumber(PHrs, 2) & """,""" & Z_FormatNumber(FPHrs, 2) & """,""" & showintr2 & """" & vbCrLf
-				ElseIf Request("ctrlX") = 2 Then
-					strtbl = strtbl & "<td class='tblgrn2' ><nobr><input class='main2' name='txtmile" & x & "' maxlength='6' size='7' " & LBconx2 & " value='" & tmpAMT & "'><input type='checkbox' name='chkOverMile" & x & "' value='1' " & LBconxx2 & " " & BlnOver2 & " ></td>" & vbCrLf & _
-					"<td class='tblgrn2' ><nobr>$<input class='main2' name='txtTol" & x & "' maxlength='5' size='7' " & LBconx2 & " value='" & Z_FormatNumber(rsReq("toll"), 2) & "'></td>" & vbCrLf & _
-					"<td class='tblgrn2' ><input type='checkbox' ID='chkM" & x & "' name='chkM" & x & "' value='1' " & LBcon2 & "></td></tr>" & vbCrLf
-					csvHEAD = "ID,Institution,Department,Language,Client Last Name, Client First Name, Interpreter,Date," & _
-						"Actual Time (from), Actual Time (to),Mileage,Tolls and Parking"
-					csvTBL = csvTBL & """" & rsReq("Index") & """,""" & tmpIname & """,""" & myDept & """,""" & tmpSalita & """,""" & rsReq("clname") & """,""" & rsReq("cfname") & _
-						""",""" & tmpInName & """,""" & rsReq("appDate") & """,""" & Z_FormatTime(rsReq("astarttime")) & """,""" & Z_FormatTime(rsReq("aendtime")) & """,""" & Z_FormatNumber(tmpAMT, 2) & """,""" & Z_FormatNumber(rsReq("toll"), 2) & """" & vbCrLf
-				End If
-				RepCSV =  "myHours.csv"
-				if Request("ctrlX") = 2 Then RepCSV =  "myMileage.csv"
-				'CONVERT TO CSV
-				Set fso = CreateObject("Scripting.FileSystemObject")
-				Set Prt = fso.CreateTextFile(RepPath &  RepCSV, True)
-				Prt.WriteLine "LANGUAGE BANK - REPORT"
-				Prt.WriteLine csvHEAD
-				Prt.WriteLine csvTBL
-				Prt.Close	
-				Set Prt = Nothing
-				fso.CopyFile RepPath & RepCSV, BackupStr
-				Set fso = Nothing
-				tmpstring = "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV)
-			strtbl = strtbl & "</tr>" & vbCrLf
+				"<td class='tblgrn2' valign=""middle""><input class='main2' name='txtstime" & x & "' maxlength='5' size='7' " & LBconx & " value='" & Z_FormatTime(rsReq("astarttime")) & "' onKeyUp=""javascript:return maskMe(this.value,this,'2,6',':');"" onBlur=""javascript:return maskMe(this.value,this,'2,6',':');""></td>" & vbCrLf & _
+				"<td class='tblgrn2' valign=""middle""><input class='main2' name='txtetime" & x & "' maxlength='5' size='7' " & LBconx & " value='" & Z_FormatTime(rsReq("aendtime")) & "' onKeyUp=""javascript:return maskMe(this.value,this,'2,6',':');"" onBlur=""javascript:return maskMe(this.value,this,'2,6',':');""></td>" & vbCrLf 
+				' ENDS AT THE "Actual End Time" COLUMN
+		If Request("ctrlX") = 1 Then
+			kulay2 = "#080F0D"
+			If Z_CZero(Phrs) > 6 Then kulay2 = "#FF0000"
+			strtbl = strtbl & "<td class='tblgrn2' >" & tmpPayHrs & "</td><td class='tblgrn2' ><nobr><input class='main2' name='txtTT" & x & "' maxlength='6' size='7' " & LBconxxx & " value='" & TT & "'></td>" & vbCrLf & _
+				"<td class='tblgrn2' ><nobr><input class='main2' name='txtPhrs" & x & "' maxlength='6' size='7' " & LBconx & " style=""color:" & kulay2 & ";"" value='" & PHrs & "'>" & vbCrLf
+			If LBconxx = "" Then
+				strtbl = strtbl & "<input type='checkbox' name='chkOverPhrs" & x & "' value='1' " & LBconxx & " " & BlnOver & " ></td>" & vbCrLf
+			Else
+				strtbl = strtbl & "<input type='checkbox' value='1' " & LBconxx & " " & BlnOver & " ><input type='hidden' name='chkOverPhrs" & x & "' value='1' " & BlnOver & "></td>" & vbCrLf
+			End If
+			strtbl = strtbl & "<td class='tblgrn2' >" & FPHrs & "</td>" & vbCrLf & _
+				"<td class='tblgrn2' ><input type='checkbox' ID='chkshow" & x & "' name='chkshow" & x & "' value='1' " & showintr & "></td>" & vbCrLf
+			if PHrs > 0 Then
+				strtbl = strtbl & "<td class='tblgrn2' ><input type='checkbox' ID='chkTS" & x & "' name='chkTS" & x & "' value='1' " & LBcon & "></td>" & vbCrLf
+			Else
+				strtbl = strtbl & "<td class='tblgrn2' ><input type='checkbox' ID='chkTS" & x & "' name='chkTS" & x & "' value='1' disabled ></td>" & vbCrLf
+			End If
+			csvHEAD = "ID,Institution,Department,Language,Client Last Name, Client First Name, Interpreter,Date," & _
+				"Actual Time (from), Actual Time (to), Total Time, Travel Time, Payable Hours, Final Payable Hours, Show to Interpreter"
+			csvTBL = csvTBL & """" & rsReq("Index") & """,""" & tmpIname & """,""" & myDept & """,""" & tmpSalita & """,""" & rsReq("clname") & """,""" & rsReq("cfname") & _
+				""",""" & tmpInName & """,""" & rsReq("appDate") & """,""" & Z_FormatTime(rsReq("astarttime")) & """,""" & Z_FormatTime(rsReq("aendtime")) & """,""" & Z_FormatNumber(tmpPayHrs, 2) & """,""" & Z_FormatNumber(TT, 2) & _
+				""",""" & Z_FormatNumber(PHrs, 2) & """,""" & Z_FormatNumber(FPHrs, 2) & """,""" & showintr2 & """" & vbCrLf
+		ElseIf Request("ctrlX") = 2 Then
+			strtbl = strtbl & "<td class='tblgrn2' ><input class='main2' name='txtmile" & x & "' maxlength='6' size='7' " & LBconx2 & " value='" & tmpAMT & "' />"
+			strtbl = strtbl & "<input type='checkbox' name='chkOverMile" & x & "' value='1' " & LBconxx2 & " " & BlnOver2 & " /></td>" & vbCrLf 
+			strtbl = strtbl & "<td class='tblgrn2' ><nobr>$<input class='main2' name='txtTol" & x & "' maxlength='5' size='7' " & LBconx2 & " value='" & Z_FormatNumber(rsReq("toll"), 2) & "' /></td>" & vbCrLf
+			' Approve Mileage checkbox
+			strtbl = strtbl & "<td class='tblgrn2' ><input type='checkbox' ID='chkM" & x & "' name='chkM" & x & "' value='1' " & LBcon2 & "></td></tr>" & vbCrLf
+			csvHEAD = "ID,Institution,Department,Language,Client Last Name, Client First Name, Interpreter,Date," & _
+				"Actual Time (from), Actual Time (to),Mileage,Tolls and Parking"
+			csvTBL = csvTBL & """" & rsReq("Index") & """,""" & tmpIname & """,""" & myDept & """,""" & tmpSalita & """,""" & rsReq("clname") & """,""" & rsReq("cfname") & _
+				""",""" & tmpInName & """,""" & rsReq("appDate") & """,""" & Z_FormatTime(rsReq("astarttime")) & """,""" & Z_FormatTime(rsReq("aendtime")) & """,""" & Z_FormatNumber(tmpAMT, 2) & """,""" & Z_FormatNumber(rsReq("toll"), 2) & """" & vbCrLf
+		End If
+		RepCSV =  "myHours.csv"
+		if Request("ctrlX") = 2 Then RepCSV =  "myMileage.csv"
+		'CONVERT TO CSV
+		Set fso = CreateObject("Scripting.FileSystemObject")
+		Set Prt = fso.CreateTextFile(RepPath &  RepCSV, True)
+		Prt.WriteLine "LANGUAGE BANK - REPORT"
+		Prt.WriteLine csvHEAD
+		Prt.WriteLine csvTBL
+		Prt.Close	
+		Set Prt = Nothing
+		fso.CopyFile RepPath & RepCSV, BackupStr
+		Set fso = Nothing
+		tmpstring = "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV)
+		strtbl = strtbl & "</tr>" & vbCrLf
 		x = x + 1
 		totFPHours = totFPHours + FPHrs
 		rsReq.MoveNext
@@ -517,6 +526,9 @@ End Select
 		<link href="CalendarControl.css" type="text/css" rel="stylesheet">
 		<script src="CalendarControl.js" language="javascript"></script>
 		<link href='style.css' type='text/css' rel='stylesheet'>
+<style>
+td.tblgrn2 { font-family: Trebuchet MS, Trebuchet, Tahoma, Verdana, Arial, Helvetica, Sans-Serif; text-align: center; vertical-align: middle; }
+</style>		
 		<script language='JavaScript'>
 		<!--
 		function SaveMe()
@@ -704,7 +716,7 @@ End Select
 								<% End If %>
 								<tr>
 									<td colspan='11' align='left'>
-										<div class='container' style='height: 500px; width:80%; position: relative;'>
+										<div class='container' style='height: 500px; width:100%; position: relative;'>
 											<table class="reqtble" width='100%'>	
 												<thead>
 													<tr class="noscroll">	
@@ -741,6 +753,7 @@ End Select
 													<%=strtbl%>
 												</tbody>
 											</table>
+											<code><%= sqlReq %></code>
 										</div>	
 									</td>
 								</tr>
