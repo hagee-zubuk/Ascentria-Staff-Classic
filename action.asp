@@ -1295,20 +1295,21 @@ ElseIf Request("ctrl") = 10 Then
 			Else
 				rsBill("aendtime") = empty
 			End If
-			rsBill("TT_Inst") = Z_CZero(tmpEntry(5))
-			rsBill("TT_Intr") = Z_CZero(tmpEntry(6))
-			rsBill("M_Inst") = Z_CZero(tmpEntry(7))
-			rsBill("M_Intr") = Z_CZero(tmpEntry(8))
-			
+
 			rsBill("emerFEE") = False
 			rsBill("Emergency") = False
 			If Request("chkEmer") <> "" Then rsBill("Emergency") = True 
 			If Request("chkEmerFee") <> "" Then rsBill("emerFEE") = True
 			
+			rsBill("TT_Inst") = Z_CZero(tmpEntry(5))
+			rsBill("TT_Intr") = Z_CZero(tmpEntry(6))
+			rsBill("M_Inst") = Z_CZero(tmpEntry(7))
+			rsBill("M_Intr") = Z_CZero(tmpEntry(8))
+			
 			'save actual TT and Mil
 			rsBill("actTT") = Z_CZero(Request("txtDecTT"))
 			rsBill("actMil") = Z_CZero(Request("txtDecMile"))
-			'
+			
 			rsBill("overTTIntr") = false
 			If tmpEntry(17) <> "" Then rsBill("overTTIntr") = True
 			rsBill("overTTInst") = false

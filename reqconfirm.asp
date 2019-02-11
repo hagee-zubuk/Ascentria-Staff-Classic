@@ -697,11 +697,12 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 		 	}
 			textbox.value = str
 		}
-		function enablebutton() {
-			document.frmConfirm.btnSaveTTM.disabled = false;
-			document.frmConfirm.btnSaveTTM2.disabled = false;
+		function enablebutton(statz) {
+			var vdis = (statz != true);
+			document.frmConfirm.btnSaveTTM.disabled = vdis;
+			document.frmConfirm.btnSaveTTM2.disabled = vdis;
 		}
-		<% If Not HideFin Then %>
+<% If Request.Cookies("UID") = 8 Or Request.Cookies("UID") = 2 And HideFin = False Then %>
 		function financeonly() {
 			if (document.frmConfirm.radioFin[0].checked == true) {
 				document.frmConfirm.btnsave.disabled = true;
@@ -859,7 +860,7 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 			<script src="https://maps.googleapis.com/maps/api/js?key=<%=googlemapskey%>" type="text/javascript"></script>
 		<% End If %>
 		<% If tmpIntr > 0 Then %>
-			<body onload='PopMe(<%=Request("PID")%>); financeonly();initMap();enablebutton();'>
+			<body onload='PopMe(<%=Request("PID")%>); financeonly();initMap();enablebutton(true);'>
 		<% Else %>
 			<body onload='PopMe(<%=Request("PID")%>); financeonly();'>
 		<% End If %>
@@ -913,10 +914,10 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 								<% Else %>
 									<tr>
 										<td colspan='10' align='center' height='30px' valign='bottom'>
-											<input class='btn' type='button' id='btnSaveTTM' name='btnSaveTTM' disabled='disabled' style='width: 253px;' <%=TTM%> value='Overwrite Travel Time and Mileage' onmouseover="this.className='hovbtn'" onmouseout="this.className='btn'" onclick="OvrdTTM('<%=Request("ID")%>');">
-											<script>
-												document.frmConfirm.btnSaveTTM.disabled = true;
-											</script>
+											<input class='btn' type='button' id='btnSaveTTM' name='btnSaveTTM' style='width: 253px;' <%=TTM%>
+												value='Overwrite Travel Time and Mileage'
+												onmouseover="this.className='hovbtn'"
+												onmouseout="this.className='btn'" onclick="OvrdTTM('<%=Request("ID")%>');" />
 											<input class='btn' type='button' style='width: 253px;' <%=assigned%> value='Email' onmouseover="this.className='hovbtn'" onmouseout="this.className='btn'" onclick="AssignMe2('<%=Request("ID")%>');">
 										</td>
 									</tr>
@@ -1382,9 +1383,6 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 														onmouseout="this.className='btnLnk'"
 														onclick="OvrdTTM('<%=Request("ID")%>');"
 														<%=TTM%> />
-												<script>
-													document.frmConfirm.btnSaveTTM2.disabled = true;
-												</script>
 <% End If %>
 											</td>
 											<td rowspan='3' valign='top'>

@@ -637,9 +637,10 @@ Set rsMiss = Nothing
 						} 
 					}
 				}
-				document.frmConfirm.txtBilTInst.value = newdollaramount;
-				var ans = window.confirm("Institution will be charged for $" + newdollaramount + " for travel time");
+				
+				var ans = window.confirm("Institution should be charged for $" + newdollaramount + " for travel time\nClick Cancel to edit.");
 				if (!ans) {
+					// document.frmConfirm.txtBilTInst.value = newdollaramount;
 					return;
 				}
 				

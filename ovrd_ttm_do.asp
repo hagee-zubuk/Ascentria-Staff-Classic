@@ -22,14 +22,14 @@ If Not rsMain.EOF Then
 	rsMain("RealTT")	= Z_CZero(Request("RealTT"))
 	rsMain("RealM")		= Z_CZero(Request("RealM"))
 
-	rsMain("M_Inst")	= Z_CZero(Request("M_Inst"))
-	rsMain("TT_Inst")	= Z_CZero(Request("TT_Inst"))
+	'rsMain("M_Inst")	= Z_CZero(Request("M_Inst"))
+	'rsMain("TT_Inst")	= Z_CZero(Request("TT_Inst"))
 	' interpreter'
 	rsMain("actTT")		= Z_CZero(Request("actTT"))
 	rsMain("actMil")	= Z_CZero(Request("actMil"))
 	
-	rsMain("M_Intr") 	= Z_CZero(Request("M_Intr"))
-	rsMain("TT_Intr")	= Z_CZero(Request("TT_Intr"))
+	'rsMain("M_Intr") 	= Z_CZero(Request("M_Intr"))
+	'rsMain("TT_Intr")	= Z_CZero(Request("TT_Intr"))
 	
 	rsMain("InstActTT") = Z_CZero(Request("InstActTT"))
 	rsMain("InstActMil") = Z_CZero(Request("InstActMil"))
