@@ -176,6 +176,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 				btnSave = "disabled"
 			End If
 		Else 									' MILEAGE
+			AMchkbox = ""
 			sqlReq = sqlReq & "AND req.[instID] <> 479 "
 			If Request("radioAss") = 0 Then			' Unapproved
 				sqlReq = sqlReq & "AND req.[LbconfirmToll] = 0 "
@@ -188,12 +189,16 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 				radioAss = ""
 				radioUnass = "checked"
 				radioUnass2 = ""
-				btnSave = "disabled"
+				btnSave = "disabled style=""display: none;"""
+				AMchkbox = " disabled "
+				mybtn = " - - - "
 			Else 									' ALL
 				radioAss = ""
 				radioUnass = ""
 				radioUnass2 = "checked"
-				btnSave = "disabled"
+				btnSave = "disabled style=""display: none;"""
+				AMchkbox = " disabled "
+				mybtn = " - - - "
 			End If
 		End If
 	'FIND
@@ -419,10 +424,38 @@ If Not rsReq.EOF Then
 				""",""" & Z_FormatNumber(PHrs, 2) & """,""" & Z_FormatNumber(FPHrs, 2) & """,""" & showintr2 & """" & vbCrLf
 		ElseIf Request("ctrlX") = 2 Then
 			strtbl = strtbl & "<td class='tblgrn2' ><input class='main2' name='txtmile" & x & "' maxlength='6' size='7' " & LBconx2 & " value='" & tmpAMT & "' />"
-			strtbl = strtbl & "<input type='checkbox' name='chkOverMile" & x & "' value='1' " & LBconxx2 & " " & BlnOver2 & " /></td>" & vbCrLf 
-			strtbl = strtbl & "<td class='tblgrn2' ><nobr>$<input class='main2' name='txtTol" & x & "' maxlength='5' size='7' " & LBconx2 & " value='" & Z_FormatNumber(rsReq("toll"), 2) & "' /></td>" & vbCrLf
+			If AMchkbox = "" Then
+				If rsReq("LBconfirmToll") <> True Then 
+					strtbl = strtbl & "<input type=""checkbox"" name=""chkOverMile" & x & """ value=""1"" " & BlnOver2 & " />" & vbCrLf 
+				End If
+			Else
+				'If rsReq
+				'strtbl = strtbl & "<input type=""hidden"" name=""chkOverMile" & x & """ value='1' " & LBconxx2 & " " & />" & vbCrLf 
+				If BlnOver2 = "checked" Then
+					strtbl = strtbl & "<img src=""images/ok.gif"" title=""YES"" alt=""X"" />" & _
+							"<input type=""hidden"" ID=""chkOverMile" & x & """ name=""chkOverMile" & x & """ value=""1"" />"
+				Else
+					strtbl = strtbl & "<img src=""images/nok.gif"" title=""NO"" alt=""O"" />" & _
+							"<input type=""hidden"" ID=""chkOverMile" & x & """ name=""chkOverMile" & x & """ value="""" />"
+				End If
+			End If
+			strtbl = strtbl & "</td><td class='tblgrn2' ><nobr>$<input class='main2' name='txtTol" & x & "' maxlength='5' size='7' " & _
+					LBconx2 & " value='" & Z_FormatNumber(rsReq("toll"), 2) & "' /></td>" & vbCrLf
 			' Approve Mileage checkbox
-			strtbl = strtbl & "<td class='tblgrn2' ><input type='checkbox' ID='chkM" & x & "' name='chkM" & x & "' value='1' " & LBcon2 & "></td></tr>" & vbCrLf
+			If AMchkbox = "" Then
+				strtbl = strtbl & "<td class='tblgrn2' ><input type='checkbox' ID='chkM" & x & _
+						"' name='chkM" & x & "' value='1' " & LBcon2  & "/></td></tr>" & vbCrLf
+			Else
+				strtbl = strtbl & "<td class='tblgrn2' >"
+				If rsReq("LBconfirmToll") = True Then 
+					strtbl = strtbl & "<img src=""images/ok.gif"" title=""YES"" alt=""X"" />" & _
+							"<input type=""hidden"" ID=""chkM" & x & """ name=""chkM" & x & """ value=""1"" />"
+				Else
+					strtbl = strtbl & "<img src=""images/nok.gif"" title=""NO"" alt=""O"" />" & _
+							"<input type=""hidden"" ID=""chkM" & x & """ name=""chkM" & x & """ value="""" />"
+				End If
+				strtbl = strtbl & "</td></tr>" & vbCrLf
+			End If
 			csvHEAD = "ID,Institution,Department,Language,Client Last Name, Client First Name, Interpreter,Date," & _
 				"Actual Time (from), Actual Time (to),Mileage,Tolls and Parking"
 			csvTBL = csvTBL & """" & rsReq("Index") & """,""" & tmpIname & """,""" & myDept & """,""" & tmpSalita & """,""" & rsReq("clname") & """,""" & rsReq("cfname") & _
@@ -689,7 +722,11 @@ td.tblgrn2 { font-family: Trebuchet MS, Trebuchet, Tahoma, Verdana, Arial, Helve
 															<input type='hidden' name='ctrlX' value='<%=Request("ctrlX")%>'>
 															<input type='hidden' name='Hctr' value='<%=x%>'>
 															<input class='btntbl' type='button' value='Export Table' style='height: 25px; width: 100px;' onmouseover="this.className='hovbtntbl'" onmouseout="this.className='btntbl'" onclick="document.location='<%=tmpstring%>';">
-															<input class='btntbl' type='button' value='<%=mybtn%>' style='height: 25px; width: 100px;' onmouseover="this.className='hovbtntbl'" onmouseout="this.className='btntbl'" onclick='SaveMe();' <%=btnSave%>>
+<% ' If Len(mybtn) > 7 Then %>
+															<input class="btntbl" type="button" value="<%=mybtn%>" style="height: 25px; width: 100px;"
+																	onmouseover="this.className='hovbtntbl'" onmouseout="this.className='btntbl'"
+																	onclick="SaveMe();" <%=btnSave%> />
+<% ' End IF %>															
 														</td>
 													<% End If %>
 												<% Else %>
@@ -753,7 +790,7 @@ td.tblgrn2 { font-family: Trebuchet MS, Trebuchet, Tahoma, Verdana, Arial, Helve
 													<%=strtbl%>
 												</tbody>
 											</table>
-											<code><%= sqlReq %></code>
+											<!-- code><%= sqlReq %></code -->
 										</div>	
 									</td>
 								</tr>
