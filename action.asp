@@ -5,9 +5,12 @@
 <!-- #include file="_Security.asp" -->
 <!-- #include file="_UtilsReport.asp" -->
 <!-- #include file="_UtilsMedicaid.asp" -->
+<!-- #include file="_googleDMA.asp" -->
 <%
-server.scripttimeout = 360000
+
+Server.ScriptTimeout = 360000
 Dim ArrSun(), ArrMon(), ArrTue(), ArrWed(), ArrThu(), ArrFri(), ArrSat()
+
 Function CleanMeSingleQuote(xxx)
 	' clean string
 	CleanMeSingleQuote = xxx
@@ -208,11 +211,15 @@ ElseIf Request("ctrl") = 3 Then
 		y = Request("Hctr")
 		tmpCCAddr = Z_FixNull(rsTBL("cc_addr"))
 		If (Not Z_Blank(tmpCCAddr)) Then
-			If  (InStr(tmpCCAddr, "@")<2) Then
-				' it's a fax!
-				tmpCCAddr = tmpCCAddr & "@emailfaxservice.com"
+			If Len(tmpCCAddr) > 5 Then
+				If  (InStr(tmpCCAddr, "@")<2) Then
+					' it's a fax!
+					tmpCCAddr = tmpCCAddr & "@emailfaxservice.com"
+				End If
+				tmpCCAddr = tmpCCAddr & ";"
+			Else
+				tmpCCAddr = ""
 			End If
-			tmpCCAddr = tmpCCAddr & ";"
 		End If
 
 		For ctr = 1 To y - 1
@@ -1485,11 +1492,12 @@ ElseIf Request("ctrl") = 10 Then
 	End If
 ElseIf Request("ctrl") = 11 Then 'SAVE ASSIGNED INTERPRETER
 	'STORE INTERPRETER ENTRIES ON COOKIE FOR EDITING AND SAVING ENTRIES
-	Response.Cookies("LBINTR") = Z_DoEncrypt(Request("txtIntrLname") & "|" & Request("txtIntrFname") & "|" & Request("txtIntrEmail")	& _
-	 	"|" & Request("txtIntrP1")	& "|" & Request("txtIntrFax")	& "|" & Request("txtIntrP2")	& "|" & Request("txtIntrAddr") & "|" & _
-	 	Request("txtIntrCity")	& "|" & Request("txtIntrState") & "|" & Request("txtIntrCZip") & "|" & Request("HnewIntr") & _
-	 	"|" & Request("chkInHouse") & "|" & Request("radioPrim2") & "|" & Request("txtIntrExt") & "|" & Request("selIntrRate") & "|" & Request("txtIntrAddrI") & "|" & Request("txtcomintr"))
-	 'CHECK AVAILABILITY
+	Response.Cookies("LBINTR") = Z_DoEncrypt(Request("txtIntrLname") & "|" & Request("txtIntrFname") & "|" & Request("txtIntrEmail") & _
+	 		"|" & Request("txtIntrP1")	& "|" & Request("txtIntrFax")	& "|" & Request("txtIntrP2")	& "|" & Request("txtIntrAddr") & _
+	 		"|" & Request("txtIntrCity")	& "|" & Request("txtIntrState") & "|" & Request("txtIntrCZip") & "|" & Request("HnewIntr") & _
+	 		"|" & Request("chkInHouse") & "|" & Request("radioPrim2") & "|" & Request("txtIntrExt") & "|" & Request("selIntrRate") & _
+	 		"|" & Request("txtIntrAddrI") & "|" & Request("txtcomintr")	 	)
+	' *** CHECK AVAILABILITY
 	'If Request("SelIntr") <> "-1" Then
 	'	If Z_CZero(Request("SelIntr")) <> Z_CZero(Request("IntrID")) Then
 	'		Set rsAvail = Server.CreateObject("ADODB.RecordSet")
@@ -1550,6 +1558,24 @@ ElseIf Request("ctrl") = 11 Then 'SAVE ASSIGNED INTERPRETER
 			rsIntr.Close
 			Set rsIntr = Nothing
 		End If
+		' *** GET TRAVEL TIME, AND MILEAGE
+		Set oGDM = New acaDistanceMatrix
+		oGDM.DBCONN = g_strCONN
+		strItrAdr = Request("txtIntrAddr") & ", " & Request("txtIntrCity") & ", " & UCASE( Request("txtIntrState")) & " " & Request("txtIntrCZip")
+		strItrZip = Request("txtIntrCZip")
+
+		Call oGDM.FetchMileageV2(Request("ReqID"), strItrAdr, strItrZip, FALSE)
+		fltRealTT	= oGDM.fltRealTT
+		fltRealM	= oGDM.fltRealM
+		fltActTT	= oGDM.fltActTT
+		fltActMil	= oGDM.fltActMil
+		strStatus	= oGDM.Status
+		strJSON		= oGDM.RawJSON
+
+		'Response.Write strJSON & "<br />--> " & strStatus & "<br /><br />"
+		'Response.Write fltRealTT & " :: " & fltRealM & " :: " & fltActMil & " :: " & fltActTT
+		'Response.End
+		' *** YAY! IT WORKS??'
 		Set rsAss = Server.CreateObject("ADODB.RecordSet")
 		sqlAss = "SELECT * FROM Request_T WHERE [index] = " & Request("ReqID")
 		rsAss.Open sqlAss,g_strCONN, 1, 3
@@ -1570,77 +1596,85 @@ ElseIf Request("ctrl") = 11 Then 'SAVE ASSIGNED INTERPRETER
 			'rsAss("Assignedby") = Response.Cookies("UID")
 			'FOR HP
 			tmpHPID = rsAss("HPID")
+			' *** BEGIN: ADD THE MILEAGE IN
+			rsAss("RealTT")	= Z_CZero(fltRealTT)
+			rsAss("RealM")	= Z_CZero(fltRealM)
+			rsAss("actTT")	= Z_CZero(fltActTT)
+			rsAss("actMil")	= Z_CZero(fltActMil)
+			rsAss("InstActTT") = Z_CZero(fltActTT)
+			rsAss("InstActMil") = Z_CZero(fltActMil)
+			' ***** END: ADD MILEAGE AND TRAVEL TIME
 			rsAss.Update
 		End If
 		rsAss.Close
 		Set rsAss = Nothing
 			
-			'SAVE TO HP
-			If Z_CZero(tmpHPID) <> 0 Then
-				Set rsHP = Server.CreateObject("ADODB.RecordSet")
-				sqlHP = "SELECT * FROM Appointment_T WHERE [index] = " & tmpHPID
-				rsHP.Open sqlHp, g_strCONNHP, 1, 3
-				If Not rsHP.EOF Then
-					rsHP("intrID") = tmpIntr
-					rsHp.Update
-				End If
-				rsHp.Close
-				Set rsHp = Nothing
+		'SAVE TO HP
+		If Z_CZero(tmpHPID) <> 0 Then
+			Set rsHP = Server.CreateObject("ADODB.RecordSet")
+			sqlHP = "SELECT * FROM Appointment_T WHERE [index] = " & tmpHPID
+			rsHP.Open sqlHp, g_strCONNHP, 1, 3
+			If Not rsHP.EOF Then
+				rsHP("intrID") = tmpIntr
+				rsHp.Update
 			End If
-			'SAVE FB
-			If tmpIntr > 0 And Request("txtintrfeed") <> "" Then
-				Set rsFB = Server.CreateObject("ADODB.RecordSet")
-				sqlFB = "SELECT * FROM InterpreterEval_T WHERE intrID = " & tmpIntr & " AND appID = " & Request("ReqID") & " AND UID = " & Request.Cookies("UID") 
-				rsFB.Open sqlFB, g_strCONN, 1, 3
-				If rsFB.EOF Then rsFB.AddNew
-				rsFB("IntrID") = tmpIntr
-				rsFB("date") = Now
-				rsFB("appID") = Request("ReqID")
-				rsFB("UID") = Request.Cookies("UID") 
-				rsFB("comment") = Request("txtintrfeed")
+			rsHp.Close
+			Set rsHp = Nothing
+		End If
+		'SAVE FB
+		If tmpIntr > 0 And Request("txtintrfeed") <> "" Then
+			Set rsFB = Server.CreateObject("ADODB.RecordSet")
+			sqlFB = "SELECT * FROM InterpreterEval_T WHERE intrID = " & tmpIntr & " AND appID = " & Request("ReqID") & " AND UID = " & Request.Cookies("UID") 
+			rsFB.Open sqlFB, g_strCONN, 1, 3
+			If rsFB.EOF Then rsFB.AddNew
+			rsFB("IntrID") = tmpIntr
+			rsFB("date") = Now
+			rsFB("appID") = Request("ReqID")
+			rsFB("UID") = Request.Cookies("UID") 
+			rsFB("comment") = Request("txtintrfeed")
+			rsFB.Update
+			rsFB.Close
+			Set rsFB = Nothing
+		ElseIf  tmpIntr > 0 And Request("txtintrfeed") = "" Then 'look if FB was just deleted
+			Set rsFB = Server.CreateObject("ADODB.RecordSet")
+			sqlFB = "SELECT * FROM InterpreterEval_T WHERE intrID = " & tmpIntr & " AND appID = " & Request("ReqID") & " AND UID = " & Request.Cookies("UID") 
+			rsFB.Open sqlFB, g_strCONN, 1, 3
+			If Not rsFB.EOF Then 
+				rsFB.Delete
 				rsFB.Update
-				rsFB.Close
-				Set rsFB = Nothing
-			ElseIf  tmpIntr > 0 And Request("txtintrfeed") = "" Then 'look if FB was just deleted
-				Set rsFB = Server.CreateObject("ADODB.RecordSet")
-				sqlFB = "SELECT * FROM InterpreterEval_T WHERE intrID = " & tmpIntr & " AND appID = " & Request("ReqID") & " AND UID = " & Request.Cookies("UID") 
-				rsFB.Open sqlFB, g_strCONN, 1, 3
-				If Not rsFB.EOF Then 
-					rsFB.Delete
-					rsFB.Update
-				End If
-				rsFB.Close
-				Set rsFB = Nothing
 			End If
-			'SAVE HISTORY
-			TimeNow = Now
-			Set rsHist = Server.CreateObject("ADODB.RecordSet")
-			sqlHist = "SELECT * FROM History_T WHERE ReqID = " & Request("ReqID")
-			rsHist.Open sqlHist, g_strCONNHist, 1,3 
-			If Not rsHist.EOF Then
-				If Z_CZero(rsHist("interID")) <> Z_CZero(tmpIntr) Then
-					rsHist("interID") = Z_CZero(tmpIntr)
-					rsHist("interTS") = TimeNow
-					rsHist("interU") = Request.Cookies("LBUsrName")
-				End If
-			Else
-				rsHist.AddNew
+			rsFB.Close
+			Set rsFB = Nothing
+		End If
+		'SAVE HISTORY
+		TimeNow = Now
+		Set rsHist = Server.CreateObject("ADODB.RecordSet")
+		sqlHist = "SELECT * FROM History_T WHERE ReqID = " & Request("ReqID")
+		rsHist.Open sqlHist, g_strCONNHist, 1,3 
+		If Not rsHist.EOF Then
+			If Z_CZero(rsHist("interID")) <> Z_CZero(tmpIntr) Then
 				rsHist("interID") = Z_CZero(tmpIntr)
 				rsHist("interTS") = TimeNow
 				rsHist("interU") = Request.Cookies("LBUsrName")
 			End If
-			rsHist.Update
-			rsHist.Close
-			Set rsHist = Nothing
-			If SaveHist(Request("ReqID"), "assign.asp") Then
-	
-			End If
-			'email "yes" interpreters?
-			
-			Response.Redirect "ReqConfirm.asp?ID=" & Request("ReqID")
 		Else
-			Response.Redirect "assign.asp?ID=" & Request("ReqID")
+			rsHist.AddNew
+			rsHist("interID") = Z_CZero(tmpIntr)
+			rsHist("interTS") = TimeNow
+			rsHist("interU") = Request.Cookies("LBUsrName")
 		End If
+			rsHist.Update
+		rsHist.Close
+		Set rsHist = Nothing
+		If SaveHist(Request("ReqID"), "assign.asp") Then
+
+		End If
+		'email "yes" interpreters?
+
+		Response.Redirect "ReqConfirm.asp?ID=" & Request("ReqID")
+	Else
+		Response.Redirect "assign.asp?ID=" & Request("ReqID")
+	End If
 ElseIf Request("ctrl") = 12 Then 'EDIT CONTACT INFORMATION
 	'STORE ENTRIES ON COOKIE FOR EDITING AND SAVING ENTRIES
 	Response.Cookies("LBREQUEST") = Z_DoEncrypt(Request("txttstamp")	& "|" & Request("selReq")	& "|" & Request("txtClilname")	& "|" & _
@@ -2392,8 +2426,8 @@ ElseIf Request("ctrl") = 17 Then'timsheet/mileage
 						tmpPayHrs = Request("txtPhrs" & ctr)
 						rsTBL("payhrs") = tmpPayHrs
 						rsTBL("actTT") =  Z_Czero(Request("txtTT" & ctr))
-						If Not rsTBL("LBconfirm") Then
-							rsTBL("LBconfirm") = False
+						'If Not rsTBL("LBconfirm") Then
+							'rsTBL("LBconfirm") = False
 							If Request("chkTS" & ctr) <> "" Then
 								If tmpPayHrs <> "" Then 
 									rsTBL("LBconfirm") = True
@@ -2403,9 +2437,13 @@ ElseIf Request("ctrl") = 17 Then'timsheet/mileage
 									LogMe.WriteLine strLog
 									Set LogMe = Nothing
 									Set fso = Nothing
+								Else
+									rsTBL("LBconfirm") = False
 								End If
+							Else
+								rsTBL("LBconfirm") = False
 							End If
-						End If
+						'End If
 						pageused = "reqtable2.asp(TS)"
 					ElseIf Request("ctrlX") = 2 Then
 						rsTBL("overmile") = False
@@ -2421,8 +2459,8 @@ ElseIf Request("ctrl") = 17 Then'timsheet/mileage
 						'	rsTBL("TT_Intr") = 0
 						'	rsTBL("M_Intr") = 0
 						'End If
-						If Not rsTBL("LbconfirmToll") Then
-							rsTBL("LbconfirmToll") = False
+						'If Not rsTBL("LbconfirmToll") Then
+							'rsTBL("LbconfirmToll") = False
 							If Request("chkM" & ctr) <> "" Then
 								rsTBL("LbconfirmToll") = True
 								Set fso = CreateObject("Scripting.FileSystemObject")
@@ -2432,7 +2470,7 @@ ElseIf Request("ctrl") = 17 Then'timsheet/mileage
 								Set LogMe = Nothing
 								Set fso = Nothing
 							End If
-						End If
+						'End If
 						pageused = "reqtable2.asp(M)"
 					End If
 					rsTBL.Update

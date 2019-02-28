@@ -347,11 +347,15 @@ Function Z_EmailInst(pcon, appid)
 		
 		tmpCCAddr = Z_FixNull(rsReq("cc_addr"))
 		If (Not Z_Blank(tmpCCAddr)) Then
-			If  (InStr(tmpCCAddr, "@")<2) Then
-				' it's a fax!
-				tmpCCAddr = tmpCCAddr & "@emailfaxservice.com"
+			If Len(tmpCCAddr) > 5 Then
+				If  (InStr(tmpCCAddr, "@")<2) Then
+					' it's a fax!
+					tmpCCAddr = tmpCCAddr & "@emailfaxservice.com"
+				End If
+				tmpCCAddr = tmpCCAddr & ";"
+			Else
+				tmpCCAddr = ""
 			End If
-			tmpCCAddr = tmpCCAddr & ";"
 		End If
 
 		tmpdept =  rsReq("department_nm")

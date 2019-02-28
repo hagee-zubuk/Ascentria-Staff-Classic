@@ -3,6 +3,7 @@
 <!-- #include file="_Announce.asp" -->
 <!-- #include file="_Utils.asp" -->
 <!-- #include file="_Security.asp" -->
+<!-- #include file="_googleDMA.asp" -->
 <%
 If Request.Cookies("LBUSERTYPE") <> 1 Then 
 	Session("MSG") = "Invalid account."
@@ -176,10 +177,32 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 				btnSave = "disabled"
 			End If
 		Else 									' MILEAGE
+			sqlReq = "SELECT req.[index]" & _
+					", req.[appDate], req.[apptimefrom], req.[apptimeto], req.[astarttime], req.[aendtime]" & _
+					", req.[phoneappt], req.[showintr], req.[payintr], req.[overmile], req.[payhrs], req.[overpayhrs]" & _
+					", req.InstID AS myInstID, req.[IntrID], req.[LangID], req.[InstRate], req.[SentReq]" & _
+					", req.[Processed], req.[Status], req.[DeptID], req.[clname], req.[cfname]" & _
+					", req.[actTT], req.[actMil], req.[toll]" & _
+					", req.[LBconfirm], req.[LbconfirmToll] " & _
+					", ins.[Facility], lan.[language], dep.[dept]" & _
+					", CASE WHEN itr.[last name] IS NOT NULL THEN itr.[last name] " & _
+					"ELSE 'N/A' " & _
+					"END AS [last name] " & _
+					", CASE WHEN itr.[first name] IS NOT NULL THEN itr.[first name] " & _
+					"ELSE 'N/A' " & _
+					"END AS [first name] " & _
+					", gdt.[reqid], gdt.[dstval], gdt.[durval], itr.[index] AS interpretindex " & _
+					"FROM [request_T] AS req " & _
+					"INNER JOIN [institution_T] AS ins	ON req.[InstID]=ins.[index] " & _
+					"INNER JOIN [dept_T] AS dep			ON req.[DeptID]=dep.[index] " & _
+					"INNER JOIN [language_T] AS lan		ON req.[LangId]=lan.[index] " & _
+					"LEFT JOIN [interpreter_T] AS itr	ON req.[IntrId]=itr.[index] " & _
+					"LEFT JOIN [tmpGoogleDist] AS gdt 	ON req.[index]=gdt.[reqid] " & _
+					"WHERE req.[showintr] = 1 " 
 			AMchkbox = ""
 			sqlReq = sqlReq & "AND req.[instID] <> 479 "
 			If Request("radioAss") = 0 Then			' Unapproved
-				sqlReq = sqlReq & "AND req.[LbconfirmToll] = 0 "
+				sqlReq = sqlReq & "AND ( req.[LbconfirmToll] = 0 OR req.[LbconfirmToll] IS NULL) "
 				radioAss = "checked"
 				radioUnass = ""
 				radioUnass2 = ""
@@ -397,8 +420,8 @@ If Not rsReq.EOF Then
 				"<td class='tblgrn2' >" & tmpInName & "</td>" & vbCrLf & _
 				"<td class='tblgrn2' >" & rsReq("appDate") & "</td>" & vbCrLf & _
 				"<td class='tblgrn2' >" & Z_FormatTime(rsReq("apptimefrom")) & " - " & Z_FormatTime(rsReq("apptimeto")) & "</td>" & vbCrLf & _
-				"<td class='tblgrn2' valign=""middle""><input class='main2' name='txtstime" & x & "' maxlength='5' size='7' " & LBconx & " value='" & Z_FormatTime(rsReq("astarttime")) & "' onKeyUp=""javascript:return maskMe(this.value,this,'2,6',':');"" onBlur=""javascript:return maskMe(this.value,this,'2,6',':');""></td>" & vbCrLf & _
-				"<td class='tblgrn2' valign=""middle""><input class='main2' name='txtetime" & x & "' maxlength='5' size='7' " & LBconx & " value='" & Z_FormatTime(rsReq("aendtime")) & "' onKeyUp=""javascript:return maskMe(this.value,this,'2,6',':');"" onBlur=""javascript:return maskMe(this.value,this,'2,6',':');""></td>" & vbCrLf 
+				"<td class='tblgrn2' valign=""middle""><input class='main2 edmil' name='txtstime" & x & "' maxlength='5' size='7' " & LBconx & " value='" & Z_FormatTime(rsReq("astarttime")) & "' onKeyUp=""javascript:return maskMe(this.value,this,'2,6',':');"" onBlur=""javascript:return maskMe(this.value,this,'2,6',':');""></td>" & vbCrLf & _
+				"<td class='tblgrn2' valign=""middle""><input class='main2 edmil' name='txtetime" & x & "' maxlength='5' size='7' " & LBconx & " value='" & Z_FormatTime(rsReq("aendtime")) & "' onKeyUp=""javascript:return maskMe(this.value,this,'2,6',':');"" onBlur=""javascript:return maskMe(this.value,this,'2,6',':');""></td>" & vbCrLf 
 				' ENDS AT THE "Actual End Time" COLUMN
 		If Request("ctrlX") = 1 Then
 			kulay2 = "#080F0D"
@@ -423,7 +446,7 @@ If Not rsReq.EOF Then
 				""",""" & tmpInName & """,""" & rsReq("appDate") & """,""" & Z_FormatTime(rsReq("astarttime")) & """,""" & Z_FormatTime(rsReq("aendtime")) & """,""" & Z_FormatNumber(tmpPayHrs, 2) & """,""" & Z_FormatNumber(TT, 2) & _
 				""",""" & Z_FormatNumber(PHrs, 2) & """,""" & Z_FormatNumber(FPHrs, 2) & """,""" & showintr2 & """" & vbCrLf
 		ElseIf Request("ctrlX") = 2 Then
-			strtbl = strtbl & "<td class='tblgrn2' ><input class='main2' name='txtmile" & x & "' maxlength='6' size='7' " & LBconx2 & " value='" & tmpAMT & "' />"
+			strtbl = strtbl & "<td class='tblgrn2' ><nobr><input class='main2 edmil' name='txtmile" & x & "' maxlength='6' size='7' " & LBconx2 & " value='" & tmpAMT & "' />"
 			If AMchkbox = "" Then
 				If rsReq("LBconfirmToll") <> True Then 
 					strtbl = strtbl & "<input type=""checkbox"" name=""chkOverMile" & x & """ value=""1"" " & BlnOver2 & " />" & vbCrLf 
@@ -439,7 +462,40 @@ If Not rsReq.EOF Then
 							"<input type=""hidden"" ID=""chkOverMile" & x & """ name=""chkOverMile" & x & """ value="""" />"
 				End If
 			End If
-			strtbl = strtbl & "</td><td class='tblgrn2' ><nobr>$<input class='main2' name='txtTol" & x & "' maxlength='5' size='7' " & _
+			strtbl = strtbl & "</nobr>"
+			' optional automated mileage information...
+			If Z_FixNull( rsReq("reqid") ) <> "" Then
+				' mileage was fetched; display it here: dstval * 2, durval / 30
+				tmpMil = Z_CDbl(rsReq("dstval")) * 2
+				If (tmpMil > 40) Then
+					tmpBilMil = tmpMil - 40
+					strTbl = strTbl & "<div class=""ggl tooltip"">" & Round(tmpBilMil, 2) & " mi"
+				Else
+					strTbl = strTbl & "<div class=""ggl tooltip"">&lt; 40 mi"
+				End If
+				tmpTT = Z_CDbl(rsReq("durval")) / 30
+				strTbl = strTbl & "<span class=""tooltiptext"">Fetched: " & Round(tmpMil, 2) & " mi (r/t);<br />" & Round(tmpTT, 2) & " hrs travel</span></div>"
+			Else
+				If Z_CDbl(rsReq("actMil")) > 0 Then
+					If Z_FixNull( rsReq("interpretindex") ) <> "" Then
+						Set oGDM = New acaDistanceMatrix
+						oGDM.DBCONN = g_strCONN
+						Call oGDM.FetchMileageFromReqID(rsReq("index"), TRUE)
+						fltRealTT	= oGDM.fltRealTT
+						fltRealM	= oGDM.fltRealM
+						fltActTT	= oGDM.fltActTT
+						If oGDM.fltRealM > 40 Then
+							strTbl = strTbl & "<div class=""ggl tooltip"">" & Round(oGDM.fltActMil, 2) & " mi"
+						Else
+							strTbl = strTbl & "<div class=""ggl tooltip"">&lt; 40 mi"
+						End If
+						strTbl = strTbl & "<span class=""tooltiptext"">Fetched (now)<br />" & Round(oGDM.fltRealM, 2) & " mi (r/t);<br />" & _
+								Round(oGDM.fltRealTT, 2) & " hrs travel</span></div>"
+					End If
+				End If
+			End If
+			' TOOLS & PARKING COLUMN'
+			strtbl = strtbl & "</td><td class='tblgrn2' ><nobr>$<input class='main2 edmil' name='txtTol" & x & "' maxlength='5' size='7' " & _
 					LBconx2 & " value='" & Z_FormatNumber(rsReq("toll"), 2) & "' /></td>" & vbCrLf
 			' Approve Mileage checkbox
 			If AMchkbox = "" Then
@@ -561,6 +617,16 @@ End Select
 		<link href='style.css' type='text/css' rel='stylesheet'>
 <style>
 td.tblgrn2 { font-family: Trebuchet MS, Trebuchet, Tahoma, Verdana, Arial, Helvetica, Sans-Serif; text-align: center; vertical-align: middle; }
+input.edmil { border-color: #01a1af; padding: 1px 3px; margin: 4px 3px 1px 3px; }
+.ggl { color: #EC7063; font-style: italic; }
+.tooltip {  position: relative;  display: inline-block;  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */ }
+/* Tooltip text */
+.tooltip .tooltiptext {  visibility: hidden; width: 120px; background-color: black; color: #fff; text-align: center; padding: 5px 0; border-radius: 6px; 
+  /* Position the tooltip text - see examples below! */
+  position: absolute; z-index: 1;
+}
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext { visibility: visible; }
 </style>		
 		<script language='JavaScript'>
 		<!--
@@ -790,7 +856,6 @@ td.tblgrn2 { font-family: Trebuchet MS, Trebuchet, Tahoma, Verdana, Arial, Helve
 													<%=strtbl%>
 												</tbody>
 											</table>
-											<!-- code><%= sqlReq %></code -->
 										</div>	
 									</td>
 								</tr>
@@ -903,6 +968,7 @@ td.tblgrn2 { font-family: Trebuchet MS, Trebuchet, Tahoma, Verdana, Arial, Helve
 					</tr>
 				</table>
 			</form>
+<!-- code><%= sqlReq %></code -->
 		</body>
 	</head>
 </html>
