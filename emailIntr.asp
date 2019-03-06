@@ -5,6 +5,22 @@
 <!-- #include file="_Security.asp" -->
 <!-- #include file="_UtilsReport.asp" -->
 <%
+Function Z_FriendlyTime(dtZ)
+	If Not IsDate(dtZ) Then Exit Function
+	strAPI = "am"
+	lngThr = Z_CLng(DatePart("h", dtZ))
+	If lngThr > 12 Then
+		strAPI = "pm"
+		lngThr = lngThr - 12
+	End If
+	lngTmn = Z_CLng(DatePart("n", dtZ))
+	If lngTmn < 10 Then
+		strAPI = "0" & lngTmn & strAPI
+	Else
+		strAPI = lngTmn & strAPI
+	End If
+	Z_FriendlyTime = lngThr & ":" & strAPI
+End Function
 Function Avail(myID, myTime)
 	Avail = False
 	Set rsAvail = Server.CreateObject("ADODB.RecordSet")
@@ -24,19 +40,21 @@ End Function
 
 Set rsReq = Server.CreateObject("ADODB.REcordSet")
 sqlReq = "SELECT [appDate], [apptimefrom], [apptimeto], [ccity], [CliAdd]" & _
-		", r.[InstID], [DeptID], d.[city], l.[language] " & _
+		", r.[InstID], [DeptID], d.[city], COALESCE(l.[language], '') AS [language] " & _
 		"FROM [request_T] AS r " & _
 		"INNER JOIN [dept_T] AS d ON r.[DeptID]=d.[index] " & _
 		"INNER JOIN [language_T] AS l ON r.[langid]=l.[index] " & _
 		"WHERE r.[index]=" & Request("ID")
 rsReq.Open sqlReq, g_strCONN, 1, 3
 If Not rsReq.EOF Then
-	appDate = rsReq("appdate")
-	appTime = rsReq("apptimefrom") & " - " & rsReq("apptimeto")
+	appDate = Z_MDYDate(rsReq("appdate"))
+	'appTime = rsReq("apptimefrom") & " - " & rsReq("apptimeto")
+	appTime = Z_FriendlyTime(rsReq("apptimefrom")) & " to " & Z_FriendlyTime(rsReq("apptimeto"))
 	tmpAppTFrom = rsReq("apptimefrom")
 	tmpAppTTo = rsReq("apptimeto")
 	appCity = rsReq("city")
 	If rsReq("cliadd") Then appCity = rsReq("Ccity")
+	strLang = rsReq("language")
 	IntrLang = Ucase(rsReq("language"))
 	tmpAvail = Weekday(appdate) & "," & Hour(tmpAppTFrom)
 	tmpInst = rsReq("instID")
@@ -50,7 +68,7 @@ If Request("mail") = 1 Then 'Request.ServerVariables("REQUEST_METHOD") = "POST" 
 	' -- get email info
 	strTo = zGetInterpreterEmailByID(Request("selIntr"))
 	strBcc = "sysdump1@ascentria.org"
-	strSubject = "Appointment on " & appDate & " at " & appTime & " in " & appCity
+	strSubject = strLang & " Appointment on " & appDate & " " & appTime & " in " & appCity
 	strMSG = "<p>Are you available to do this appointment?</p>"& _
 			"<p>If you accept this appointment this is the amount you will be reimbursed " & _
 			"for mileage and travel time.</p>" & _
@@ -93,7 +111,8 @@ End If
 
 'PREPARE EMAIL	
 strAvail = 0
-strSubj = "Appointment on " & appDate & " at " & apptime & " in " & appCity
+'strSubj = "Appointment on " & appDate & " at " & apptime & " in " & appCity
+strSubj = strLang & " Appointment on " & appDate & " " & appTime & " in " & appCity
 strMSG = "Are you available to do this appointment?" & vbCrlf & vbCrlf & _
 	"Please reply to this email or contact " & Request.Cookies("LBUsrName") & " of LanguageBank." & vbCrlf & vbCrlf & _
 	"If you accept this appointment this is the amount you will be reimbursed for mileage and travel time." & vbCrlf & vbCrlf & _
