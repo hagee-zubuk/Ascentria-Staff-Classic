@@ -29,7 +29,7 @@ Class acaDistanceMatrix
 	Public fltRealTT, fltRealM, fltActTT, fltActMil
 	Public RawJSON, Status
 
-	Public Sub FetchMileageV2(strReq, strItrAdr, strItrZip, blnForce)
+	Public Sub FetchMileageV2(strReq, strItrID, strItrAdr, strItrZip, blnForce)
 		' *** TAKE ADDRESS INFORMATION FROM APPOINTMENT REQUEST RECORD'
 		Set rsAddr = Server.CreateObject("ADODB.RecordSet")
 		strSQL = "SELECT req.[index]" & _
@@ -66,7 +66,11 @@ Class acaDistanceMatrix
 			If blnForce Then
 				strDstAdr = rsAddr("dest_Address")
 				strDstZIP = rsAddr("dest_ZIP")
-				strIntrID = rsAddr("intr_id")
+				If Z_CLng( rsAddr("intr_id") ) > 0 Then
+					strIntrID = rsAddr("intr_id")
+				Else
+					strIntrID = strItrID
+				End If
 			
 				Call GetMileage(strReq, strIntrID, strItrAdr, strDstAdr)
 			Else
@@ -120,7 +124,7 @@ Class acaDistanceMatrix
 			' *** INTERROGATE GOOGLE MAPS FOR TRAVEL TIME, AND MILEAGE
 			If Z_FixNull(rsAddr("reqid")) = "" Then blnForce = True
 
-			If blnForce Then
+			If blnForce Then ' means that there was no reqid -- nothing on the tmpGoogleDist table
 				strDstAdr = rsAddr("dest_Address")
 				strDstZIP = rsAddr("dest_ZIP")
 				strItrAdr = rsAddr("orig_Address")
@@ -145,18 +149,18 @@ Class acaDistanceMatrix
 	Private Sub GetMileage(strReq, strIntr, strItrAdr, strDstAdr)
 		strJSON = Z_GetDMAData(strItrAdr, strDstAdr)
 		RawJSON = strJSON
-			
+
 		Set oJSON = New aspJSON
 		oJSON.loadJSON(strJSON)
 		Status = Z_FixNull( oJSON.data("status") )
-		
+
 		If Status <> "OK" Then
 			strJSON = Z_GetDMAData(strItrZip, strDstZIP)
 			Set oJSON = New aspJSON
 			oJSON.loadJSON(strJSON)
 			Status = Z_FixNull( oJSON.data("status") )
 		End If
-		
+
 		If Status = "OK" Then
 			tmpRealTT = Z_CDbl(oJSON.data("rows")(0)("elements")(0)("duration")("value")) / 3600
 			fltRealTT = Round((2 * tmpRealTT), 2) 
@@ -191,10 +195,12 @@ Class acaDistanceMatrix
 			End If
 			rsGoog("raw") 		= strItrAdr & " || " & strDstAdr
 			rsGoog("fetch") 	= Now
+ON ERROR RESUME NEXT
+			rsGoog("source") 	= Request.ServerVariables("SCRIPT_NAME")
+ON ERROR GOTO 0
 			rsGoog.Update
 			rsGoog.Close
 			Set rsGoog = Nothing
-
 		End If
 	End Sub
 End Class

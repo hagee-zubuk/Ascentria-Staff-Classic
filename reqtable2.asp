@@ -133,7 +133,6 @@ Else
 End If
 x = 0
 If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 Then
-
 		sqlReq = "SELECT req.[index]" & _
 				", req.[appDate], req.[apptimefrom], req.[apptimeto], req.[astarttime], req.[aendtime]" & _
 				", req.[phoneappt], req.[showintr], req.[payintr], req.[overmile], req.[payhrs], req.[overpayhrs]" & _
@@ -152,7 +151,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 				"INNER JOIN [institution_T] AS ins	ON req.[InstID]=ins.[index] " & _
 				"INNER JOIN [dept_T] AS dep			ON req.[DeptID]=dep.[index] " & _
 				"INNER JOIN [language_T] AS lan		ON req.[LangId]=lan.[index] " & _
-				"LEFT JOIN [interpreter_T] AS itr	ON req.[IntrId]=itr.[index] " & _
+				"INNER JOIN [interpreter_T] AS itr	ON req.[IntrId]=itr.[index] " & _
 				"WHERE req.[showintr] = 1 " 
 		If Request("ctrlX") = 1 Then 			' TIMESHEET'
 			If Request("radioAss") = 0 Then	' unapproved '
@@ -196,8 +195,8 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 					"INNER JOIN [institution_T] AS ins	ON req.[InstID]=ins.[index] " & _
 					"INNER JOIN [dept_T] AS dep			ON req.[DeptID]=dep.[index] " & _
 					"INNER JOIN [language_T] AS lan		ON req.[LangId]=lan.[index] " & _
-					"LEFT JOIN [interpreter_T] AS itr	ON req.[IntrId]=itr.[index] " & _
-					"LEFT JOIN [tmpGoogleDist] AS gdt 	ON req.[index]=gdt.[reqid] " & _
+					"INNER JOIN [interpreter_T] AS itr	ON req.[IntrId]=itr.[index] " & _
+					"LEFT JOIN [tmpGoogleDist] AS gdt 	ON req.[index]=gdt.[reqid] AND req.[intrid]=gdt.[intrid] " & _
 					"WHERE req.[showintr] = 1 " 
 			AMchkbox = ""
 			sqlReq = sqlReq & "AND req.[instID] <> 479 "
@@ -452,8 +451,6 @@ If Not rsReq.EOF Then
 					strtbl = strtbl & "<input type=""checkbox"" name=""chkOverMile" & x & """ value=""1"" " & BlnOver2 & " />" & vbCrLf 
 				End If
 			Else
-				'If rsReq
-				'strtbl = strtbl & "<input type=""hidden"" name=""chkOverMile" & x & """ value='1' " & LBconxx2 & " " & />" & vbCrLf 
 				If BlnOver2 = "checked" Then
 					strtbl = strtbl & "<img src=""images/ok.gif"" title=""YES"" alt=""X"" />" & _
 							"<input type=""hidden"" ID=""chkOverMile" & x & """ name=""chkOverMile" & x & """ value=""1"" />"
@@ -476,7 +473,7 @@ If Not rsReq.EOF Then
 				tmpTT = Z_CDbl(rsReq("durval")) / 30
 				strTbl = strTbl & "<span class=""tooltiptext"">Fetched: " & Round(tmpMil, 2) & " mi (r/t);<br />" & Round(tmpTT, 2) & " hrs travel</span></div>"
 			Else
-				If Z_CDbl(rsReq("actMil")) > 0 Then
+'				If Z_CDbl(rsReq("actMil")) > 0 Then
 					If Z_FixNull( rsReq("interpretindex") ) <> "" Then
 						Set oGDM = New acaDistanceMatrix
 						oGDM.DBCONN = g_strCONN
@@ -491,8 +488,10 @@ If Not rsReq.EOF Then
 						End If
 						strTbl = strTbl & "<span class=""tooltiptext"">Fetched (now)<br />" & Round(oGDM.fltRealM, 2) & " mi (r/t);<br />" & _
 								Round(oGDM.fltRealTT, 2) & " hrs travel</span></div>"
+					' Else
+					'	strTbl = strTbl & "&lt;no interpreter index&gt;"
 					End If
-				End If
+'				End If
 			End If
 			' TOOLS & PARKING COLUMN'
 			strtbl = strtbl & "</td><td class='tblgrn2' ><nobr>$<input class='main2 edmil' name='txtTol" & x & "' maxlength='5' size='7' " & _
@@ -820,7 +819,7 @@ input.edmil { border-color: #01a1af; padding: 1px 3px; margin: 4px 3px 1px 3px; 
 								<tr>
 									<td colspan='11' align='left'>
 										<div class='container' style='height: 500px; width:100%; position: relative;'>
-											<table class="reqtble" width='100%'>	
+											<table class="reqtble" width='98%'>	
 												<thead>
 													<tr class="noscroll">	
 														<td colspan='2' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" class='tblgrn'>Request ID</td>
