@@ -331,6 +331,7 @@ Function Z_EmailInst(pcon, appid)
 	If Not rsReq.EOF Then
 		CliName = rsReq("Clname") & ", " & rsReq("Cfname")
 		IntrName = rsReq("Intr_nm")
+		tmpIntrName = IntrName
 		tmpIntr = IntrName
 		LangName = rsReq("Language")
 		LangID = rsReq("LangID")
