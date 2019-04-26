@@ -418,11 +418,17 @@ ElseIf Request("ctrl")= 2 Then
 			kulay = "#FFFFFF"
 			If Not Z_IsOdd(y) Then kulay = "#F5F5F5"
 			cliname = rsRep("lname") & ", " & rsRep("fname")
-			gender = "M"
-			gender2 = 0
-			If rsRep("gender") Then 
+			gender = "U"
+			strGender = " AND [gender] IS NULL"
+			gender2 = -1
+			If rsRep("gender") = 0 Then 
+				gender = "M"
+				gender2 = 0
+				strGender = " AND [gender]=0"
+			ElseIf rsRep("gender") = 1 Then 
 				gender = "F"
 				gender2 = 1
+				strGender = " AND [gender]=1"
 			End If
 			'save in uploaded client
 			medicaid = Ucase(Trim(rsRep("medicaid")))
@@ -433,7 +439,8 @@ ElseIf Request("ctrl")= 2 Then
 			CleanFname = Replace(Ucase(Trim(rsRep("fname"))), "'", "''")
 			Set rsCli = Server.CreateObject("ADODB.RecordSet")
 			sqlCli = "SELECT * FROM clientuploaded_T WHERE lname = '" & CleanLname & "' AND fname = '" & CleanFname & _
-				"' AND medicaid = '" & medicaid & "' AND dob = '" & rsRep("dob") & "' AND gender = " & gender2
+				"' AND medicaid = '" & medicaid & "' AND dob = '" & rsRep("dob") & "'" & strGender
+			'" AND gender = " & gender2
 			rsCli.Open sqlCli, g_strCONN, 1, 3
 			If rsCli.EOF Then
 				rsCli.AddNew
@@ -441,8 +448,11 @@ ElseIf Request("ctrl")= 2 Then
 				rsCli("fname") = Ucase(Trim(rsRep("fname")))
 				rsCli("medicaid") = medicaid
 				rsCli("dob") = rsRep("DOB")
-				rsCli("gender") = False
-				If rsRep("gender") Then rsCli("gender") = True
+				If gender2 < 0 Then
+					rsCli("gender") = vbNull
+				Else
+					rsCli("gender") = rsRep("gender")
+				End If
 				rsCli("timestamp") = ts
 				rsCli.Update
 				strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & medicaid & "</td>" & vbCrLf & _

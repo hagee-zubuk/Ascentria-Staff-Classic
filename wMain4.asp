@@ -91,12 +91,12 @@ on error resume next
 	If tmpEntry(30) <> "" Then chkcall = "CHECKED"
 	chkleave = ""
 	If tmpEntry(31) <> "" Then chkleave = "CHECKED"
-	tmpGender	= Z_CZero(tmpEntry(23))
+	tmpGender	= tmpEntry(23)
 	tmpMale = ""
 	tmpFemale = ""
 	If tmpGender = 0 Then 
 		tmpMale = "SELECTED"
-	Else
+	ElseIf tmpGender = 1 Then 
 		tmpFemale = "SELECTED"
 	End If
 	chkMinor = ""
@@ -949,6 +949,7 @@ End If
 										<td align='right'>Gender:</td>
 										<td>
 											<select class='seltxt' name='selGender' style='width: 75px;'>
+												<option value ='-1'> &nbsp; </option>
 												<option value='0' <%=tmpMale%>>Male</option>
 												<option value='1' <%=tmpfeMale%>>Female</option>
 											</select>

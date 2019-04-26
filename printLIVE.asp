@@ -59,12 +59,17 @@ If Not rsConfirm.EOF Then
 	if rsConfirm("emergency") = True Then tmpEmer = "<u><b>_X_</b></u>"
 	If rsConfirm("CliAdd") = True Then tmpDeptaddr = rsConfirm("CAddress") &", " & rsConfirm("CliAdrI") & ", " & rsConfirm("CCity") & ", " & rsConfirm("CState") & ", " & rsConfirm("CZip")
 	tmpHPID = Z_CZero(rsConfirm("hpid"))
-	tmpGender	= Z_CZero(rsConfirm("Gender"))
-	If tmpGender = 0 Then 
-		tmpSex = "MALE"
+
+	If rsConfirm("Gender") = vbNull Then
+		tmpSex = "Unknown"
 	Else
-		tmpSex = "FEMALE"
+		If rsConfirm("Gender") = 1 Then
+			tmpSex = "FEMALE"
+		ElseIf rsConfirm("Gender") = 0 Then
+			tmpSex = "MALE"
+		End If
 	End If
+
 	tmpMinor2 = "ADULT"
 	If rsConfirm("Child") Then tmpMinor2 = "MINOR"	
 End If

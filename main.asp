@@ -248,12 +248,12 @@ If Request("Clone") <> "" Then
 		If rsClone("Emergency") =True Then tmpEmer = "checked"
 		tmpEmerFee = ""
 		If rsClone("EmerFee") =True Then tmpEmerFEE = "checked"
-		tmpGender	= Z_CZero(rsClone("Gender"))
+		tmpGender= rsClone("Gender")
 		tmpMale = ""
 		tmpFemale = ""
 		If tmpGender = 0 Then 
 			tmpMale = "SELECTED"
-		Else
+		ElseIf tmpGender = 1 Then 
 			tmpFemale = "SELECTED"
 		End If
 		chkMinor = ""
@@ -1737,6 +1737,7 @@ Set rsDept2 = Nothing
 										<td align='right'>Gender:</td>
 										<td>
 											<select class='seltxt' name='selGender' style='width: 75px;'>
+												<option value='-1'> &nbsp; </option>
 												<option value='0' <%=tmpMale%>>Male</option>
 												<option value='1' <%=tmpfeMale%>>Female</option>
 											</select>

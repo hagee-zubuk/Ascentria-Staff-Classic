@@ -65,11 +65,15 @@ If Not rsConfirm.EOF Then
 	tmpComm = tmpEmer2 & "<br>" & Replace(Z_FixNull(rsConfirm("comment")), vbcrlf, "<br>")
 	If rsConfirm("CliAdd") = True Then tmpDeptaddr = rsConfirm("CAddress") &", " & rsConfirm("CliAdrI") & ", " & rsConfirm("CCity") & ", " & rsConfirm("CState") & ", " & rsConfirm("CZip")
 	tmpHPID = Z_CZero(rsConfirm("hpid"))
-	tmpGender	= Z_CZero(rsConfirm("Gender"))
-	If tmpGender = 0 Then 
-		tmpSex = "MALE"
+	
+	If rsConfirm("Gender") = vbNull Then
+		tmpSex = "Unknown"
 	Else
-		tmpSex = "FEMALE"
+		If rsConfirm("Gender") = 1 Then
+			tmpSex = "FEMALE"
+		ElseIf rsConfirm("Gender") = 0 Then
+			tmpSex = "MALE"
+		End If
 	End If
 	tmpMinor2 = "ADULT"
 	If rsConfirm("Child") Then tmpMinor2 = "MINOR"	
@@ -304,6 +308,14 @@ INTERPRETER SERVICES
                   	<div style="padding: 2px 4px; position: relative; height: 100%; width: 100%;">
 <b>MEDICAL RECORD NUMBER ONLY:</b><br /><br />
 <div style="font-size: 150%; text-align: center; width: 100%;"><u><b><%=mrrec%></b></u></div>
+<div style="display: block; position: absolute; bottom: 25px; width: 90%; margin: 0px auto; text-align: center; ">
+	<div style="font-size: 70%;">LB tracking code</div>
+	<img src="_barcode.asp?code=<%=PID%>&height=20&width=2&mode=code39&text=0&fileout=<%=myPath%>" style="visibility:hidden" >
+	<br />
+	&nbsp;<img src="Images/BC/<%=myBC%>">&nbsp;
+	<br />
+	<b><%=PID%></b>
+</div>
 <div style="position: absolute; bottom: -0px; font-size: 80%;">
 	<i>Do not include any other information besides MRN#</i>
 </div>

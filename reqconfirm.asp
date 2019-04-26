@@ -158,11 +158,15 @@ If Not rsConfirm.EOF Then
 	If Left(reqTrail, 4) = "<br>" Then reqTrail = Mid(reqTrail, 5)
 	chkVer = ""
 	If rsConfirm("verified") = True Then chkVer = "(CONFIRMED)"
-	tmpGender	= Z_CZero(rsConfirm("Gender"))
-	If tmpGender = 0 Then 
-		tmpSex = "MALE"
+	If rsConfirm("Gender") = vbNull Then
+		tmpSex = "UNKNOWN"
 	Else
-		tmpSex = "FEMALE"
+		tmpGender	= Z_CZero(rsConfirm("Gender"))
+		If tmpGender = 0 Then 
+			tmpSex = "MALE"
+		Else
+			tmpSex = "FEMALE"
+		End If
 	End If
 	tmpMinor2 = ""
 	If rsConfirm("Child") Then tmpMinor2 = "*MINOR"	
@@ -559,6 +563,10 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 		{
 			document.frmConfirm.action = "editapp.asp?ID=" + <%=Request("ID")%>;
 			document.frmConfirm.submit();
+		}
+		function MilTable() {
+			milwindow = window.open('intrmileage.asp?id=<%=Request("ID")%>','miles','height=500,width=800,scrollbars=1,directories=0,status=0,toolbar=0,resizable=1');
+			if (window.focus) { milwindow.focus(); }
 		}
 		function PopMe(zzz)
 		{
@@ -1302,6 +1310,13 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 										Or Cint(Request.Cookies("LBUSERTYPE")) = 3 Then %>
 										<input class='btnLnk' type='button' name='btnEditIntr' value='EDIT' onmouseover="this.className='hovbtnLnk'" onmouseout="this.className='btnLnk'"
 												<%=disableMe%> onclick='AssignMe();' title='Edit Interpreter Information'>	
+										<% If True Then %>
+											<input class='btnLnk' type='button' name='btnIntrMileage' id='btnIntrMileage'
+													value='SHOW INTERPRETER MILEAGES' style="width: 180px;"
+													onmouseover="this.className='hovbtnLnk'" onmouseout="this.className='btnLnk'"
+													<%=disableMe%> onclick='MilTable();' title='Show Interpreter Mileage Table' 
+													/>
+										<% End If %>
 									<% End If %>	
 								</td>
 								</tr>

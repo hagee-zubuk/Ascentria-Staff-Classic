@@ -249,7 +249,11 @@ ElseIf Request("ctrl") = 4 Then
 			If Request("chkClientAdd") <> "" Then rsMain("CliAdd") = True
 			rsMain("CliAdrI") = Request("txtCliAddrI")
 			rsMain("Comment") = Request("txtcom")
-			rsMain("Gender") = Request("selGender")
+			If Z_CLng(Request("selGender")) > -1 Then
+				rsMain("Gender") = Request("selGender")
+			Else
+				rsMain("Gender") = vbNull
+			End If
 			rsMain("Child") = False
 			If Request("chkMinor") <> "" Then rsMain("Child") = True
 			rsMain("outpatient") = False

@@ -312,9 +312,10 @@ ElseIf Request("ctrl") = 4 Then
 	End If
 ElseIf Request("ctrl") = 5 Then
 	'STORE ENTRIES ON COOKIE FOR PRINTING
-	Response.Cookies("LBREPORT") = Z_DoEncrypt(Request("selRep")	& "|" & Request("txtRepFrom") & "|" & _
-		Request("txtRepTo")	& "|" & Request("selInst")	& "|" & Request("selIntr")	& "|" & Request("selTown") & _
-		"|" & Request("selLang")	& "|" & Request("selCli")	& "|" & Request("selClass") & "|" & Request("chkAddnl") & "|" & Request("selIntrStat") & "|" & Request("txtZip") & "|" & Request("txtState"))
+	Response.Cookies("LBREPORT") = Z_DoEncrypt(Request("selRep") & "|" & _
+				Request("txtRepFrom") & "|" & Request("txtRepTo") & "|" & Request("selInst")	& "|" & Request("selIntr")	& "|" & Request("selTown") & "|" & _
+				Request("selLang")	& "|" & Request("selCli")	& "|" & Request("selClass") & "|" & Request("chkAddnl") & "|" & Request("selIntrStat") & "|" & _
+				Request("txtZip") & "|" & Request("txtState"))
 	If Request("txtRepFrom") <> "" Then
 		If Not IsDate(Request("txtRepFrom")) Then
 			Session("MSG") = "ERROR: Invalid timeframe (From:)."
@@ -1558,13 +1559,25 @@ ElseIf Request("ctrl") = 11 Then 'SAVE ASSIGNED INTERPRETER
 			rsIntr.Close
 			Set rsIntr = Nothing
 		End If
+		tmpIntrID = Request("SelIntr")
 		' *** GET TRAVEL TIME, AND MILEAGE
 		Set oGDM = New acaDistanceMatrix
 		oGDM.DBCONN = g_strCONN
-		strItrAdr = Request("txtIntrAddr") & ", " & Request("txtIntrCity") & ", " & UCASE( Request("txtIntrState")) & " " & Request("txtIntrCZip")
-		strItrZip = Request("txtIntrCZip")
+		sqlIntr = "SELECT itr.[Zip Code] AS [itr_zip], itr.[address1] + ', ' + itr.[City] + ', ' + itr.[State] + ' ' + itr.[Zip Code] AS [itr_addr] " & _
+				"FROM [interpreter_T] AS itr WHERE [index]=" & tmpIntrID
+		Set rsIntr = Server.CreateObject("ADODB.RecordSet")
+		rsIntr.Open sqlIntr, g_strCONN, 3, 1
+		If rsIntr.EOF Then
+			strItrAdr = Request("txtIntrAddr") & ", " & Request("txtIntrCity") & ", " & UCASE( Request("txtIntrState")) & " " & Request("txtIntrCZip")
+			strItrZip = Request("txtIntrCZip")
+		Else
+			strItrAdr = rsIntr("itr_addr")
+			strItrZip = rsIntr("itr_zip")
+		End If
+		rsIntr.Close
+		Set rsIntr = Nothing
 
-		Call oGDM.FetchMileageV2(Request("ReqID"), strItrAdr, strItrZip, FALSE)
+		Call oGDM.FetchMileageV2(Request("ReqID"), tmpIntrID, strItrAdr, strItrZip, FALSE)
 		fltRealTT	= oGDM.fltRealTT
 		fltRealM	= oGDM.fltRealM
 		fltActTT	= oGDM.fltActTT
@@ -2044,7 +2057,11 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 			rsMain("CliAdrI") = tmpEntry(45)
 			tmpHPID = Z_CZero(rsMain("HPID"))
 			If Request("Intr") = 1 Then rsMain("IntrID") = "-1"
-			rsMain("Gender") = Request("selGender")
+			If Request("selGender") = -1 Then
+				rsMain("Gender") = vbNull
+			Else	
+				rsMain("Gender") = Request("selGender")
+			End If
 			rsMain("Child") = False
 			If Request("chkMinor") <> "" Then rsMain("Child") = True
 			rsMain("late") = Request("sellate")
@@ -2094,13 +2111,22 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 			If medicaid = "" Then medicaid = Ucase(Trim(rsMain("nhhealth")))
 			If medicaid = "" Then medicaid = Ucase(Trim(rsMain("wellsense")))
 			dob = Trim(rsMain("dob"))
-			gender = 0
-			If rsMain("gender") Then gender = 1
-			
+			If rsMain("gender") = vbNull Then
+				strGender = " "
+			Else
+				strGender = " AND [gender]="
+				If rsMain("gender") = 1 Then
+					strGender = strGender & "1"
+				Else
+					strGender = strGender & "0"
+				End If
+				strGender = strGender & " "
+			End If
+
 			If vermed = 1 Then 'add in client list
 				Set rsCli = Server.CreateObject("ADODB.RecordSet")
 				sqlCli = "SELECT * FROM clientuploaded_T WHERE lname = '" & clilname & "' AND fname = '" & clifname & "' AND medicaid = '" & medicaid & _
-					"' AND dob = '" & dob & "' AND gender = " & gender 
+						"' AND dob = '" & dob & "'" & strGender
 				rsCli.Open sqlCli, g_strCONN, 3, 1
 				If rsCli.EOF Then
 					Set rsCliList = Server.CreateObject("ADODB.RecordSet")
@@ -2110,8 +2136,10 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 					rsCliList("fname") = clifname
 					rsCliList("medicaid") = medicaid
 					rsCliList("dob") = dob
-					rsCliList("gender") = False
-					If gender = 1 Then rsCliList("gender") = True
+					If rsMain("gender") <> vbNull Then
+						rsCliList("gender") = False
+						If gender = 1 Then rsCliList("gender") = True
+					End If
 					rsCliList("timestamp") = now
 					rsCliList.Update
 					rsCliList.Close
@@ -2122,7 +2150,8 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 			ElseIf vermed = 2 Then 'remove in client list
 				Set rsCli = Server.CreateObject("ADODB.RecordSet")
 				sqlCli = "SELECT * FROM clientList_T WHERE lname = '" & clilname & "' AND fname = '" & clifname & "' AND medicaid = '" & medicaid & _
-					"' AND dob = '" & dob & "' AND gender = " & gender 
+					"' AND dob = '" & dob & "'" & strGender
+
 				rsCli.Open sqlCli, g_strCONN, 1, 3
 				If Not rsCli.EOF Then
 					rsCli.Delete
@@ -2727,11 +2756,22 @@ If Not rsTBL.EOF Then
 					medicaid = Z_FixNull(Ucase(Trim(rsTBL("wellsense")))) 
 				End If
 				dob = Trim(rsTBL("dob"))
-				gender = 0
-				If rsTBL("gender") Then gender = 1
+				
+				If rsTBL("gender") = vbNull Then
+					strGender = " "
+				Else
+					strGender = " AND [gender]="
+					If rsTbl("gender") = 0 Then
+						strGender = strGender & "0"
+					Else
+						strGender = strGender & "1"
+					End If
+					strGender = strGender & " "
+				End If
+
 				Set rsCli = Server.CreateObject("ADODB.RecordSet")
 				sqlCli = "SELECT * FROM clientuploaded_T WHERE lname = '" & clilname & "' AND fname = '" & clifname & "' AND medicaid = '" & medicaid & _
-					"' AND dob = '" & dob & "' AND gender = " & gender 
+					"' AND dob = '" & dob & "'" & strGender
 				rsCli.Open sqlCli, g_strCONN, 3, 1
 				If rsCli.EOF Then
 					Set rsCliList = Server.CreateObject("ADODB.RecordSet")
@@ -2741,8 +2781,9 @@ If Not rsTBL.EOF Then
 					rsCliList("fname") = Ucase(Trim(rsTBL("cfname")))
 					rsCliList("medicaid") = medicaid
 					rsCliList("dob") = dob
-					rsCliList("gender") = False
-					If gender = 1 Then rsCliList("gender") = True
+					If rsTbl("gender") <> vbNull Then
+						rsCliList("gender") = rsTbl("gender")
+					End If
 					rsCliList("timestamp") = ts
 					rsCliList.Update
 					rsCliList.Close

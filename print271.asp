@@ -145,7 +145,7 @@ If Request("fname") <> "none" Then
 					rsApp("lname") = arrNMLN(x)
 					rsApp("fname") = arrNMFN(x)
 					rsApp("dob") = arrDMG(x)
-					rsApp("gender") = 0
+					'rsApp("gender") = 0
 					rsApp.Update
 					rsApp.Close
 					Set rsApp = Nothing

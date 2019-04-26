@@ -14,7 +14,7 @@ End Function
 Function Z_MedicaidCheck(appid)
 	Z_MedicaidCheck = True
 	Set rsMed = Server.CreateObject("ADODB.RecordSet")
-	rsMed.Open "SELECT clname, cfname, dob, medicaid, meridian, nhhealth, wellsense, gender FROM request_T WHERE [index] = " & appid, g_strCONN, 3, 1
+	rsMed.Open "SELECT clname, cfname, dob, medicaid, meridian, nhhealth, wellsense FROM [request_T] WHERE [index] = " & appid, g_strCONN, 3, 1
 	If Not rsMed.EOF Then
 		lname = Trim(Ucase(rsMed("clname")))
 		fname = Trim(Ucase(rsMed("cfname")))
@@ -33,11 +33,9 @@ Function Z_MedicaidCheck(appid)
 		If Z_FixNull(rsMed("wellsense")) <> "" Then 
 			hmo = Z_FixNull(Ucase(Trim(rsMed("wellsense")))) 
 		End If
-		gender = false
-		if rsmed("gender") = 1 then gender = true
 	End If
-	rsmed.close
-	set rsmed = nothing
+	rsMed.close
+	set rsMed = nothing
 	Set rsTBL = Server.CreateObject("ADODB.RecordSet")
 	rsTBL.Open "SELECT * FROM medapprove_T WHERE medicaid = '" & hmo & "'", g_strCONN, 3, 1
 	if Not rstbl.EOF Then
@@ -89,12 +87,21 @@ Function Z_DOBMed(ReqID)
 	Set rsMed = Nothing
 End Function
 Function Z_GenderMed(ReqID)
-	Z_GenderMed = "M"
 	If Z_Czero(ReqID) = 0 Then Exit Function
 	Set rsMed = Server.CreateObject("ADODB.RecordSet")
 	rsMed.Open "SELECT Gender FROM Request_T WHERE [index] = " & ReqID, g_strCONN, 3, 1
 	If Not rsMed.EOF Then
-		If rsMed("gender") = 1 Then Z_GenderMed = "F"
+		If rsMed("gender") = vbNull Then
+			Z_GenderMed = "U"
+		Else
+			If rsMed("gender") = 1 Then
+				Z_GenderMed = "F"
+			Else
+				Z_GenderMed = "M"
+			End If
+		End If
+	Else
+		Z_GenderMed = "U"
 	End If
 	rsMed.Close
 	Set rsMed = Nothing
