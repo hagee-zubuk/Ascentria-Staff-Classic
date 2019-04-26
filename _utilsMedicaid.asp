@@ -92,7 +92,7 @@ Function Z_GenderMed(ReqID)
 	rsMed.Open "SELECT Gender FROM Request_T WHERE [index] = " & ReqID, g_strCONN, 3, 1
 	If Not rsMed.EOF Then
 		If rsMed("gender") = vbNull Then
-			Z_GenderMed = "U"
+			Z_GenderMed = "F" ' U"
 		Else
 			If rsMed("gender") = 1 Then
 				Z_GenderMed = "F"
@@ -101,7 +101,7 @@ Function Z_GenderMed(ReqID)
 			End If
 		End If
 	Else
-		Z_GenderMed = "U"
+		Z_GenderMed = "F" ' U"
 	End If
 	rsMed.Close
 	Set rsMed = Nothing
