@@ -439,7 +439,7 @@ ElseIf Request("ctrl")= 2 Then
 			CleanFname = Replace(Ucase(Trim(rsRep("fname"))), "'", "''")
 			Set rsCli = Server.CreateObject("ADODB.RecordSet")
 			sqlCli = "SELECT * FROM clientuploaded_T WHERE lname = '" & CleanLname & "' AND fname = '" & CleanFname & _
-				"' AND medicaid = '" & medicaid & "' AND dob = '" & rsRep("dob") & "'" & strGender
+				"' AND medicaid = '" & medicaid & "' AND dob = '" & rsRep("dob") & "' " ' & strGender
 			'" AND gender = " & gender2
 			rsCli.Open sqlCli, g_strCONN, 1, 3
 			If rsCli.EOF Then
