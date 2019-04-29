@@ -21,9 +21,9 @@ td:first-child {
 	strSQL = "SELECT r.[index], r.[InstID]" & _
 			", r.[langID], l.[Language]" & _
 			", r.[appDate], r.[appTimeFrom], r.[appTimeTo]" & _
-			", r.[deptID],  d.[dept], d.[Address], d.[City], d.[State], d.[Zip]" & _
-			", r.[CliAdd], r.[Caddress], r.[Ccity], r.[Czip], r.[Cphone]" & _
-			", r.[clname], r.[cfname]" & _
+			", r.[deptID],  d.[dept], d.[Address], d.[InstAdrI], d.[City], d.[State], d.[Zip]" & _
+			", r.[CliAdd], r.[Caddress], r.[Ccity], r.[cstate], r.[Czip], r.[Cphone]" & _
+			", r.[clname], r.[cfname], r.[courtcall]" & _
 			", r.[mrrec], r.[LBcomment] " & _
 			"FROM [request_t] AS r " & _
 			"INNER JOIN [dept_T] AS d ON r.[DeptID]=d.[index] " & _
@@ -37,23 +37,39 @@ td:first-child {
 		Response.Write "<h1>INVALID</h1><p>The request ID is invalid, or something went wrong. Please contact LB Tech Support.</p></body></html>"
 		Response.End
 	End If
+	If (rsIntr("cliAdd") ) Then
+		'tmpAddress = Trim(rsIntr("cfname") & " " & rsIntr("clname"))
+		'If Len(tmpAddress) > 1 Then tmpAddress = tmpAddress & " --<br />"
+		tmpAddress = "(Client Address)<br />" & rsIntr("caddress")
+		tmpStreet = rsIntr("ccity") & ", " & rsIntr("cstate") & " " & rsIntr("czip")
+	Else
+		tmpAddress = rsIntr("dept") & "<br />" & Trim(rsIntr("InstAdrI"))
+		If (Len(tmpAddress) > 1) Then
+			tmpAddress = rsIntr("address") & "<br />" & tmpAddress
+		Else
+			tmpAddress = rsIntr("address")
+		End If
+		tmpStreet = rsIntr("city") & ", " & rsIntr("state") & " " & rsIntr("zip")
+	End If
 	'strComment = Trim(rsIntr("LBcomment"))
 	'If Len(strComment) > 1 Then
 	'	strComment = "<tr><td>Comment:&nbsp;</td><td><pre>" & strComment & "</pre></td></tr>"
 	'End If
-	'strPhone = Trim(rsIntr("phone"))
-	'If Len(strPhone) > 1 Then
-	'	strPhone = "<tr><td>Phone:&nbsp;</td><td>" & strPhone & "</td></tr>"
-	'End If
+	If (rsIntr("courtcall") = TRUE) Then 
+		strPhone = Trim(rsIntr("Cphone"))
+		If Len(strPhone) > 1 Then
+			strPhone = "<tr><td>Phone:&nbsp;</td><td>" & strPhone & "</td></tr>"
+		End If
+	End If
+
 %>
 <div style="width: 80%; margin: 30px auto;">
 <h1>DO NOT PRINT THIS PAGE</h1>
 <p>
 Report to:
 <address style="margin-left: 50px; font-weight: bold; line-height: 120%; font-size: 150%;">
-	<%= rsIntr("dept") %><br />
-	<%= rsIntr("address") %><br />
-	<%= rsIntr("city") %>, <%= rsIntr("state") %> <%= rsIntr("zip") %><br />
+	<%= tmpAddress%><br />
+	<%= tmpStreet%><br />
 </address>
 </p>
 <table style="width: 90%;">
