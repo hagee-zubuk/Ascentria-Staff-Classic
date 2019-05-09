@@ -5222,11 +5222,31 @@ ElseIf tmpReport(0) = 68 Then 'Elliot
 		"<td class='tblgrn'>Medicaid/MCO</td>" & vbCrlf & _
 		"<td class='tblgrn'>Status</td>" & vbCrlf
 	CSVHead = "Request ID, Institution,Department,Client Last Name, Client First Name, Language, Interpreter Last Name, Interpreter First Name, Date, Billed Amount, Travel, Mileage, Medicaid/MCO, Status"	
-	sqlRep = "SELECT langid, request_T.[index] AS myindex, facility, deptid, clname, cfname, intrid, appdate, billable, emerfee, class, tt_inst, m_inst, " & _
-		"processedmedicaid, processed, status, medicaid, meridian, nhhealth, wellsense, InstRate FROM request_T, institution_T, dept_T WHERE request_T.[instid] = institution_T.[index] " & _
-		"AND request_T.deptID =  dept_T.[index] AND (Status = 0 OR status = 1) AND (request_T.[instid] = 19 OR request_T.[instid] = 265 OR " & _
-		"request_T.[instid] = 268 OR request_T.[instid] = 269 OR request_T.[instid] = 308 OR request_T.[instid] = 398 OR request_T.[instid] = 427 OR request_T.[instid] = 431 OR " & _
-		"request_T.[instid] = 472)"
+	'sqlRep = "SELECT langid, request_T.[index] AS myindex, facility, deptid, clname, cfname, intrid, appdate, billable, emerfee, class, tt_inst, m_inst, " & _
+	'	"processedmedicaid, processed, status, medicaid, meridian, nhhealth, wellsense, InstRate FROM request_T, institution_T, dept_T " & _
+	'	"WHERE request_T.[instid] = institution_T.[index] " & _
+	'	"AND request_T.deptID =  dept_T.[index] AND (Status = 0 OR status = 1) AND (request_T.[instid] = 19 OR request_T.[instid] = 265 OR " & _
+	'	"request_T.[instid] = 268 OR request_T.[instid] = 269 OR request_T.[instid] = 308 OR request_T.[instid] = 398 " & _
+	'	"OR request_T.[instid] = 427 OR request_T.[instid] = 431 " & _
+	'	"OR request_T.[instid] = 472)"
+	sqlRep = "SELECT langid, req.[index] AS myindex, facility, deptid, clname, cfname, intrid, appdate, billable, emerfee, class, tt_inst, m_inst, " & _
+			"processedmedicaid, processed, status, medicaid, meridian, nhhealth, wellsense, InstRate " & _
+			"FROM request_T AS req " & _
+			"INNER JOIN [institution_T] AS ins ON req.[instid]= ins.[index] " & _
+			"INNER JOIN [dept_T] AS dep ON req.[deptID]= dep.[index] " & _
+			"WHERE (Status = 0 OR status = 1) " & _
+			"AND (req.[instid] = 19 " & _
+			"OR req.[instid] = 265 " & _
+			"OR req.[instid] = 268 " & _
+			"OR req.[instid] = 269 " & _
+			"OR req.[instid] = 308 " & _
+			"OR req.[instid] = 398 " & _
+			"OR req.[instid] = 427 " & _
+			"OR req.[instid] = 431 " & _
+			"OR req.[instid] = 472 " & _
+			"OR req.[instid] = 987 " & _
+			"OR req.[instid] = 993 " & _
+			")"
 	If tmpReport(1) <> "" Then
 		sqlRep = sqlRep & " AND appDate >= '" & tmpReport(1) & "'"
 		strMSG = strMSG & " from " & tmpReport(1)
