@@ -132,6 +132,16 @@ If Request("sino") = 0 Then 'FOR REQUESTOR
 							"<font size='2' face='trebuchet MS'>&nbsp;<b>" & tmpCon & "</b></font><br>" & vbCrLf & _
 						"</td>" & vbCrLf & _
 					"</tr>" & vbCrLf & _
+
+					"<tr>" & vbCrLf & _
+						"<td align='right'>" & vbCrLf & _
+							"<font size='2' face='trebuchet MS'>Interpreter:</font><br>" & vbCrLf & _
+						"</td>" & vbCrLf & _
+						"<td align='left'>" & vbCrLf & _
+							"<font size='2' face='trebuchet MS'>&nbsp;<b>" & IntrName & "</b></font><br>" & vbCrLf & _
+						"</td>" & vbCrLf & _
+					"</tr>" & vbCrLf & _
+
 				"</table>" & vbCrLf & _
 			"</td></tr>" & vbCrLf & _
 			"<tr><td>&nbsp;</td></tr>" & vbCrLf & _	
