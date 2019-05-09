@@ -3049,12 +3049,14 @@ ElseIf Request("ctrl") = 28 Then 'cancel appt
 	End If
 	If SaveHist(Request("ID"), "reqconfirm.asp") Then
 		'log edit
-		Set fso = CreateObject("Scripting.FileSystemObject")
+On Error Resume Next		
+		Set fso = Server.CreateObject("Scripting.FileSystemObject")
 		Set LogMe = fso.OpenTextFile("C:\work\lss-lbis\log\editlogs.txt", 8, True)
 		strLog = Now & vbtab & "Appointment Cancelled - ID: " & Request("ID") & " by " & Request.Cookies("LBUsrName") & " DATE: " & tmpDate & " TIME: " & tmpTime
 		LogMe.WriteLine strLog
 		Set LogMe = Nothing
 		Set fso = Nothing
+On Error Goto 0		
 	End If
 	'SEND EMAIL TO NOTIFY CANCEL TO LB
 	strBody = "<img src='http:https://staff.thelanguagebank.org/lsslbis/images/LBISLOGOBandW.jpg'><br><br>" & vbCrLf & _

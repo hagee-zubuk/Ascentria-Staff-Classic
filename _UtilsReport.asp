@@ -1440,6 +1440,7 @@ Function SaveHist(xxx, mypage)
 	sqlHist = "SELECT * FROM hist_T WHERE Timestamp = '" & Now & "'"
 	sqlLB = "SELECT * FROM request_T WHERE [index] = " & xxx
 	rsLB.Open sqlLB, g_strCONN, 1, 3
+On error resume next
 	rsHist.Open sqlHist, g_strCONNHist2, 1,3 
 	If not rsLB.EOF Then
 		rsHist.AddNew
@@ -1448,22 +1449,21 @@ Function SaveHist(xxx, mypage)
 		rsHist("Author") = Request.Cookies("LBUsrName")
 		rsHist("pageused") = mypage
 		x = 1
-On error resume next
-    Do Until x = rsLB.Fields.Count
-    	If x = 7 Then 
-    		tmpHist = tmpHist & """" & rsLB.Fields(x).Value & "|" & GetLang(rsLB.Fields(x).Value) & ""","
-    	ElseIf x = 19 Then
-    		tmpHist = tmpHist & """" & rsLB.Fields(x).Value & "|" & GetInst(rsLB.Fields(x).Value) & ""","
-    	ElseIf x = 20 Then
-    		tmpHist = tmpHist & """" & rsLB.Fields(x).Value & "|" & GetDept(rsLB.Fields(x).Value) & ""","
-    	ElseIf x = 23 Then
-    		tmpHist = tmpHist & """" & rsLB.Fields(x).Value & "|" & GetIntr(rsLB.Fields(x).Value) & ""","
-    	Else
-        tmpHist = tmpHist & """" & rsLB.Fields(x).Value & ""","
-      End If
-        x = x + 1
-    Loop
-    rsHist("Hist") = trim(tmpHist)
+		Do Until x = rsLB.Fields.Count
+			If x = 7 Then 
+				tmpHist = tmpHist & """" & rsLB.Fields(x).Value & "|" & GetLang(rsLB.Fields(x).Value) & ""","
+			ElseIf x = 19 Then
+				tmpHist = tmpHist & """" & rsLB.Fields(x).Value & "|" & GetInst(rsLB.Fields(x).Value) & ""","
+			ElseIf x = 20 Then
+				tmpHist = tmpHist & """" & rsLB.Fields(x).Value & "|" & GetDept(rsLB.Fields(x).Value) & ""","
+			ElseIf x = 23 Then
+				tmpHist = tmpHist & """" & rsLB.Fields(x).Value & "|" & GetIntr(rsLB.Fields(x).Value) & ""","
+			Else
+				tmpHist = tmpHist & """" & rsLB.Fields(x).Value & ""","
+			End If
+        	x = x + 1
+    	Loop
+    	rsHist("Hist") = trim(tmpHist)
 		rsHist.Update
 	End If
 	rsLB.CLose
