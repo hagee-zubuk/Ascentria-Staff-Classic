@@ -190,11 +190,11 @@ If tmpClass = 3 Or tmpClass = 5 Then tmpName = tmpfName & " " & Left(tmplName, 1
 		<title>Language Bank - Request Confirmation - Print</title>
 		<meta content="text/html; charset=utf-8" http-equiv="content-type">
 		<link href='style.css' type='text/css' rel='stylesheet'>
-		<script language='JavaScript'>
-		<!--
-		 
-	  -->
-	</script>
+<style>
+.barcode {
+	width: 95%; height: 100%; margin-top: 6px; margin-bottom: 6px;
+}
+</style>		
 	</head>
 		<body >
 			<table cellSpacing='0' cellPadding='0' width='100%' bgColor='white' border='0' align='center'>
@@ -207,11 +207,8 @@ If tmpClass = 3 Or tmpClass = 5 Then tmpName = tmpfName & " " & Left(tmplName, 1
 									<td align='right' colspan='2'>
 										<table cellSpacing='0' cellPadding='0'  bgcolor='#FFFFFF'  border='0' align='right'>
 											<tr>
-												<td align='center' width='100%' style='border: solid 1px;'>
-													<img src="_barcode.asp?code=<%=PID%>&height=20&width=2&mode=code39&text=0&fileout=<%=myPath%>" style="visibility:hidden" >
-													<br />
-										    	&nbsp;<img src="Images/BC/<%=myBC%>">&nbsp;
-										   		<br />
+												<td align='center' width='100%' style='border: solid 1px; height: 20px;'>
+<img src="_barcode.asp?code=<%=PID%>&height=30&width=2&mode=code39&text=0" class="barcode" />
 	                  			<b><%=PID%></b>
 	                  		</td>
 											</tr>
@@ -305,20 +302,19 @@ INTERPRETER SERVICES
 									</td>
 
                   <td align='left' width='50%' style="border: 1px solid; vertical-align: top;" rowspan='5'>
-                  	<div style="padding: 2px 4px; position: relative; height: 100%; width: 100%;">
-<b>MEDICAL RECORD NUMBER ONLY:</b><br /><br />
-<div style="font-size: 150%; text-align: center; width: 100%;"><u><b><%=mrrec%></b></u></div>
-<div style="display: block; position: absolute; bottom: 25px; width: 90%; margin: 0px auto; text-align: center; ">
-	<div style="font-size: 70%;">LB tracking code</div>
-	<img src="_barcode.asp?code=<%=PID%>&height=20&width=2&mode=code39&text=0&fileout=<%=myPath%>" style="visibility:hidden" >
-	<br />
-	&nbsp;<img src="Images/BC/<%=myBC%>">&nbsp;
-	<br />
-	<b><%=PID%></b>
-</div>
-<div style="position: absolute; bottom: -0px; font-size: 80%;">
-	<i>Do not include any other information besides MRN#</i>
-</div>
+					<div style="padding: 2px 4px; position: relative; height: 100%; width: 100%;">
+						<b>MEDICAL RECORD NUMBER ONLY:</b><br />
+						<div style="font-size: 150%; text-align: center; width: 100%;"><u><b><%=mrrec%></b></u></div>
+						<div style="display: block; position: absolute; bottom: 25px; width: 95%; margin: 0px auto; text-align: center; height: 120px;">
+							<div style="font-size: 80%;">LB tracking code</div>
+							<div style="height: 80px; width: 100%; position: relative; top: -4px;">
+								<img src="_barcode.asp?code=<%=PID%>&height=20&width=2&mode=code39&text=0" class="barcode" />
+							</div>
+							<b><%=PID%></b>
+						</div>
+						<div style="position: absolute; bottom: -0px; font-size: 80%;">
+							<i>Do not include any other information besides MRN#</i>
+						</div>
 					</div>
                   </td>
 								</tr>
@@ -362,20 +358,18 @@ INTERPRETER SERVICES
 							<table cellSpacing='0' cellPadding='0' height='120px' width='620px' bgcolor='#FFFFFF' border='5'>
 								<tr>
 									<td align='center'>
-										<img src='images/LBISLOGOtrans.gif' align='center' height='60px'>
-										<br>
-										340&nbsp;Granite&nbsp;Street&nbsp;3<sup>rd</sup>&nbsp;Floor,&nbsp;Manchester,&nbsp;NH&nbsp;03102<br>
-										Tel:&nbsp;(603)&nbsp;410-6183&nbsp;|&nbsp;Fax:&nbsp;(603)&nbsp;410-6186
-										<br><br>
+										<img src='images/language-bank-logo.gif' align='center' height='60px' alt="LanguageBank" /><br />
+										340&nbsp;Granite&nbsp;Street&nbsp;3<sup>rd</sup>&nbsp;Floor,&nbsp;Manchester,&nbsp;NH&nbsp;03102<br />
+										11&nbsp;Shattuck&nbsp;Street,&nbsp;Worcester&nbsp;MA&nbsp;01605<br />
+										Tel:&nbsp;844.579.0610&nbsp;|&nbsp;Fax:&nbsp;603.410.6186<br />
 										<p class='title'>Service Verification Form</p>
 									</td>
 								</tr>
-								
 							</table>
 						</td>
 					</tr>
 				<% End If %>
-				<tr><td>&nbsp;</td></tr>
+				<!-- tr><td>&nbsp;</td></tr -->
 				<% If tmpInst = 671 Then %>
 					<tr>
 						<td>
@@ -923,19 +917,15 @@ tmpAppTTo =  tmpHr & ":" & Right("0" & Minute(tmpAppTTo),2) & tmpAP
 								<tr>
 									<td colspan='2' align='center' class='header' style='border:1px solid #000000;' bgcolor='#FFFFFF'>
 										Court Assignment
-										<p class='notes'>To be completed by Language Bank Staff</p>
+										<!-- p class='notes'>To be completed by Language Bank Staff</p -->
 									</td>
 								</tr>
 								<tr>
 									<td class='printForm'>
 										Project ID:&nbsp;&nbsp;<b><%=PID%></b>
-										
-										<img src="_barcode.asp?code=<%=PID%>&height=20&width=2&mode=code39&text=0&fileout=<%=myPath%>" style="visibility:hidden" >
 									</td>
-									<td class='printForm' Style='text-align: center;'>	
-										<br>
-										&nbsp;<img src="Images/BC/<%=myBC%>">&nbsp;
-										<br><br>
+									<td class='printForm' Style='text-align: center; min-width: 45%;'>	
+<img src="_barcode.asp?code=<%=PID%>&height=20&width=2&mode=code39&text=0" class="barcode" />
 									</td>
 								</tr>
 								<tr height='25px'>
@@ -1009,18 +999,18 @@ tmpAppTTo =  tmpHr & ":" & Right("0" & Minute(tmpAppTTo),2) & tmpAP
 										Job Verification
 										<p class='notes'>
 											To be completed at time of service<br>
-											To be completed by Language Bank Interpreter and signed by requesting agency and interpreter
+											<!-- To be completed by Language Bank Interpreter and signed by requesting agency and interpreter -->
 										</p>
 									</td>
 								</tr>
-								<tr height='25px'>
+								<!-- tr height='25px'>
 									<td class='printForm' style='border-right-color:#FFFFFF;'>
 										Date of Service:
 									</td>
 									<td class='printForm' colspan='2' width='250px' style='border-left-color:#FFFFFF;'>
 										Total Hours:
 									</td>
-								</tr>
+								</tr -->
 								<tr height='50px'>
 									<td class='printForm' valign='top' style='border-right-color:#FFFFFF;'>
 										Signature of Interpreter:
@@ -1048,38 +1038,13 @@ tmpAppTTo =  tmpHr & ":" & Right("0" & Minute(tmpAppTTo),2) & tmpAP
 										Date:
 									</td>
 								</tr>
-								<tr bgcolor='#FFFFFF'>
-									<td colspan='3' align='center' style='border:1px solid #000000;'>
-											<table cellSpacing='0' cellPadding='0' width='620px' bgColor='#FFFFFF' border='0'>
-												<tr>
-													<td colspan='3' class='printForm'>
-														For Billing Department - Billing Address<br>
-														&nbsp;&nbsp;&nbsp;&nbsp;
-														<u>Dale Trombley, Administrative Office of the Courts, 2 Noble Drive, Concord, NH 03301</u>
-													</td>
-												</tr>
-												<tr height='25px' bgcolor='#FFFFFF'>
-													<td class='printForm' valign='top' style='border-right-color:#D3D3D3;'>
-														___ Block Scheduled Time: ____________<br>
-														___ Regular Appoinment: _____________<br>
-														<%=tmpEmer%> Emergency Appointment: _________<br>
-														___ Cost of Service Hours: ____________<br>
-													</td>
-													<td class='printForm' colspan='2' valign='top' style='border-left-color:#D3D3D3;'>
-															&nbsp;&nbsp;Travel Time: ______________<br>
-															&nbsp;&nbsp;Total Allowable Mileage: ______________<br>
-															&nbsp;&nbsp;Total Travel Cost: ______________<br>
-															&nbsp;&nbsp;Cancellation Fee: _______________<br>
-															<b>&nbsp;&nbsp;TOTAL COST: _______________</b>
-														</form>
-													</td>
-												</tr>
-										</table>
-									</td>
-								</tr>
+
+<!-- For Billing Department section (removed 2019-06-03) -->
+
 								<tr>
-									<td class='printForm' colspan='3' style='text-align: center;'><i>*This form contains information that must be protected and kept at secure place at all times. Please make sure that the form is kept at place that you only have access to. If verification forms are saved on your computer, please make sure you are the only person who has access to folder(s) where forms are saved. After you fax or emails us a copy of the form, please make sure to shred/delete the form</i> </td>
-									
+									<td class='printForm' colspan='3' style='text-align: center;'><i>
+* This form contains confidential information that must be protected and kept in a secure place at all times. If verification forms are saved on your computer, please make sure you are the only person who has access to them. After you fax or email us a copy of the form, please make sure to shred or permanently delete the form.
+									</i> </td>
 								</tr>
 							</table>
 						</td>
@@ -1091,21 +1056,15 @@ tmpAppTTo =  tmpHr & ":" & Right("0" & Minute(tmpAppTTo),2) & tmpAP
 								<tr>
 									<td colspan='2' align='center' class='header' style='border:1px solid #000000;' bgcolor='#FFFFFF'>
 										Assignment
-										<p class='notes'>To be completed by Language Bank Staff</p>
+										<!-- p class='notes'>To be completed by Language Bank Staff</p -->
 									</td>
 								</tr>
 								<tr>
-									<td class='printForm' style="width: 310px; text-align: center;">
-										
-										<b><%=PID%></b>
-										
-										<img src="_barcode.asp?code=<%=PID%>&height=20&width=2&mode=code39&text=0&fileout=<%=myPath%>" style="visibility:hidden">
-
+									<td class='printForm'>
+										Project ID:&nbsp;&nbsp;<b><%=PID%></b>
 									</td>
 									<td class='printForm' Style='text-align: center;'>	
-										<br>
-										&nbsp;<img src="Images/BC/<%=myBC%>">&nbsp;
-										<br><br>
+<img src="_barcode.asp?code=<%=PID%>&height=20&width=2&mode=code39&text=0" class="barcode" />
 									</td>
 								</tr>
 								<tr height='25px'>
@@ -1281,7 +1240,9 @@ tmpAppTTo =  tmpHr & ":" & Right("0" & Minute(tmpAppTTo),2) & tmpAP
 										<table cellspacing='0' cellpadding='0' width='100%' border='0'>
 											
 											<tr>
-												<td class='printForm' colspan='3' style='text-align: center;'><i>*This form contains information that must be protected and kept at secure place at all times. Please make sure that the form is kept at place that you only have access to. If verification forms are saved on your computer, please make sure you are the only person who has access to folder(s) where forms are saved. After you fax or emails us a copy of the form, please make sure to shred/delete the form</i> </td>
+												<td class='printForm' colspan='3' style='text-align: center;'><i>
+* This form contains confidential information that must be protected and kept in a secure place at all times. If verification forms are saved on your computer, please make sure you are the only person who has access to them. After you fax or email us a copy of the form, please make sure to shred or permanently delete the form.
+												</i> </td>
 												
 											</tr>
 										</table>

@@ -298,7 +298,7 @@ ElseIf Request("sino") = 1 Or Request("sino") = 3 Then 'FOR INTERPRETER
 	Else
 		tmpMile = tmpDecMile
 	End If
-	mlMail.From = "DO-NOT-REPLY@thelanguagebank.org"
+	mlMail.From = "info@thelanguagebank.org"
 	strSubj = "[LBIS]Appointment Assignment - " & AppDate & " - " & subInst & " - " & SubCity
 	mlMail.Subject = strSubj
 	Set theDoc = Server.CreateObject("ABCpdf6.Doc") 'converts html to pdf
