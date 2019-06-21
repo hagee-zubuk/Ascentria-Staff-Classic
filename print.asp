@@ -305,7 +305,7 @@ INTERPRETER SERVICES
 					<div style="padding: 2px 4px; position: relative; height: 100%; width: 100%;">
 						<b>MEDICAL RECORD NUMBER ONLY:</b><br />
 						<div style="font-size: 150%; text-align: center; width: 100%;"><u><b><%=mrrec%></b></u></div>
-						<div style="display: block; position: absolute; bottom: 25px; width: 95%; margin: 0px auto; text-align: center; height: 120px;">
+						<div style="display: block; position: absolute; bottom: 25px; width: 95%; margin: 0px auto; text-align: center; height: 90px;">
 							<div style="font-size: 80%;">LB tracking code</div>
 							<div style="height: 80px; width: 100%; position: relative; top: -4px;">
 								<img src="_barcode.asp?code=<%=PID%>&height=20&width=2&mode=code39&text=0" class="barcode" />
@@ -921,7 +921,7 @@ tmpAppTTo =  tmpHr & ":" & Right("0" & Minute(tmpAppTTo),2) & tmpAP
 									</td>
 								</tr>
 								<tr>
-									<td class='printForm'>
+									<td class='printForm' rowspan="2">
 										Project ID:&nbsp;&nbsp;<b><%=PID%></b>
 									</td>
 									<td class='printForm' Style='text-align: center; min-width: 45%;'>	
@@ -929,10 +929,6 @@ tmpAppTTo =  tmpHr & ":" & Right("0" & Minute(tmpAppTTo),2) & tmpAP
 									</td>
 								</tr>
 								<tr height='25px'>
-									<td class='printForm'>
-										Date:<br>
-										&nbsp;&nbsp;<b><%=Date%></b>
-									</td>
 									<td class='printForm'>
 										Interpreter:<br>
 										&nbsp;&nbsp;<b><%=tmpInName%></b>
@@ -1060,7 +1056,7 @@ tmpAppTTo =  tmpHr & ":" & Right("0" & Minute(tmpAppTTo),2) & tmpAP
 									</td>
 								</tr>
 								<tr>
-									<td class='printForm'>
+									<td class='printForm' rowspan="2">
 										Project ID:&nbsp;&nbsp;<b><%=PID%></b>
 									</td>
 									<td class='printForm' Style='text-align: center;'>	
@@ -1068,10 +1064,6 @@ tmpAppTTo =  tmpHr & ":" & Right("0" & Minute(tmpAppTTo),2) & tmpAP
 									</td>
 								</tr>
 								<tr height='25px'>
-									<td class='printForm'>
-										Date:
-										&nbsp;&nbsp;<b><%=Date%></b>
-									</td>
 									<td class='printForm'>
 										Interpreter:
 										&nbsp;&nbsp;<b><%=tmpInName%></b>
