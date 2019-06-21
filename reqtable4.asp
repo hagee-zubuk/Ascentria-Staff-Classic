@@ -428,9 +428,11 @@ If Not rsReq.EOF Then
 	tmpTime = replace(tmpTime, " ", "")
 	Repx12 =  "x12270-" & tmpdate & tmpTime & ".x12" 
 	Set fso = CreateObject("Scripting.FileSystemObject")
+	' Response.Write x12Path & Repx12
 	Set ofilex12 = fso.CreateTextFile(x12Path & Repx12, 8, True) 
 	ofilex12.Write strMed
 	Set ofilex12 = Nothing
+	' Response.Write "<br /><br /><br />" & x12Path & Repx12 & " to " & x12pathbackup
 	fso.CopyFile x12Path & Repx12, x12pathbackup
 	Set fso = Nothing
 	tmpstring = "x12/" & Repx12
@@ -570,13 +572,11 @@ if x > 1 then btndis = ""
 			document.frmTbl.action = "reqtable4.asp?sort=" + sortnum + "&sType=" + <%=stype%>;
 			document.frmTbl.submit();
 		}
-		function FindMe(xxx)
-		{
+		function FindMe(xxx) {
 			document.frmTbl.action = "reqtable4.asp?action=3";
 			document.frmTbl.submit();
 		}
-		function FixSort()
-		{
+		function FixSort() {
 			document.frmTbl.txtFromd8.disabled = true;
 			document.frmTbl.txtTod8.disabled = true;
 			document.frmTbl.txtFromID.disabled = true;
@@ -592,13 +592,20 @@ if x > 1 then btndis = ""
 				document.frmTbl.txtToID.disabled = false;
 			}
 		}
-		function CalendarView(strDate)
-		{
+		function TblFix() {
+			/*
+			var bodyRect = document.body.getBoundingClientRect();
+			var tbl = document.getElementById('tabResults');
+			var elemRect = tbl.getBoundingClientRect();
+    		var offset  = elemRect.top - bodyRect.top;
+    		var y_sz = document.body.clientHeight - offset - 200;
+			tbl.style.height = y_sz + "px";	
+*/		} 
+		function CalendarView(strDate) {
 			document.frmTbl.action = 'calendarview2.asp?appDate=' + strDate;
 			document.frmTbl.submit();
 		}
-		function maskMe(str,textbox,loc,delim)
-		{
+		function maskMe(str,textbox,loc,delim) {
 			var locs = loc.split(',');
 			for (var i = 0; i <= locs.length; i++)
 			{
@@ -721,9 +728,9 @@ if x > 1 then btndis = ""
 	          text-align: left;
 	      }
 		</style>
-		<body onload='FixSort();'>
+		<body onload='FixSort(); TblFix();'>
 			<form method='POST' name='frmTbl' action='reqtable4.asp'>
-				<table cellSpacing='0' cellPadding='0' height='100%' width="100%" border='0' class='bgstyle2'>
+				<table cellSpacing='0' cellPadding='0' width="100%" border='0' class='bgstyle2'>
 					<tr>
 						<td height='100px'>
 							<!-- #include file="_header.asp" -->
@@ -737,7 +744,7 @@ if x > 1 then btndis = ""
 									<td>
 										<table cellpadding='0' cellspacing='0' width='100%' border='0'>
 											<tr>
-												<td align='left' width='1000px' style='vertical-align: bottom;'>
+												<td align='left' width='800px' style='vertical-align: bottom;'>
 													Legend: <font color='#FF00FF' size='+3'>•</font>&nbsp;-&nbsp;Canceled (billable)
 													&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 													Admin Sort:
@@ -754,7 +761,7 @@ if x > 1 then btndis = ""
 													<% If Cint(Request.Cookies("LBUSERTYPE")) <> 1 Then %> 
 														<td align='right'>
 															<input type='hidden' name='Hctr' value='<%=x%>'>
-																<input class='btntbl' type='button' <%=noAppr%> <%=btndis%> value='Approve/Disapprove Medicaid' style='height: 25px; width: 150px;' onmouseover="this.className='hovbtntbl'" onmouseout="this.className='btntbl'" onclick='ApproveMe();'>
+																<input class='btntbl' type='button' <%=noAppr%> <%=btndis%> value='Approve/Disapprove Medicaid' style='height: 25px; width: 250px;' onmouseover="this.className='hovbtntbl'" onmouseout="this.className='btntbl'" onclick='ApproveMe();'>
 																	<% If Request.Cookies("UID") = 2 Or tmpstring <> "" Then %>
 																<input class='btntbl' type="button" value="Download 270 file" style='width: 100px;' onmouseover="this.className='hovbtntbl'" onmouseout="this.className='btntbl'" onclick="document.location='<%=tmpstring%>';">
 															<% End If %>
@@ -765,10 +772,10 @@ if x > 1 then btndis = ""
 															<input type='hidden' name='Hctr' value='<%=x%>'>
 															
 																<% If tmpstring <> "" Then %>
-																	<input class='btntbl' type="button" value="Download 270 file" style='height: 25px; width: 175px;' onmouseover="this.className='hovbtntbl'" onmouseout="this.className='btntbl'" onclick="document.location='<%=tmpstring%>';">
+																	<input class='btntbl' type="button" value="Download 270 file" style='height: 25px; width: 275px;' onmouseover="this.className='hovbtntbl'" onmouseout="this.className='btntbl'" onclick="document.location='<%=tmpstring%>';">
 																	<br><br>
 																<% End If %>
-																<input class='btntbl' type='button' <%=noAppr%> <%=btndis%> value='Approve/Disapprove MCO/Medicaid' style='height: 25px; width: 175px;' onmouseover="this.className='hovbtntbl'" onmouseout="this.className='btntbl'" onclick='ApproveMe();'>
+																<input class='btntbl' type='button' <%=noAppr%> <%=btndis%> value='Approve/Disapprove MCO/Medicaid' style='height: 25px; width: 275px;' onmouseover="this.className='hovbtntbl'" onmouseout="this.className='btntbl'" onclick='ApproveMe();'>
 														
 														</td>
 													<% End If %>
@@ -794,158 +801,148 @@ if x > 1 then btndis = ""
 									</tr>
 									<tr><td>&nbsp;</td></tr>
 								<% End If %>
-								<tr>
-									<td colspan='11' align='left'>
-										<div class='container' style='height: 500px; width:80%; position: relative;'>
-											<table class="reqtble" width='100%'>	
-												<thead>
-													<tr class="noscroll">	
-														<td colspan='2' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" class='tblgrn' onclick='SortMe(1);'>Request ID</td>
-														<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(2);'>Institution</td>
-														<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(3);'>Language</td>
-														<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(4);'>Client</td>
-														<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(5);'>DOB</td>
-														<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(6);'>Medicaid</td>
-														<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(11);'>MCO</td>
-														<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(7);'>Interpreter</td>
-														<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(8);'>Xerox ID</td>
-														<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(9);'>Date</td>
-														<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(10);'>Billable Hrs</td>
-														<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(12);'>Happened</td>
-														<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'">
-														
-															Approve Medicaid<br>
-														
-															<input type='checkbox' name='chkall' <%=noAppr%> onclick='if(this.checked) {document.frmTbl.chkall2.checked=false;} checkme(<%=x%>);'>
-														</td>
-														<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'">
-														
-															Disapprove Medicaid<br>
-														
-															<input type='checkbox' name='chkall2' <%=noAppr%> onclick='if(this.checked) {document.frmTbl.chkall.checked=false;} checkme2(<%=x%>);'>
-														</td>
-													</tr>
-												</thead>
-												<tbody style="OVERFLOW: auto;">
-													<%=strtbl%>
-												</tbody>
-											</table>
-										</div>	
-									</td>
-								</tr>
 							</table>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<table width='100%'  border='0'>
-								<tr>
-									<td align='left'>
-										&nbsp;
-									</td>
-									<td align='right'>
-										<% If x <> 0 Then %>
-											<b><u><%=x - 1%></u></b> records &nbsp;&nbsp;&nbsp;&nbsp;
-										<% End If %>
-									</td>
-									<td>&nbsp;</td>
-								</tr>
-							</table>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<table cellSpacing='0' cellPadding='0' width='1005px' border='0' style='border: solid 1px;'>
-								<tr bgcolor='#FBEEB7'>
-									<td align='right' style='border-bottom: solid 1px;'><b>Sort:</b></td>
-									<td style='border-right: solid 1px;border-bottom: solid 1px;'>
-										<input type='radio' name='radioStat' value='0' <%=radioApp%> onclick='FixSort();'>&nbsp;<b>App. Date Range:</b>
-										&nbsp;&nbsp;
-										<input class='main' size='10' maxlength='10' name='txtFromd8' value='<%=tmpFromd8%>'>
-										&nbsp;-&nbsp;
-										<input class='main' size='10' maxlength='10' name='txtTod8' value='<%=tmpTod8%>'>
-										<span class='formatsmall' onmouseover="this.className='formatbig'" onmouseout="this.className='formatsmall'">mm/dd/yyyy</span>
-										&nbsp;&nbsp;
-										<input type='radio' name='radioStat' value='1' <%=radioID%> onclick='FixSort();'>&nbsp;<b>Request ID Range:</b>
-										&nbsp;&nbsp;
-										<input class='main' size='7' maxlength='7' name='txtFromID' value='<%=tmpFromID%>'>
-										&nbsp;-&nbsp;
-										<input class='main' size='7' maxlength='7' name='txtToID' value='<%=tmpToID%>'>
-										&nbsp;&nbsp;
-										<input type='radio' name='radioStat' value='2' <%=radioAll%> onclick='FixSort();'>&nbsp;<b>All</b>
-									</td>
-									<td align='right' style='border-bottom: solid 1px;'><b>&nbsp;&nbsp;</b></td>
-									<td style='border-bottom: solid 1px;'>
-										<input type='radio' name='radioAss' value='0' <%=radioAss%> onclick='FixSort();'>&nbsp;<b>For Review</b>
-										&nbsp;&nbsp;
-										<input type='radio' name='radioAss' value='1' <%=radioUnAss%> onclick='FixSort();'>&nbsp;<b>Approved</b>
-										&nbsp;&nbsp;
-										<input type='radio' name='radioAss' value='2' <%=radioUnAss2%> onclick='FixSort();'>&nbsp;<b>Disapprove</b>
-										<!--<input type='radio' name='radioAss' value='2' <%=radioUnAss2%> onclick='FixSort();'>&nbsp;<b>ALL</b>
-										&nbsp;&nbsp;//-->
-									</td>
-									<td align='right' style='border-left: solid 1px;' rowspan='3'>
-										<input class='btntbl' type='button' value='Find' style='height: 35px;' onmouseover="this.className='hovbtntbl'" onmouseout="this.className='btntbl'" onclick='FindMe(<%=Request("ctrlX")%>);'>
-									</td>
-									</td>
-								</tr>
-								<tr bgcolor='#FBEEB7'>
-									<td align='left' colspan='4'>
-										Institution:
-										<select class='seltxt' style='width: 285px;' name='selInst'>
-											<option value='-1'>&nbsp;</option>
-											<%=strInst%>
-										</select>
-										&nbsp;Language:
-										<select class='seltxt' style='width: 150px;' name='selLang'>
-											<option value='-1'>&nbsp;</option>
-											<%=strLang%>
-										</select>
-										<% If Cint(Request.Cookies("LBUSERTYPE")) <> 4 Then %>
-											&nbsp;Client:
-											<input class='main' size='20' maxlength='20' name='txtclilname' value="<%=tmpclilname%>">
-											&nbsp;,&nbsp;&nbsp;
-											<input class='main' size='20' maxlength='20' name='txtclifname' value="<%=tmpclifname%>">
-											<span class='formatsmall' onmouseover="this.className='formatbig'" onmouseout="this.className='formatsmall'">Last name, First name</span>
-										<% End If %>
-										
-										&nbsp;
-									</td>
-								</tr>
-								<tr bgcolor='#FBEEB7'>
-									<td align='left' colspan='4'>
-										Interpreter:
-										<select class='seltxt' name='selIntr'>
-											<option value='-1'>&nbsp;</option>
-											<%=strIntr%>
-										</select>
-										&nbsp;Classification:
-										<select class='seltxt' style='width: 100px;' name='selClass'>
-											<option value='-1'>&nbsp;</option>
-											<option value='1' <%=SocSer%>>Social Services</option>
-											<option value='2' <%=Priv%>>Private</option>
-											<option value='3' <%=Legal%>>Legal</option>
-											<option value='4' <%=Med%>>Medical</option>
-										</select>
-										&nbsp;Medicaid/MCO:
-										<select class='seltxt' style='width: 100px;' name='selMCO'>
-											<option value='1' <%=selmed%>>Medicaid</option>
-											<option value='2' <%=selmer%>>Meridian Health Plan</option>
-											<option value='3' <%=selnh%>>NH Healthy Families</option>
-											<option value='4' <%=selwell%>>Well Sense Health Plan</option>
-										</select>
-									</td>
-									<td>&nbsp;</td>
-								</tr>
-							</table>
-						</td>
-					</tr>
-					<tr>
-						<td height='50px' valign='bottom'>
-							<!-- #include file="_footer.asp" -->
-						</td>
-					</tr>
 				</table>
+
+<div id="tabResults" style='width:100%; position: relative;'>
+	<table class="reqtble" width='100%'>	
+		<thead>
+			<tr class="noscroll">	
+				<td colspan='2' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" class='tblgrn' onclick='SortMe(1);'>Request ID</td>
+				<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(2);'>Institution</td>
+				<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(3);'>Language</td>
+				<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(4);'>Client</td>
+				<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(5);'>DOB</td>
+				<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(6);'>Medicaid</td>
+				<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(11);'>MCO</td>
+				<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(7);'>Interpreter</td>
+				<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(8);'>Xerox ID</td>
+				<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(9);'>Date</td>
+				<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(10);'>Billable Hrs</td>
+				<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'" onclick='SortMe(12);'>Happened</td>
+				<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'">
+				
+					Approve Medicaid<br>
+				
+					<input type='checkbox' name='chkall' <%=noAppr%> onclick='if(this.checked) {document.frmTbl.chkall2.checked=false;} checkme(<%=x%>);'>
+				</td>
+				<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'">
+				
+					Disapprove Medicaid<br>
+				
+					<input type='checkbox' name='chkall2' <%=noAppr%> onclick='if(this.checked) {document.frmTbl.chkall.checked=false;} checkme2(<%=x%>);'>
+				</td>
+			</tr>
+		</thead>
+		<tbody style="OVERFLOW: auto;">
+			<%=strtbl%>
+		</tbody>
+	</table>
+	<table width='100%'  border='0'>
+		<tr><td align='left'>&nbsp;</td>
+			<td align='right'>
+<% If x <> 0 Then %>
+				<b><u><%=x - 1%></u></b> records &nbsp;&nbsp;&nbsp;&nbsp;
+<% End If %>
+				</td>
+			<td>&nbsp;</td>
+		</tr>
+	</table>
+</div>	
+
+
+		<table cellSpacing='0' cellPadding='0' width='1005px' border='0' style="border: solid 1px; position: relative;">
+			<tr bgcolor='#FBEEB7'>
+				<td align='right' style='border-bottom: solid 1px;'><b>Sort:</b></td>
+				<td style='border-right: solid 1px;border-bottom: solid 1px;'>
+					<input type='radio' name='radioStat' value='0' <%=radioApp%> onclick='FixSort();'>&nbsp;<b>App. Date Range:</b>
+					&nbsp;&nbsp;
+					<input class='main' size='10' maxlength='10' name='txtFromd8' value='<%=tmpFromd8%>'>
+					&nbsp;-&nbsp;
+					<input class='main' size='10' maxlength='10' name='txtTod8' value='<%=tmpTod8%>'>
+					<span class='formatsmall' onmouseover="this.className='formatbig'" onmouseout="this.className='formatsmall'">mm/dd/yyyy</span>
+					&nbsp;&nbsp;
+					<input type='radio' name='radioStat' value='1' <%=radioID%> onclick='FixSort();'>&nbsp;<b>Request ID Range:</b>
+					&nbsp;&nbsp;
+					<input class='main' size='7' maxlength='7' name='txtFromID' value='<%=tmpFromID%>'>
+					&nbsp;-&nbsp;
+					<input class='main' size='7' maxlength='7' name='txtToID' value='<%=tmpToID%>'>
+					&nbsp;&nbsp;
+					<input type='radio' name='radioStat' value='2' <%=radioAll%> onclick='FixSort();'>&nbsp;<b>All</b>
+				</td>
+				<td align='right' style='border-bottom: solid 1px;'><b>&nbsp;&nbsp;</b></td>
+				<td style='border-bottom: solid 1px;'>
+					<input type='radio' name='radioAss' value='0' <%=radioAss%> onclick='FixSort();'>&nbsp;<b>For Review</b>
+					&nbsp;&nbsp;
+					<input type='radio' name='radioAss' value='1' <%=radioUnAss%> onclick='FixSort();'>&nbsp;<b>Approved</b>
+					&nbsp;&nbsp;
+					<input type='radio' name='radioAss' value='2' <%=radioUnAss2%> onclick='FixSort();'>&nbsp;<b>Disapprove</b>
+					<!--<input type='radio' name='radioAss' value='2' <%=radioUnAss2%> onclick='FixSort();'>&nbsp;<b>ALL</b>
+					&nbsp;&nbsp;//-->
+				</td>
+				<td align='right' style='border-left: solid 1px;' rowspan='3'>
+					<input class='btntbl' type='button' value='Find' style='height: 35px;' onmouseover="this.className='hovbtntbl'" onmouseout="this.className='btntbl'" onclick='FindMe(<%=Request("ctrlX")%>);'>
+				</td>
+				</td>
+			</tr>
+			<tr bgcolor='#FBEEB7'>
+				<td align='left' colspan='4'>
+					Institution:
+					<select class='seltxt' style='width: 285px;' name='selInst'>
+						<option value='-1'>&nbsp;</option>
+						<%=strInst%>
+					</select>
+					&nbsp;Language:
+					<select class='seltxt' style='width: 150px;' name='selLang'>
+						<option value='-1'>&nbsp;</option>
+						<%=strLang%>
+					</select>
+					<% If Cint(Request.Cookies("LBUSERTYPE")) <> 4 Then %>
+						&nbsp;Client:
+						<input class='main' size='20' maxlength='20' name='txtclilname' value="<%=tmpclilname%>">
+						&nbsp;,&nbsp;&nbsp;
+						<input class='main' size='20' maxlength='20' name='txtclifname' value="<%=tmpclifname%>">
+						<span class='formatsmall' onmouseover="this.className='formatbig'" onmouseout="this.className='formatsmall'">Last name, First name</span>
+					<% End If %>
+					
+					&nbsp;
+				</td>
+			</tr>
+			<tr bgcolor='#FBEEB7'>
+				<td align='left' colspan='4'>
+					Interpreter:
+					<select class='seltxt' name='selIntr'>
+						<option value='-1'>&nbsp;</option>
+						<%=strIntr%>
+					</select>
+					&nbsp;Classification:
+					<select class='seltxt' style='width: 100px;' name='selClass'>
+						<option value='-1'>&nbsp;</option>
+						<option value='1' <%=SocSer%>>Social Services</option>
+						<option value='2' <%=Priv%>>Private</option>
+						<option value='3' <%=Legal%>>Legal</option>
+						<option value='4' <%=Med%>>Medical</option>
+					</select>
+					&nbsp;Medicaid/MCO:
+					<select class='seltxt' style='width: 100px;' name='selMCO'>
+						<option value='1' <%=selmed%>>Medicaid</option>
+						<option value='2' <%=selmer%>>Meridian Health Plan</option>
+						<option value='3' <%=selnh%>>NH Healthy Families</option>
+						<option value='4' <%=selwell%>>Well Sense Health Plan</option>
+					</select>
+				</td>
+				<td>&nbsp;</td>
+			</tr>
+		</table>
+<!-- footer! -->
+<table cellSpacing='0' cellPadding='0' width="100%" border='0' class='bgstyle2'>
+	<tr><td height='50px' valign='bottom'>
+<!-- #include file="_footer.asp" -->
+			</td>
+		</tr>
+</table>
+
+
 			</form>
 		</body>
 	</head>
