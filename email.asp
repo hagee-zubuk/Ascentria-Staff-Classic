@@ -254,7 +254,7 @@ If Request("sino") = 0 Then 'FOR REQUESTOR
 			"<tr><td align='left'>" & vbCrLf & _
 				"<font size='2' face='trebuchet MS'>The request for the above appointment has been received and confirmed.  A Language Bank Interpreter will be<br>" & vbCrlf & _
 				"present for this appointment.  If any of the above information is not correct, changes or you have additional questions,<br>" & vbCrLf & _
-				"please contact the LanguageBank office immediately at 410-6183 or email us at <a href='mailto:info@thelanguagebank.org'>info@thelanguagebank.org</a>.<br>"  & vbCrlf & _
+				"please contact the LanguageBank office immediately at 410-6183 or email us at <a href='mailto:language.services@thelanguagebank.org'>language.services@thelanguagebank.org</a>.<br>"  & vbCrlf & _
 				"Please refer to the Project ID Number when calling or emailing the office. If there are any difficulties in completing<br>" & vbCrLf & _
 				"this assignment you will be notified.<br><br>" & vbCrLf & _
 				"Language Bank Cancellation Policy:<br>" & vbCrLf & _
@@ -298,7 +298,7 @@ ElseIf Request("sino") = 1 Or Request("sino") = 3 Then 'FOR INTERPRETER
 	Else
 		tmpMile = tmpDecMile
 	End If
-	mlMail.From = "info@thelanguagebank.org"
+	mlMail.From = "language.services@thelanguagebank.org"
 	strSubj = "[LBIS]Appointment Assignment - " & AppDate & " - " & subInst & " - " & SubCity
 	mlMail.Subject = strSubj
 	Set theDoc = Server.CreateObject("ABCpdf6.Doc") 'converts html to pdf
@@ -379,7 +379,7 @@ ElseIf Request("sino") = 1 Or Request("sino") = 3 Then 'FOR INTERPRETER
 	theDoc.Save attachPDF
 	strBody = "<font size='2' face='trebuchet MS'>A request has been assigned to you.<br><br>Attached is the verification form for the request. Please fill-out the form  upon completion." & vbCrlf & _
 		"If there are any questions or clarifications, please contact the LanguageBank office immediately at 410-6183 or email us at " & vbCrLf & _
-		"<a href='mailto:info@thelanguagebank.org'>info@thelanguagebank.org</a>."& _
+		"<a href='mailto:language.services@thelanguagebank.org'>language.services@thelanguagebank.org</a>."& _
 		"This email was initiated by " & Request.Cookies("LBUsrName") & "</font><br><br>" & vbCrLf & _
 		"<font size='2' face='trebuchet MS'><b>Payable Mileage: " & Z_FormatNumber(tmpMile, 2) & " Miles<br>" & vbCrLf & _
 		"Payable Travel Time: " & Z_FormatNumber(tmpTravel, 2) & " Hrs.</b><br><br></font>" & vbCrLf
