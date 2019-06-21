@@ -94,7 +94,7 @@
 			hmo = Z_FixNull(Ucase(Trim(rsMed("wellsense")))) 
 		End If
 		gender = "Unknown"
-		If rsmed("gender") <> vbNull Then
+		If Not IsNull(rsmed("gender"))  Then
 			If rsmed("gender") = 1 Then
 				gender = "Female"
 			ElseIf rsmed("gender") = 0 Then
@@ -111,7 +111,7 @@
 		mfname = rsTBL("fname") 
 		mdob = rsTBL("dob")
 		mgender = "Unknown"
-		If rsTBL("gender") <> vbNull Then
+		If Not IsNull( rsTBL("gender") ) Then
 			If rsTBL("gender") = 1 Then
 				mgender = "Female"
 			ElseIf rsTBL("gender") = 0 Then

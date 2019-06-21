@@ -158,7 +158,7 @@ If Not rsConfirm.EOF Then
 	If Left(reqTrail, 4) = "<br>" Then reqTrail = Mid(reqTrail, 5)
 	chkVer = ""
 	If rsConfirm("verified") = True Then chkVer = "(CONFIRMED)"
-	If rsConfirm("Gender") = vbNull Then
+	If IsNull( rsConfirm("Gender") ) Then
 		tmpSex = "UNKNOWN"
 	Else
 		tmpGender	= Z_CZero(rsConfirm("Gender"))

@@ -117,7 +117,7 @@ If Not rsConfirm.EOF Then
 	tmpGender	= rsConfirm("Gender")
 	tmpMale = ""
 	tmpFemale = ""
-	If tmpGender <> vbNull Then
+	If Not IsNull( tmpGender ) Then
 		If tmpGender = 0 Then 
 			tmpMale = "SELECTED"
 		Else

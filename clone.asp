@@ -132,7 +132,7 @@ If Request("Clone") <> "" Then
 	'rsMain("BilComment") = tmpEntry(33)
 	'rsMain("LBcomment") = tmpEntry(34)
 	'response.write "<!---" & tmpEntry(35) & "-->"
-	If tmpGender <> vbNull Then
+	If Not IsNull(tmpGender) Then
 		rsMain("Gender") = tmpGender
 	End If
 	rsMain("Child") = false
