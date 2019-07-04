@@ -66,7 +66,7 @@ If Not rsConfirm.EOF Then
 	If rsConfirm("CliAdd") = True Then tmpDeptaddr = rsConfirm("CAddress") &", " & rsConfirm("CliAdrI") & ", " & rsConfirm("CCity") & ", " & rsConfirm("CState") & ", " & rsConfirm("CZip")
 	tmpHPID = Z_CZero(rsConfirm("hpid"))
 	
-	If rsConfirm("Gender") = vbNull Then
+	If IsNull( rsConfirm("Gender") ) Then
 		tmpSex = "Unknown"
 	Else
 		If rsConfirm("Gender") = 1 Then
@@ -163,7 +163,7 @@ If tmpHPID <> 0 Then
 			tmpMeet = UCase(GetLoc(rsHP("mlocation")))
 			If tmpMeet = "OTHER" Then tmpMeet = rsHP("mother")
 		End If	
-		tmpMinor2 = ""
+		tmpMinor2 = "-"
 		If rsHP("minor") = True Then tmpMinor2 = "* Minor"
 		tmpParents = ""
 		If rsHP("parents") <> "" Then tmpParents = rsHP("parents") 
@@ -1134,10 +1134,14 @@ tmpAppTTo =  tmpHr & ":" & Right("0" & Minute(tmpAppTTo),2) & tmpAP
 								</tr>
 								<tr height='25px'>
 									<td class='printForm'>
-										Adult or Child:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Gender:<br>
-										&nbsp;&nbsp;<b><%=tmpMinor2%></b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-										&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-										<b><%=tmpSex%></b>
+										<div style="float: left; width: 40%; position: relative;">
+											Adult or Child:<br/>
+											<b><%=tmpMinor2%></b>
+										</div>
+										<div style="float: left; width: 40%; position: relative;">
+											Gender:<br/>
+											<b><%=tmpSex%></b>
+										</div>
 									</td>
 									<% If tmpHPID = 0 Then %>
 										<td class='printForm'>
