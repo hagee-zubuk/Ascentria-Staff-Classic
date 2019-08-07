@@ -1563,15 +1563,21 @@ ElseIf Request("ctrl") = 11 Then 'SAVE ASSIGNED INTERPRETER
 		' *** GET TRAVEL TIME, AND MILEAGE
 		Set oGDM = New acaDistanceMatrix
 		oGDM.DBCONN = g_strCONN
-		sqlIntr = "SELECT itr.[Zip Code] AS [itr_zip], itr.[address1] + ', ' + itr.[City] + ', ' + itr.[State] + ' ' + itr.[Zip Code] AS [itr_addr] " & _
+		sqlIntr = "SELECT itr.[Zip Code] AS [itr_zip], itr.[address1] AS [itr_street], itr.[City] AS [itr_City], itr.[State] AS [itr_state] " & _
 				"FROM [interpreter_T] AS itr WHERE [index]=" & tmpIntrID
 		Set rsIntr = Server.CreateObject("ADODB.RecordSet")
 		rsIntr.Open sqlIntr, g_strCONN, 3, 1
+		strItrAdr = ""
 		If rsIntr.EOF Then
-			strItrAdr = Request("txtIntrAddr") & ", " & Request("txtIntrCity") & ", " & UCASE( Request("txtIntrState")) & " " & Request("txtIntrCZip")
+			If Not Z_Blank(Request("txtIntrAddr")) Then strItrAdr = strItrAdr & Request("txtIntrAddr") & ", "
+			If Not Z_Blank(Request("txtIntrCity")) Then strItrAdr = strItrAdr & Request("txtIntrCity") & ", "
+			strItrAdr = strItrAdr & Request("txtIntrState") & " " & Request("txtIntrCZip")
 			strItrZip = Request("txtIntrCZip")
 		Else
-			strItrAdr = rsIntr("itr_addr")
+			If Not Z_Blank(rsIntr("itr_street")) Then strItrAdr = strItrAdr & rsIntr("itr_street") & ", "
+			If Not Z_Blank(rsIntr("itr_City")) Then strItrAdr = strItrAdr & rsIntr("itr_City") & ", "
+			strItrAdr = strItrAdr & rsIntr("itr_state") & " " & rsIntr("itr_zip")
+			'strItrAdr = rsIntr("itr_addr")
 			strItrZip = rsIntr("itr_zip")
 		End If
 		rsIntr.Close
@@ -2111,7 +2117,7 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 			If medicaid = "" Then medicaid = Ucase(Trim(rsMain("nhhealth")))
 			If medicaid = "" Then medicaid = Ucase(Trim(rsMain("wellsense")))
 			dob = Trim(rsMain("dob"))
-			If rsMain("gender") = vbNull Then
+			If IsNull(rsMain("gender") ) Then
 				strGender = " "
 			Else
 				strGender = " AND [gender]="
@@ -2136,7 +2142,7 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 					rsCliList("fname") = clifname
 					rsCliList("medicaid") = medicaid
 					rsCliList("dob") = dob
-					If rsMain("gender") <> vbNull Then
+					If Not IsNull(rsMain("gender"))  Then
 						rsCliList("gender") = False
 						If gender = 1 Then rsCliList("gender") = True
 					End If
@@ -2711,106 +2717,107 @@ ElseIf Request("ctrl") = 22 Then 'Approve Medicaid
 			sqlTBL = "SELECT * FROM request_T WHERE appDate >= '" & Request("txtFromd8") & "' AND appDate <= '" & Request("txtTod8") & "'  AND autoacc <> 1 AND wcomp <> 1 AND (medicaid <> '' OR NOT medicaid IS NULL OR meridian <> '' OR NOT meridian IS NULL)"
 		End If
 	End If
-rsTBL.Open sqlTBL, g_strCONN, 1, 3 
-ts = now
-If Not rsTBL.EOF Then 
-	y = Request("Hctr")
-	For ctr = 1 To y - 1
-		tmpID = Request("ID" & ctr)
-		tmpIndex = "Index= " & tmpID
-		rsTBL.MoveFirst
-		rsTBL.Find(tmpIndex)
-		If Not rsTBL.EOF Then
-			rsTBL("vermed") = 0
-			If Request("chkM" & ctr) <> "" Then 
-				syscomstr = Z_fixNull(rsTBL("syscom"))
-				syscomstr = Replace(syscomstr, "<br>Medicaid approved.", "")
-				syscomstr = Replace(syscomstr, "<br>Medicaid disapproved.", "")
-				rsTBL("syscom") = syscomstr & "<br>Medicaid approved." 
-				rsTBL("vermed") = 1
-			End If
-			If Request("chkX" & ctr) <> "" Then 
-				rsTBL("vermed") = 2
-				If Z_Czero(Instr(rsTBL("syscom"), "Medicaid disapproved.")) = 0 Then rsTBL("syscom") = rsTBL("syscom") & "<br>Medicaid disapproved." 
-				syscomstr = Z_fixNull(rsTBL("syscom"))
-				syscomstr = Replace(syscomstr, "<br>Medicaid approved.", "")
-				syscomstr = Replace(syscomstr, "<br>Medicaid disapproved.", "")
-				rsTBL("syscom") = syscomstr & "<br>Medicaid disapproved." 
-			End If
-			rsTBL.Update
-			If rsTBL("vermed") = 1 Then
-				clilname = CleanMeSingleQuote(Ucase(Trim(rsTBL("clname"))))
-				clifname = CleanMeSingleQuote(Ucase(Trim(rsTBL("cfname"))))
-				'medicaid = Ucase(Trim(rsTBL("medicaid")))
-				'If medicaid = "" Then medicaid = Ucase(Trim(rsTBL("meridian")))
-				'If medicaid = "" Then medicaid = Ucase(Trim(rsTBL("nhhealth")))
-				'If medicaid = "" Then medicaid = Ucase(Trim(rsTBL("wellsense")))
-				medicaid = Z_FixNull(Ucase(Trim(rsTBL("medicaid")))) 
-				If Z_FixNull(rsTBL("meridian")) <> "" Then 
-					medicaid = Z_FixNull(Ucase(Trim(rsTBL("meridian"))))
+	rsTBL.Open sqlTBL, g_strCONN, 1, 3 
+	ts = now
+	If Not rsTBL.EOF Then 
+		y = Request("Hctr")
+		For ctr = 1 To y - 1
+			tmpID = Request("ID" & ctr)
+			tmpIndex = "Index= " & tmpID
+			rsTBL.MoveFirst
+			rsTBL.Find(tmpIndex)
+			If Not rsTBL.EOF Then
+				rsTBL("vermed") = 0
+				If Request("chkM" & ctr) <> "" Then 
+					syscomstr = Z_fixNull(rsTBL("syscom"))
+					syscomstr = Replace(syscomstr, "<br>Medicaid approved.", "")
+					syscomstr = Replace(syscomstr, "<br>Medicaid disapproved.", "")
+					rsTBL("syscom") = syscomstr & "<br>Medicaid approved." 
+					rsTBL("vermed") = 1
 				End If
-				If Z_FixNull(rsTBL("nhhealth")) <> "" Then 
-					medicaid = Z_FixNull(Ucase(Trim(rsTBL("nhhealth"))))
+				If Request("chkX" & ctr) <> "" Then 
+					rsTBL("vermed") = 2
+					If Z_Czero(Instr(rsTBL("syscom"), "Medicaid disapproved.")) = 0 Then rsTBL("syscom") = rsTBL("syscom") & "<br>Medicaid disapproved." 
+					syscomstr = Z_fixNull(rsTBL("syscom"))
+					syscomstr = Replace(syscomstr, "<br>Medicaid approved.", "")
+					syscomstr = Replace(syscomstr, "<br>Medicaid disapproved.", "")
+					rsTBL("syscom") = syscomstr & "<br>Medicaid disapproved." 
 				End If
-				If Z_FixNull(rsTBL("wellsense")) <> "" Then 
-					medicaid = Z_FixNull(Ucase(Trim(rsTBL("wellsense")))) 
-				End If
-				dob = Trim(rsTBL("dob"))
-				
-				If rsTBL("gender") = vbNull Then
-					strGender = " "
-				Else
-					strGender = " AND [gender]="
-					If rsTbl("gender") = 0 Then
-						strGender = strGender & "0"
+				rsTBL.Update
+				If rsTBL("vermed") = 1 Then
+					clilname = CleanMeSingleQuote(Ucase(Trim(rsTBL("clname"))))
+					clifname = CleanMeSingleQuote(Ucase(Trim(rsTBL("cfname"))))
+					'medicaid = Ucase(Trim(rsTBL("medicaid")))
+					'If medicaid = "" Then medicaid = Ucase(Trim(rsTBL("meridian")))
+					'If medicaid = "" Then medicaid = Ucase(Trim(rsTBL("nhhealth")))
+					'If medicaid = "" Then medicaid = Ucase(Trim(rsTBL("wellsense")))
+					medicaid = Z_FixNull(Ucase(Trim(rsTBL("medicaid")))) 
+					If Z_FixNull(rsTBL("meridian")) <> "" Then 
+						medicaid = Z_FixNull(Ucase(Trim(rsTBL("meridian"))))
+					End If
+					If Z_FixNull(rsTBL("nhhealth")) <> "" Then 
+						medicaid = Z_FixNull(Ucase(Trim(rsTBL("nhhealth"))))
+					End If
+					If Z_FixNull(rsTBL("wellsense")) <> "" Then 
+						medicaid = Z_FixNull(Ucase(Trim(rsTBL("wellsense")))) 
+					End If
+					dob = Trim(rsTBL("dob"))
+					
+					If IsNull(rsTBL("gender") ) Then
+						strGender = " "
 					Else
-						strGender = strGender & "1"
+						strGender = " AND [gender]="
+						If rsTbl("gender") = 0 Then
+							strGender = strGender & "0"
+						Else
+							strGender = strGender & "1"
+						End If
+						strGender = strGender & " "
 					End If
-					strGender = strGender & " "
-				End If
 
-				Set rsCli = Server.CreateObject("ADODB.RecordSet")
-				sqlCli = "SELECT * FROM clientuploaded_T WHERE lname = '" & clilname & "' AND fname = '" & clifname & "' AND medicaid = '" & medicaid & _
-					"' AND dob = '" & dob & "'" & strGender
-				rsCli.Open sqlCli, g_strCONN, 3, 1
-				If rsCli.EOF Then
-					Set rsCliList = Server.CreateObject("ADODB.RecordSet")
-					rsCliList.Open "SELECT * FROM clientList_T", g_strCONN, 1, 3
-					rsCliList.AddNew
-					rsCliList("lname") = Ucase(Trim(rsTBL("clname")))
-					rsCliList("fname") = Ucase(Trim(rsTBL("cfname")))
-					rsCliList("medicaid") = medicaid
-					rsCliList("dob") = dob
-					If rsTbl("gender") <> vbNull Then
-						rsCliList("gender") = rsTbl("gender")
+					Set rsCli = Server.CreateObject("ADODB.RecordSet")
+					sqlCli = "SELECT * FROM clientuploaded_T WHERE lname = '" & clilname & "' AND fname = '" & clifname & "' AND medicaid = '" & medicaid & _
+						"' AND dob = '" & dob & "'" & strGender
+					rsCli.Open sqlCli, g_strCONN, 3, 1
+					If rsCli.EOF Then
+						Set rsCliList = Server.CreateObject("ADODB.RecordSet")
+						rsCliList.Open "SELECT * FROM clientList_T", g_strCONN, 1, 3
+						rsCliList.AddNew
+						rsCliList("lname") = Ucase(Trim(rsTBL("clname")))
+						rsCliList("fname") = Ucase(Trim(rsTBL("cfname")))
+						rsCliList("medicaid") = medicaid
+						rsCliList("dob") = dob
+						If Not IsNull(rsTbl("gender") ) Then
+							rsCliList("gender") = rsTbl("gender")
+						End If
+						rsCliList("timestamp") = ts
+						rsCliList.Update
+						rsCliList.Close
+						Set rsCliList = Nothing
+						'Set fso = CreateObject("Scripting.FileSystemObject")
+						'Set oFileNew = fso.OpenTextFile(clientList, 8)
+						'oFileNew.Write """" & cliname & """,""" & clifname & """,""" & medicaid & """,""" & dob & """,""" & gender & """"
+						'oFileNew.Close
+						'Set oFileNew = Nothing
+						'Set fso = Nothing
 					End If
-					rsCliList("timestamp") = ts
-					rsCliList.Update
-					rsCliList.Close
-					Set rsCliList = Nothing
-					'Set fso = CreateObject("Scripting.FileSystemObject")
-					'Set oFileNew = fso.OpenTextFile(clientList, 8)
-					'oFileNew.Write """" & cliname & """,""" & clifname & """,""" & medicaid & """,""" & dob & """,""" & gender & """"
-					'oFileNew.Close
-					'Set oFileNew = Nothing
-					'Set fso = Nothing
+					rsCli.Close
+					Set rsCli = Nothing
+					
 				End If
-				rsCli.Close
-				Set rsCli = Nothing
-				
+				If SaveHist(tmpID, "reqtable4.asp") Then
+				 'Session("MSG") = "HIST SAVED"
+				End If
 			End If
-			If SaveHist(tmpID, "reqtable4.asp") Then
-			 'Session("MSG") = "HIST SAVED"
-			End If
-		End If
-	Next
-End If
-rsTBL.Close
-Set rsTBL = Nothing
-Session("MSG") = "Medicaid Approved/Disapproved."
-Response.Redirect "reqtable4.asp?radioStat=" & Request("radioStat") & "&txtFromd8=" & Request("txtFromd8") & "&txtTod8=" & Request("txtTod8") & _
-	"&txtFromID=" & Request("txtFromID") & "&txtToID=" & Request("txtToID") & "&selInst=" & Request("selInst") & "&selLang=" & Request("selLang") & "&tmpclilname=" & Request("txtclilname") & "&tmpclifname=" & Request("txtclifname") & _
-	"&selIntr=" & Request("selIntr") & "&selClass=" & Request("selClass") & "&selAdmin=" & Request("selAdmin") & "&action=3"
+		Next
+	End If
+	rsTBL.Close
+	Set rsTBL = Nothing
+	Session("MSG") = "Medicaid Approved/Disapproved."
+	Response.Redirect "reqtable4.asp?radioStat=" & Request("radioStat") & "&txtFromd8=" & Request("txtFromd8") & "&txtTod8=" & Request("txtTod8") & _
+			"&txtFromID=" & Request("txtFromID") & "&txtToID=" & Request("txtToID") & "&selInst=" & Request("selInst") & "&selLang=" & _
+			Request("selLang") & "&tmpclilname=" & Request("txtclilname") & "&tmpclifname=" & Request("txtclifname") & _
+			"&selIntr=" & Request("selIntr") & "&selClass=" & Request("selClass") & "&selAdmin=" & Request("selAdmin") & "&action=3"
 ElseIf Request("ctrl") = 23 Then 'Medicaid check
 	Set rsTBL = Server.CreateObject("ADODB.RecordSet")
 	sqlTBL = "SELECT * FROM request_T WHERE autoacc <> 1 AND wcomp <> 1 AND (medicaid <> '' OR NOT medicaid IS NULL)"
