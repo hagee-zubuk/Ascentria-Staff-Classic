@@ -34,12 +34,15 @@
 					strRID & "&uid=" & rsUploads("uid") & """><img src='images/zoom.gif'>" & _
 					rsUploads("timestamp") & "</a><br/>" & vbCrLf
 		End If
-
+		strDebug =  ""
 		If lngUID = rsUploads("uid") Then
-			If ( rsUploads("type") = 0 ) Then
+			lngType = CLng(rsUploads("type"))
+			strDebug = strDebug & "Matched lngUID = " & rsUploads("uid") & " :: type=" & lngType & vbCrLf
+
+			If ( lngType = 0 ) Then
 				subfold = "\vform\"
 				msgtype = "Verification form"
-			ElseIf ( rsUploads("type") = 1 ) Then
+			Else
 				subfold = "\tolls\"
 				msgtype = "Tolls and Parking Receipts"
 			End If
@@ -123,6 +126,10 @@
 				</tr>
 			</table>
 		</form>
+<!-- pre>
+	ViewPath: <%= viewpath %>
+	<%= strDebug %>
+</pre -->
 	</body>
 </html>
 <%

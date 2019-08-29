@@ -1310,7 +1310,7 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 										Or Cint(Request.Cookies("LBUSERTYPE")) = 3 Then %>
 										<input class='btnLnk' type='button' name='btnEditIntr' value='EDIT' onmouseover="this.className='hovbtnLnk'" onmouseout="this.className='btnLnk'"
 												<%=disableMe%> onclick='AssignMe();' title='Edit Interpreter Information'>	
-										<% If True Then %>
+										<% If False Then %>
 											<input class='btnLnk' type='button' name='btnIntrMileage' id='btnIntrMileage'
 													value='SHOW INTERPRETER MILEAGES' style="width: 180px;"
 													onmouseover="this.className='hovbtnLnk'" onmouseout="this.className='btnLnk'"
