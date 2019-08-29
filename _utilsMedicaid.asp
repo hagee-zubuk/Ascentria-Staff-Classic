@@ -91,8 +91,8 @@ Function Z_GenderMed(ReqID)
 	Set rsMed = Server.CreateObject("ADODB.RecordSet")
 	rsMed.Open "SELECT Gender FROM Request_T WHERE [index] = " & ReqID, g_strCONN, 3, 1
 	If Not rsMed.EOF Then
-		If rsMed("gender") = vbNull Then
-			Z_GenderMed = "F" ' U"
+		If IsNull(rsMed("gender")) Then
+			Z_GenderMed = "U"
 		Else
 			If rsMed("gender") = 1 Then
 				Z_GenderMed = "F"
@@ -101,7 +101,7 @@ Function Z_GenderMed(ReqID)
 			End If
 		End If
 	Else
-		Z_GenderMed = "F" ' U"
+		Z_GenderMed = "U"
 	End If
 	rsMed.Close
 	Set rsMed = Nothing

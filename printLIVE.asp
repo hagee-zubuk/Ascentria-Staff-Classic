@@ -60,7 +60,7 @@ If Not rsConfirm.EOF Then
 	If rsConfirm("CliAdd") = True Then tmpDeptaddr = rsConfirm("CAddress") &", " & rsConfirm("CliAdrI") & ", " & rsConfirm("CCity") & ", " & rsConfirm("CState") & ", " & rsConfirm("CZip")
 	tmpHPID = Z_CZero(rsConfirm("hpid"))
 
-	If rsConfirm("Gender") = vbNull Then
+	If IsNull( rsConfirm("Gender") ) Then
 		tmpSex = "Unknown"
 	Else
 		If rsConfirm("Gender") = 1 Then
