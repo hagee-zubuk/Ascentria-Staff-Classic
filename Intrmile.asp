@@ -16,6 +16,7 @@ rsmile.Open sqlMile, g_strCONN, 3, 1
 If Not rsmile.EOF Then tmpmilecap = Z_czero(rsmile("milediff"))
 rsmile.Close
 Set rsmile = Nothing
+tmpmilecap = tmpmilecap * 2
 
 ' GET ADDRESS AND ZIP of Intrpreter
 Set rsIntr = Server.CreateObject("ADODB.REcordSet")
@@ -40,9 +41,18 @@ Call oGDM.FetchMileageV2(intReqID, strItrID, tmpIntrAdd, tmpIntrZip, TRUE)
 fltRealTT	= oGDM.fltRealTT
 fltRealM	= oGDM.fltRealM
 fltActTT	= oGDM.fltActTT
+fltActMi	= oGDM.fltActMil
 tmpDeptAddr = oGDM.ApptAddr 	'= strDstAdr
 tmpZipInst	= oGDM.ApptZIP		'= strDstZIP
 
+'If (tmpmilecap > fltRealM) Then
+''	fltRealTT	= 0
+''	fltRealM	= 0
+'Else
+''	tmpRate = fltRealM / fltRealTT
+''	fltRealM	= fltRealM - tmpmilecap
+''	fltRealTT	= 0
+'End If
 %>
 <html lang="en">
 <head>
@@ -58,30 +68,34 @@ tmpZipInst	= oGDM.ApptZIP		'= strDstZIP
 				<tr><td>&nbsp;</td></tr>
 				<tr>
 					<td align='right'>Intepreter:</td>
-					<td>
+					<td colspan="2">
 						<b><%=GetIntr(Request("selIntr"))%></b>
 					</td>
 				</tr>
 				<tr>
 					<td align='right' valign='top'>Availablity:</td>
-					<td>
+					<td colspan="2">
 						<textarea readonly><%=tmpAvail%></textarea>
 					</td>
 				</tr>
 				<tr>
 					<td align='right'>Mileage:</td>
 					<td>
-						<input class='main' size='5' readonly name='txtMile' value="<%=fltRealM%>">&nbsp;miles
+						<input class='main' size='5' readonly name='txtMile' value="<%=fltActMi%>">&nbsp;miles
+					</td><td>
+						(R/T: <%=fltRealm%> mi)
 					</td>
 				</tr>
 				<tr>
 					<td align='right'>Travel Time:</td>
 					<td>
-						<input class='main' size='5' readonly name='txtTravel'  value="<%=fltRealTT%>">&nbsp;hrs
+						<input class='main' size='5' readonly name='txtTravel'  value="<%=fltActTT%>">&nbsp;hrs
+					</td><td>						
+						(R/T: <%=fltRealTT%> hrs)
 					</td>
 				</tr>	
 				<tr>
-					<td colspan='2' align='center'>
+					<td colspan='3' align='center'>
 						<input class="btn" type="button" name="btnOK" id="btnOK" value="OK" style="width: 100px;" disabled
 								onmouseover="this.className='hovbtn'"
 								onmouseout="this.className='btn'"
@@ -101,8 +115,8 @@ tmpZipInst	= oGDM.ApptZIP		'= strDstZIP
 			<input type='hidden' name='zip2'  value='<%=tmpZipInst%>' 				/>
 			<input type='hidden' name='ID'  value='<%=intReqID%>' 					/>
 			<tr>
-									<td valign="top"><div id="output" style="display: none;"></div></td>
-								</tr>
+				<td valign="top"><div id="output" style="display: none;"></div></td>
+				</tr>
 		</form>
 	</body>
 </html>

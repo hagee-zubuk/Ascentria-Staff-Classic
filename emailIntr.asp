@@ -63,21 +63,21 @@ End If
 rsReq.Close
 Set rsReq = Nothing
 
+
 If Request("mail") = 1 Then 'Request.ServerVariables("REQUEST_METHOD") = "POST" Then
 	'SEND THE MESSAGE
 	' -- get email info
 	strTo = zGetInterpreterEmailByID(Request("selIntr"))
 	strBcc = "sysdump1@ascentria.org"
 	strSubject = strLang & " Appointment on " & appDate & " " & appTime & " in " & appCity
-	strMSG = "<p>Are you available to do this appointment?</p>"& _
-			"<p>If you accept this appointment this is the amount you will be reimbursed " & _
-			"for mileage and travel time.</p>" & _
-			"Payable travel time is: " & Z_Czero(Request("txtTravel")) & " hrs.<br /> " & _
-			"Payable mileage is: " & Z_Czero(Request("txtMile")) & "  miles.<br /><br />"& _
-			"<p>Please reply to this email or contact " & Request.Cookies("LBUsrName") & _
-			" of LanguageBank.</p><p>Thank you.</p>" & _
-			"<div style=""color:#FFFFFF"">" & Request("adr1") & "|" & Request("adr2") & "|" & _
-			Request("zip1") & "|" & Request("zip2") & "</div>"
+	strMSG = "<p>Are you available to do this appointment?</p>"
+	If (Z_Czero(Request("txtMile")) > 0) Then
+		strMSG = strMSG & "<p>If you accept this appointment this is the amount you will be reimbursed " & _
+				"for mileage and travel time.</p>Payable travel time is: " & Z_Czero(Request("txtTravel")) & " hrs.<br /> " & _
+				"Payable mileage is: " & Z_Czero(Request("txtMile")) & "  miles.<br /><br />"
+	End If
+	strMSG = strMSG  & "<p>Please reply to this email or contact " & Request.Cookies("LBUsrName") & _
+			" of LanguageBank.</p><p>Thank you.</p>"
 
 	' -- try to send the message out
 	lngMesgErr = zSendMessage(strTo, strBCC, strSubject, strMSG)
@@ -113,11 +113,14 @@ End If
 strAvail = 0
 'strSubj = "Appointment on " & appDate & " at " & apptime & " in " & appCity
 strSubj = strLang & " Appointment on " & appDate & " " & appTime & " in " & appCity
-strMSG = "Are you available to do this appointment?" & vbCrlf & vbCrlf & _
-	"Please reply to this email or contact " & Request.Cookies("LBUsrName") & " of LanguageBank." & vbCrlf & vbCrlf & _
-	"If you accept this appointment this is the amount you will be reimbursed for mileage and travel time." & vbCrlf & vbCrlf & _
-	"Payable travel time is " & Z_Czero(Request("txtTravel")) & " hrs. and payable mileage is " & Z_Czero(Request("txtMile")) & " miles." & vbCrlf & vbCrlf & _
-	"Thank you."
+strMSG = "Are you available to do this appointment?" & vbCrlf & vbCrlf
+If (Z_Czero(Request("txtMile")) > 0) Then
+	strMSG = strMSG  & "If you accept this appointment this is the amount you will be reimbursed for mileage " & _
+			"and travel time." & vbCrlf & vbCrlf & "Payable travel time is " & Z_Czero(Request("txtTravel")) & _
+			" hrs. and payable mileage is " & Z_Czero(Request("txtMile")) & " miles." & vbCrlf & vbCrlf
+End If
+strMSG = strMSG  & 	"Please reply to this email or contact " & Request.Cookies("LBUsrName") & " of LanguageBank." & vbCrlf & vbCrlf & _
+		"Thank you."
 'INTERPRETER LIST
 Set rsIntr = Server.CreateObject("ADODB.RecordSet")
 sqlIntr = "SELECT * FROM interpreter_T WHERE  Active = 1 " & _
