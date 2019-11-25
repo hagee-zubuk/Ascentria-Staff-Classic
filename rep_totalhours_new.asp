@@ -87,6 +87,15 @@ xt = 0
 Do While Not rsRep.EOF
 	strIntr = rsRep("IntrID")
 	TT = Z_FormatNumber(rsRep("actTT"), 2)
+	'  2019-11-22 FIX:: initialize all variables to zero so that you don't pick up previous entries 	
+	FPHHrs = 0
+	FPHrs = 0
+	ihthours = 0
+	FPHrsHP = 0
+	thours = 0
+	bhrs = 0
+	'  2019-11-22 FIX:: END
+
 	If rsRep("overpayhrs") Then 
 		PHrs = Z_FormatNumber(rsRep("payhrs"), 2)
 	Else
@@ -286,7 +295,6 @@ If Request("csv") <> 1 Then
 	'EXPORT CSV
 	'If Request("bill") <> 1 Then
 	tmpstring = "CSV/" & repCSV 'add for RepCSVBill
-	tmpstring = "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV)
 End If
 %>
 <!DOCTYPE html>
