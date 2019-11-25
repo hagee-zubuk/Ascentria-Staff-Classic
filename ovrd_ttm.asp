@@ -2,6 +2,7 @@
 <!-- #include file="_Files.asp" -->
 <!-- #include file="_Utils.asp" -->
 <!-- #include file="_Security.asp" -->
+<!-- #include file="_googleDMA.asp" -->
 <%
 'ovrd_ttm.asp?ReqID=
 
@@ -212,6 +213,19 @@ End If
 rsmile.Close
 Set rsmile = Nothing
 
+
+Set oGDM = New acaDistanceMatrix
+oGDM.DBCONN = g_strCONN
+Call oGDM.FetchMileageV2(strReqID, tmpIntr, tmpIntrAddG, tmpIntrZip, FALSE)
+'// Call oGDM.FetchMileageFromReqID(rsReq("index"), TRUE)
+fltRealTT	= oGDM.fltRealTT
+fltRealM	= oGDM.fltRealM
+fltActTT	= oGDM.fltActTT
+fltActMil	= oGDM.fltActMil
+tmpDeptAddr = oGDM.ApptAddr 	'= strDstAdr
+tmpZipInst	= oGDM.ApptZIP		'= strDstZIP
+tmpAvgSpd	= Z_FormatNumber(fltRealM / fltRealTT, 1)
+
 %>
 <!doctype html>
 <html lang="en">
@@ -334,27 +348,27 @@ End If
 					<tr><td>&nbsp;</td><td>&nbsp;&nbsp;&nbsp;Setting</td><td>Google Maps Values</td></tr>
 					<tr><td>Driving Duration:</td>
 							<td><input type="text" name="RealTT" id="RealTT" value="<%= tmpRealTT %>" /></td>
-							<td><div name="txtRTravel" id="txtRTravel"><img src="images/ajax-loader-small.gif" alt=".." title="loading" /></div></td>
+							<td><div name="txtRTravel" id="txtRTravel"><%= fltRealTT %></div></td>
 							<td>hr</td>
 						</tr>
 					<tr><td>Distance:</td>
 							<td><input type="text" name="RealM" id="RealM" value="<%= tmpRealM%>" /></td>
-							<td><div name="txtRMile" id="txtRMile"><img src="images/ajax-loader-small.gif" alt=".." title="loading" /></div></td>
+							<td><div name="txtRMile" id="txtRMile"><%= fltRealM %></div></td>
 							<td>mile</td>
 						</tr>
 					<tr><td>Average Speed:</td><td>&nbsp;</td><td>
-							<div name="txtRate" id="txtRate"><img src="images/ajax-loader-small.gif" alt=".." title="loading" /></div></td>
+							<div name="txtRate" id="txtRate"><%= tmpAvgSpd %></div></td>
 							<td>mph</td>
 						</tr>
 					<tr><td colspan="4" style="text-align: center; background-color: pink; font-size: 110%;">Interpreter (cap: <%= tmpmilecap %>)</td></tr>
 					<tr><td>Billable Distance:</td>
 							<td><input type="text" name="actMil" id="actMil" value="<%= tmpIntrMI %>" /></td>
-							<td><div name="txtMile" id="txtMile"><img src="images/ajax-loader-small.gif" alt=".." title="loading" /></div></td>
+							<td><div name="txtMile" id="txtMile"><%= fltActMil %></div></td>
 							<td>mile</td>
 						</tr>	
 					<tr><td>Billable Travel Time:</td>
 							<td><input type="text" name="actTT" id="actTT" value="<%= tmpIntrTT %>" /></td>
-							<td><div name="txtTravel" id="txtTravel"><img src="images/ajax-loader-small.gif" alt=".." title="loading" /></div></td>
+							<td><div name="txtTravel" id="txtTravel"><%= fltActTT %></div></td>
 							<td>hr
 							<input type="hidden" name="TT_Intr" id="TT_Intr" value="<%= tmpBilTIntr %>" />
 							<input type="hidden" name="M_Intr" id="M_Intr" value="<%= tmpBilMIntr %>" />
@@ -378,11 +392,11 @@ End If
 					<tr><td colspan="4" style="text-align: center; background-color: pink; font-size: 110%;">Institution (cap: <%= tmpMileCapInst %>)</td></tr>
 					<tr><td>Billable Mileage:</td>
 							<td><input type="text" name="InstActMil" id="InstActMil" value="<%= tmpInstActMil %>"/></td>
-							<td><div name="txtMileInst" id="txtMileInst"><img src="images/ajax-loader-small.gif" alt=".." title="loading" /></div></td>
+							<td><div name="txtMileInst" id="txtMileInst"><%= fltActMil %></div></td>
 							<td>mile</td></tr>
 					<tr><td>Billable Travel Time:</td>
 							<td><input type="text" name="InstActTT" id="InstActTT" value="<%= tmpInstActTT %>" /></td>
-							<td><div name="txtTravelInst" id="txtTravelInst"><img src="images/ajax-loader-small.gif" alt=".." title="loading" /></div></td>
+							<td><div name="txtTravelInst" id="txtTravelInst"><%= fltActTT %></div></td>
 							<td>hr
 								<input type="hidden" name="M_Inst" id="M_Inst" value="<%= tmpBilMInst %>" />
 								<input type="hidden" name="TT_Inst" id="TT_Inst" value="<%= tmpBilTInst %>" />
@@ -418,123 +432,3 @@ End If
 </div><!-- container -->
 </body>
 </html>
-<script language="javascript" type="text/javascript"><!--
-	var origindef		= "<%=tmpIntrAddG%>"	;
-	var originzip		= "<%=tmpIntrZip%>"		;
-	var desinationdef	= "<%=tmpDeptaddrG%>"	;
-	var desinationzip	= "<%=tmpZipInstg%>"	;
-
-function initMap() {
-	var service = new google.maps.DistanceMatrixService();
-	calculateDistances(service, origindef, desinationdef);	
-}
-function  calculateDistances(directionsService, from, to) {
-	directionsService.getDistanceMatrix({
-			origins: [from],
-			destinations: [to],
-			travelMode: 'DRIVING',
-			unitSystem: google.maps.UnitSystem.METRIC,
-			avoidHighways: false,
-			avoidTolls: false
-			}, callback);
-}
-function callback(response, status) {
-	var origins = response.originAddresses;
-	var destinations = response.destinationAddresses;
-	if (origins != '' && destinations != '') {
-		for (var i = 0; i < origins.length; i++) {
-			var results = response.rows[i].elements;
-			for (var j = 0; j < results.length; j++) {
-				var element = results[j];
-				var distance = element.distance.value;
-				var duration = element.duration.value;
-				getDistanceValues(distance, duration);
-			}
-		}
-	} else {
-		//alert('Error: One of the addresses is invalid. System used ZIP CODES to calculate Travel Time and Mileage');
-		if ( (originzip.length>3) && (desinationzip.length>3) ) {
-			var service = new google.maps.DistanceMatrixService();
-			alert('Error: One of the addresses is invalid. System used ZIP CODES to calculate Travel Time and Mileage');
-			calculateDistances(service, originzip, desinationzip);	
-		} else {
-			alert('one of the addresses and/or zip codes are invalid.\n\nUnable to calculate distance.');
-			$('#txtRTravel').html('n/a');
-			$('#txtRMile').html('n/a');
-			$('#txtMile').html('&mdash;');
-			$('#txtTravel').html('&mdash;');
-			$('#txtMileInst').html('&mdash;');
-			$('#txtTravelInst').html('&mdash;');
-			$('#txtRate').html('n/a');
-		}
-		
-	}
-}
-function getDistanceValues(dista, dura){ 
-// Use this function to access information about the latest load() results.
-	duree = dura;
-	dist = dista;
-	dureeHrs = ((duree) / 60) / 60;
-	distMile = dist / 1609.344;
-	decHrs = dureeHrs;
-	decMile = distMile;
-	tmpRate = decMile / decHrs;
-	
-	$('#txtRTravel').html( Math.round((dureeHrs * 2) * 100)/100 );
-	$('#txtRMile').html( Math.round((distMile * 2) * 100)/100 );  
-	// interpreter section
-	var bilMile = (decMile * 2) - (<%=tmpmilecap%> * 2);	//billable mileage (2 way)
-	$('#txtMile').html( Math.round(bilMile * 100)/100 ); 
-	if (bilMile < 0) {
-		$('#txtMile').addClass("makered");
-		//$('#txtMile2').val('0.00');
-	}
-	var bilTravel = bilMile / tmpRate;						//billable travel time (2 way)	
-	$('#txtTravel').html( Math.round(bilTravel * 100)/100 );
-	if (bilTravel < 0) {
-		$('#txtTravel').addClass("makered");
-		//$('#txtTravel2').val('0.00');
-	}
-
-	//institution
-	var bilMileInst = (decMile * 2) - (<%=tmpMileCapInst%> * 2); //billable mileage (2 way)
-	$('#txtMileInst').html( Math.round(bilMileInst * 100)/100 );
-	if (bilMileInst < 0) {
-		$('#txtMileInst').addClass("makered");
-		//$('#txtMileInst2').val('0.00');
-	}
-	var bilTravelInst = bilMileInst / tmpRate; //billable travel time (2 way)
-	$('#txtTravelInst').html( Math.round(bilTravelInst * 100)/100 );
-	if (bilTravelInst < 0) {
-		$('#txtTravelInst').addClass("makered");
-		//$('#txtTravelInst2').val('0.00');
-	}
-
-	$('#txtRate').html( Math.round(tmpRate * 10)/10 );
-}
-function computeIntrTT() {
-	var ttamt = $('#actTT').val() * <%= tmpIntrRate %>;
-	$('#TT_Intr').val(parseFloat(Math.round(ttamt * 100) / 100).toFixed(2));
-}
-function computeIntrMI() {
-	var miamt = $('#actMil').val() * <%= tmpmilerate %>;
-	$('#M_Intr').val(parseFloat(Math.round(miamt * 100) / 100).toFixed(2));
-}
-function computeInstTT() {
-	var ttamt = $('#InstActTT').val() * <%= ttrate %>;
-	$('#TT_Inst').val(parseFloat(Math.round(ttamt * 100) / 100).toFixed(2));
-}
-function computeInstMI() {
-	var miamt = $('#InstActMil').val() * <%= tmpMrate %>;
-	$('#M_Inst').val(parseFloat(Math.round(miamt * 100) / 100).toFixed(2));
-}
-
-
-$( document ).ready(function() {
-	initMap();
-	$('#actTT').change(function(){ computeIntrTT(); });
-	$('#actMil').change(function(){ computeIntrMI(); });
-	$('#InstActTT').change(function(){ computeInstTT(); });
-	$('#InstActMil').change(function() {computeInstMI(); });
-});
-// --></script>
