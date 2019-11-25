@@ -396,6 +396,7 @@ ElseIf Request("sino") = 1 Or Request("sino") = 3 Then 'FOR INTERPRETER
 		"<font size='2' face='trebuchet MS'>The Language Bank</font><br><br>" & vbCrLf & _
 		"<font size='1' face='trebuchet MS'>* Please do not reply to this email. This is a computer generated email. Use the information above for questions.</font>"
 	mlMail.HTMLBody = "<html><body>" & vbCrLf & strBody & vbCrLf & "</body></html>"
+	'mlMail.Body = "If you can see this, please enable HTML viewing for e-mail messages." & vbCrLf & vbCrLf
 	'create ICS
 	'If CreateICS(Request("HID"), strSubj) Then
 	'	mlMail.AddAttachment CalPath & Request("HID") & ".ICS"
