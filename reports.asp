@@ -949,7 +949,7 @@ todaydate = Cdate(date)
 											<option value='48' <%=TypeSel48%>>Interpreter Inactivity Report</option>
 											<option value='1' <%=TypeSel1%>>Invoice Report</option>
 											<option value='17' <%=TypeSel17%>>KPI Report</option>
-											<option value='51' <%=TypeSel51%>>Language Frequency by Class Report</option>
+											<!-- option value='51' <%=TypeSel51%>>Language Frequency by Class Report</option -->
 											<option value='69' <%=TypeSel69%>>Language Statistics Report</option>
 											<option value='47' <%=TypeSel47%>>Language Use Report</option>
 											<option value='24' <%=TypeSel8%>>List - Interpreter (ACTIVE ONLY)</option>

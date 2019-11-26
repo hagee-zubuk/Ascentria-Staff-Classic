@@ -94,6 +94,7 @@ If Not rsConfirm.EOF Then
 	tmpDeptaddr = ""
 	tmpmed = ""
 	If rsConfirm("outpatient") And rsConfirm("hasmed") Then
+		tmpAme = rsConfirm("amerihealth")
 		tmpmed = rsConfirm("medicaid")
 		tmpmer = rsConfirm("meridian")
 		tmpnh = rsConfirm("nhhealth")
@@ -158,11 +159,14 @@ If Not rsConfirm.EOF Then
 	If Left(reqTrail, 4) = "<br>" Then reqTrail = Mid(reqTrail, 5)
 	chkVer = ""
 	If rsConfirm("verified") = True Then chkVer = "(CONFIRMED)"
+	Response.Write "<!-- GENDER: " & rsConfirm("Gender") & " -->" & vbCrLf
 	If IsNull( rsConfirm("Gender") ) Then
 		tmpSex = "UNKNOWN"
 	Else
 		tmpGender	= Z_CZero(rsConfirm("Gender"))
-		If tmpGender = 0 Then 
+		If tmpGender = -1 Then
+			tmpSex = "UNKNOWN"
+		ElseIf tmpGender = 0 Then 
 			tmpSex = "MALE"
 		Else
 			tmpSex = "FEMALE"
@@ -240,7 +244,8 @@ rsReq.Open sqlReq, g_strCONN, 3, 1
 If Not rsReq.EOF Then
 	tmpRP = ""
 	If tmpHPID <> 0  THen
-		If tmpReqname <> "" Then tmpRP = tmpReqname
+		'If tmpReqname <> "" Then tmpRP = tmpReqname
+		If tmpReqname <> "" Then tmpRP = tmpReqname & " (req-name from Vendor site)"
 	End If
 	If tmpRP = "" Then tmpRP = rsReq("Lname") & ", " & rsReq("Fname") 
 	Fon = rsReq("phone") 
@@ -1207,6 +1212,10 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 									<td align='left'><b>----</b></td>
 								</tr>
 								<tr>
+									<td align='right'>AmeriHealth Member ID:</td>
+									<td class='confirm'><%=tmpAme%></td>
+								</tr>
+								<tr>
 									<td align='right'>Medicaid Number:</td>
 									<td class='confirm'><%=tmpMed%></td>
 								</tr>
@@ -1310,7 +1319,7 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 										Or Cint(Request.Cookies("LBUSERTYPE")) = 3 Then %>
 										<input class='btnLnk' type='button' name='btnEditIntr' value='EDIT' onmouseover="this.className='hovbtnLnk'" onmouseout="this.className='btnLnk'"
 												<%=disableMe%> onclick='AssignMe();' title='Edit Interpreter Information'>	
-										<% If False Then %>
+										<% If True Then %>
 											<input class='btnLnk' type='button' name='btnIntrMileage' id='btnIntrMileage'
 													value='SHOW INTERPRETER MILEAGES' style="width: 180px;"
 													onmouseover="this.className='hovbtnLnk'" onmouseout="this.className='btnLnk'"

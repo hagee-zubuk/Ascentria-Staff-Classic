@@ -1988,7 +1988,7 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 		Request("txtBilMInst") & "|" & Request("txtBilMIntr") & "|" & Request("txtHPID") & "|" & Request("txtCliAddrI")& "|" & Request("chkout") & "|" & _
 		Request("chkmed") & "|" & Request("MCnum") & "|" & Request("txtPDamount") & "|" & Request("h_tmpfilename") & "|" & Request("sellateres") & "|" & _
 		Request("MHPnum") & "|" & Request("NHHFnum") & "|" & Request("WSHPnum") & "|" & Request("chkawk") & "|" & Request("txtjudge") & "|" & _
-		Request("txtclaim") & "|" & Request("chkcall") & "|" & Request("chkleave"))
+		Request("txtclaim") & "|" & Request("chkcall") & "|" & Request("chkleave") & "|" & Request("AHMemId")		)
 	'CHECK REQUIRED FIELDS
 	If Request("txtClilname") = "" Or Request("txtClifname") = "" Then Session("MSG") = Session("MSG") & "<br>ERROR: Client's full name is required."
 	If Request("selLang") = "-1" Then Session("MSG") = Session("MSG") & "<br>ERROR: Language is required."
@@ -2080,6 +2080,7 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 			rsMain("meridian") = Request("MHPnum")
 			rsMain("nhhealth") = Request("NHHFnum")
 			rsMain("wellsense") = Request("WSHPnum")
+			rsMain("amerihealth") = Left(Trim(Request("AHMemId")), 9)
 			rsMain("acknowledge") = false
 			If Request("chkawk") <> "" Then rsMain("acknowledge") = True
 			rsMain("vermed") = 0
@@ -2113,6 +2114,7 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 			clilname = Ucase(Trim(rsMain("clname")))
 			clifname = Ucase(Trim(rsMain("cfname")))
 			medicaid = Ucase(Trim(rsMain("medicaid")))
+			If medicaid = "" Then medicaid = Ucase(Trim(rsMain("amerihealth")))
 			If medicaid = "" Then medicaid = Ucase(Trim(rsMain("meridian")))
 			If medicaid = "" Then medicaid = Ucase(Trim(rsMain("nhhealth")))
 			If medicaid = "" Then medicaid = Ucase(Trim(rsMain("wellsense")))
@@ -2132,7 +2134,7 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 			If vermed = 1 Then 'add in client list
 				Set rsCli = Server.CreateObject("ADODB.RecordSet")
 				sqlCli = "SELECT * FROM clientuploaded_T WHERE lname = '" & clilname & "' AND fname = '" & clifname & "' AND medicaid = '" & medicaid & _
-						"' AND dob = '" & dob & "'" & strGender
+						"' AND dob = '" & dob & "'" ' & strGender
 				rsCli.Open sqlCli, g_strCONN, 3, 1
 				If rsCli.EOF Then
 					Set rsCliList = Server.CreateObject("ADODB.RecordSet")
@@ -2156,7 +2158,7 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 			ElseIf vermed = 2 Then 'remove in client list
 				Set rsCli = Server.CreateObject("ADODB.RecordSet")
 				sqlCli = "SELECT * FROM clientList_T WHERE lname = '" & clilname & "' AND fname = '" & clifname & "' AND medicaid = '" & medicaid & _
-					"' AND dob = '" & dob & "'" & strGender
+					"' AND dob = '" & dob & "'" '& strGender
 
 				rsCli.Open sqlCli, g_strCONN, 1, 3
 				If Not rsCli.EOF Then
@@ -2260,6 +2262,7 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 				rsHp("meridian") = Request("MHPnum")
 				rsHp("nhhealth") = Request("NHHFnum")
 				rsHp("wellsense") = Request("WSHPnum")
+				rsHP("amerihealth") = Left(Trim(Request("AHMemId")), 9)
 				rsHp("acknowledge") = false
 				If Request("chkawk") <> "" Then rsHp("acknowledge") = True
 				rsHp("autoacc") = False
@@ -2752,6 +2755,9 @@ ElseIf Request("ctrl") = 22 Then 'Approve Medicaid
 					'If medicaid = "" Then medicaid = Ucase(Trim(rsTBL("nhhealth")))
 					'If medicaid = "" Then medicaid = Ucase(Trim(rsTBL("wellsense")))
 					medicaid = Z_FixNull(Ucase(Trim(rsTBL("medicaid")))) 
+					If Z_FixNull(rsTBL("amerihealth")) <> "" Then 
+						medicaid = Z_FixNull(Ucase(Trim(rsTBL("amerihealth"))))
+					End If
 					If Z_FixNull(rsTBL("meridian")) <> "" Then 
 						medicaid = Z_FixNull(Ucase(Trim(rsTBL("meridian"))))
 					End If
@@ -2767,7 +2773,9 @@ ElseIf Request("ctrl") = 22 Then 'Approve Medicaid
 						strGender = " "
 					Else
 						strGender = " AND [gender]="
-						If rsTbl("gender") = 0 Then
+						If rsTbl("gender") = -1 Then
+							strGender = ""
+						ElseIf rsTbl("gender") = 0 Then
 							strGender = strGender & "0"
 						Else
 							strGender = strGender & "1"
@@ -2864,24 +2872,25 @@ ElseIf Request("ctrl") = 23 Then 'Medicaid check
 				dtetime = FormatDateTime(Now, 4)
 				tme = Replace(dtetime, ":", "")
 				medicaid = Ucase(Trim(rsTBL("medicaid")))
+				If medicaid = "" Then medicaid = Ucase(Trim(rsTBL("amerihealth")))
 				If medicaid = "" Then medicaid = Ucase(Trim(rsTBL("meridian")))
 				If medicaid = "" Then medicaid = Ucase(Trim(rsTBL("nhhealth")))
 				If medicaid = "" Then medicaid = Ucase(Trim(rsTBL("wellsense")))
 				'change to intepreter - "NM1*1P*1*" & Z_IntrInfo(rsTBL("intrID")) & "~" & _
 				STnum = Right("0000" & ctr, 4)
 				strMedBody = strMedBody & "ST*270*" & STnum & "*005010X279A1~" & _
-					"BHT*0022*13*10001234*" & dteYr & dteMn & dteDy & "*" & tme & "~" & _
-					"HL*1**20*1~" & _
-					"NM1*PR*2*NH MEDICAID*****PI*026000618~" & _
-					"HL*2*1*21*1~" & _
-					"NM1*1P*1*OMERBEGOVIC*ALEN****SV*30849597~" & _
-					"REF*EO*820000243~" & _
-					"HL*3*2*22*0~" & _
-					"NM1*IL*1*" & Z_NameMed(rsTBL("index")) & "****MI*" & medicaid & "~" & _
-					"DMG*D8*" & Z_DOBMed(rsTBL("index")) & "*" & Z_GenderMed(rsTBL("index")) & "~" & _
-					"DTP*291*RD8*" & Z_DateMed(rsTBL("index")) & "-" & Z_DateMed(rsTBL("index")) & "~" & _
-					"EQ*30~" & _
-					"SE*13*" & STnum & "~"
+						"BHT*0022*13*10001234*" & dteYr & dteMn & dteDy & "*" & tme & "~" & _
+						"HL*1**20*1~" & _
+						"NM1*PR*2*NH MEDICAID*****PI*026000618~" & _
+						"HL*2*1*21*1~" & _
+						"NM1*1P*1*OMERBEGOVIC*ALEN****SV*30849597~" & _
+						"REF*EO*820000243~" & _
+						"HL*3*2*22*0~" & _
+						"NM1*IL*1*" & Z_NameMed(rsTBL("index")) & "****MI*" & medicaid & "~" & _
+						"DMG*D8*" & Z_DOBMed(rsTBL("index")) & "*" & Z_GenderMed(rsTBL("index")) & "~" & _
+						"DTP*291*RD8*" & Z_DateMed(rsTBL("index")) & "-" & Z_DateMed(rsTBL("index")) & "~" & _
+						"EQ*30~" & _
+						"SE*13*" & STnum & "~"
 			End If
 		Next
 		strMedFtr = "GE*" & ctr - 1 & "*1~IEA*1*000000007~"

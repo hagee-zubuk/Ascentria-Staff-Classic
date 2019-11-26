@@ -52,6 +52,7 @@ selIntrFax = "checked"
 selIntrP2 = ""
 selIntrP1 = ""
 selIntrEmail = ""
+AHMemId = ""
 tmpTS = Now
 tmpDept = 0
 tmpReqP = 0
@@ -157,32 +158,39 @@ sqlInst = "SELECT * FROM mco_T"
 rsInst.Open sqlInst, g_strCONN, 3, 1
 If Not rsInst.EOF Then
 	Do Until rsInst.EOF 
+		If rsInst("mco") = "AmeriHealth" Then
+			If rsInst("active") Then
+				allowMCO = allowMCO & "document.frmMain.rdoMed_Ame.disabled = false; " & vbCrLf 
+			Else
+				allowMCO = allowMCO & "document.frmMain.rdoMed_Ame.disabled = true; " & vbCrLf 
+			End If
+		End If
 		If rsInst("mco") = "Medicaid" Then
 			If rsInst("active") Then
-				allowMCO = allowMCO & "document.frmMain.radiomed[3].disabled = false; " & vbCrLf 
+				allowMCO = allowMCO & "document.frmMain.rdoMed_Med.disabled = false; " & vbCrLf 
 			Else
-				allowMCO = allowMCO & "document.frmMain.radiomed[3].disabled = true; " & vbCrLf 
+				allowMCO = allowMCO & "document.frmMain.rdoMed_Med.disabled = true; " & vbCrLf 
 			End If
 		End If
 		If rsInst("mco") = "Meridian" Then
 			If rsInst("active") Then
-				allowMCO = allowMCO & "document.frmMain.radiomed[0].disabled = false; " & vbCrLf 
+				allowMCO = allowMCO & "document.frmMain.rdoMed_Mer.disabled = false; " & vbCrLf 
 			Else
-				allowMCO = allowMCO & "document.frmMain.radiomed[0].disabled = true; " & vbCrLf 
+				allowMCO = allowMCO & "document.frmMain.rdoMed_Mer.disabled = true; " & vbCrLf 
 			End If
 		End If
 		If rsInst("mco") = "NHhealth" Then
 			If rsInst("active") Then
-				allowMCO = allowMCO & "document.frmMain.radiomed[1].disabled = false; " & vbCrLf 
+				allowMCO = allowMCO & "document.frmMain.rdoMed_NHH.disabled = false; " & vbCrLf 
 			Else
-				allowMCO = allowMCO & "document.frmMain.radiomed[1].disabled = true; " & vbCrLf 
+				allowMCO = allowMCO & "document.frmMain.rdoMed_NHH.disabled = true; " & vbCrLf 
 			End If
 		End If
 		If rsInst("mco") = "WellSense" Then
 			If rsInst("active") Then
-				allowMCO = allowMCO & "document.frmMain.radiomed[2].disabled = false; " & vbCrLf 
+				allowMCO = allowMCO & "document.frmMain.rdoMed_Wel.disabled = false; " & vbCrLf 
 			Else
-				allowMCO = allowMCO & "document.frmMain.radiomed[2].disabled = true; " & vbCrLf 
+				allowMCO = allowMCO & "document.frmMain.rdoMed_Wel.disabled = true; " & vbCrLf 
 			End If
 		End If
 		rsInst.MoveNext
@@ -477,16 +485,30 @@ End If
 							alert("Please input client's date of birth.")
 							return;
 						}
-						if (document.frmMain.radiomed[0].checked == false && document.frmMain.radiomed[1].checked == false && document.frmMain.radiomed[2].checked == false &&
-							document.frmMain.radiomed[3].checked == false) {
+						if (document.frmMain.rdoMed_Mer.checked == false &&
+								document.frmMain.rdoMed_NHH.checked == false &&
+								document.frmMain.rdoMed_Wel.checked == false &&
+								document.frmMain.rdoMed_Med.checked == false &&
+								document.frmMain.rdoMed_Ame.checked == false
+								) {
 							alert("Please select a Medicaid/MCO.")
 							return;
 						}
-						if (Trim(document.frmMain.MHPnum.value) == "" && document.frmMain.radiomed[0].checked == true) {
+						if (document.frmMain.rdoMed_Ame.checked == true) {
+							var strAHMid = Trim(document.frmMain.AHMemId.value);
+							if (strAHMid == "") {
+								alert("Please input client's AmeriHealth member ID.")
+							} else if (strAHMid.length != 9) {
+								alert("Client's AmeriHealth member ID is invalid.")
+							}
+							document.frmMain.AHMemId.value = strAHMid;
+							return;
+						}
+						if (Trim(document.frmMain.MHPnum.value) == "" && document.frmMain.rdoMed_Mer.checked == true) {
 							alert("Please input client's Meridian Health Plan number.")
 							return;
 						}
-						if (Trim(document.frmMain.NHHFnum.value) == "" && document.frmMain.radiomed[1].checked == true) {
+						if (Trim(document.frmMain.NHHFnum.value) == "" && document.frmMain.rdoMed_NHH.checked == true) {
 							alert("Please input client's NH Healthy Families number.")
 							return;
 						}
@@ -499,7 +521,7 @@ End If
 								}
 							}
 						}
-						if (Trim(document.frmMain.WSHPnum.value) == "" && document.frmMain.radiomed[2].checked == true) {
+						if (Trim(document.frmMain.WSHPnum.value) == "" && document.frmMain.rdoMed_Wel.checked == true) {
 							alert("Please input client's Well Sense Health Plan number.")
 							return;
 						}
@@ -518,7 +540,7 @@ End If
 								}
 							}
 						}
-						if (Trim(document.frmMain.MCnum.value) == "" && document.frmMain.radiomed[3].checked == true) {
+						if (Trim(document.frmMain.MCnum.value) == "" && document.frmMain.rdoMed_Med.checked == true) {
 							alert("Please input client's Medicaid number.")
 							return;
 						}
@@ -632,23 +654,29 @@ End If
 			function OutPatient() {
 				if (document.frmMain.chkout.checked == true) {
 					document.frmMain.chkmed.disabled = false;
-				}
-				else {
+				} else {
 					document.frmMain.chkmed.checked = false;
 					document.frmMain.chkmed.disabled = true;
-					document.frmMain.radiomed[3].disabled = true;
-					document.frmMain.radiomed[2].disabled = true;
-					document.frmMain.radiomed[1].disabled = true;
-					document.frmMain.radiomed[0].disabled = true;
-					document.frmMain.radiomed[3].checked = false;
-					document.frmMain.radiomed[2].checked = false;
-					document.frmMain.radiomed[1].checked = false;
-					document.frmMain.radiomed[0].checked = false;
+
+					document.frmMain.rdoMed_Ame.disabled = true;
+					document.frmMain.rdoMed_Med.disabled = true;
+					document.frmMain.rdoMed_Mer.disabled = true;
+					document.frmMain.rdoMed_NHH.disabled = true;
+					document.frmMain.rdoMed_Wel.disabled = true;
+
+					document.frmMain.rdoMed_Ame.checked = false;
+					document.frmMain.rdoMed_Med.checked = false;
+					document.frmMain.rdoMed_Mer.checked = false;
+					document.frmMain.rdoMed_NHH.checked = false;
+					document.frmMain.rdoMed_Wel.checked = false;
+
+					document.frmMain.AHMemId.value = "";
 					document.frmMain.MHPnum.value = "";
 					document.frmMain.NHHFnum.value = "";
 					document.frmMain.WSHPnum.value = "";
 					document.frmMain.MCnum.value = "";
 					document.frmMain.chkawk.disabled = true;
+					document.frmMain.AHMemId.disabled = true;
 					document.frmMain.MHPnum.disabled = true;
 					document.frmMain.NHHFnum.disabled = true;
 					document.frmMain.WSHPnum.disabled = true;
@@ -660,25 +688,31 @@ End If
 				//document.frmMain.MCnum.disabled = false;
 				<%=allowMCO%>
 				document.frmMain.chkawk.disabled = false;
-			}
-			else {
-				document.frmMain.radiomed[3].disabled = true;
-				document.frmMain.radiomed[2].disabled = true;
-				document.frmMain.radiomed[1].disabled = true;
-				document.frmMain.radiomed[0].disabled = true;
-				document.frmMain.radiomed[3].checked = false;
-				document.frmMain.radiomed[2].checked = false;
-				document.frmMain.radiomed[1].checked = false;
-				document.frmMain.radiomed[0].checked = false;
+			} else {
+				document.frmMain.rdoMed_Ame.disabled = true;
+				document.frmMain.rdoMed_Med.disabled = true;
+				document.frmMain.rdoMed_Mer.disabled = true;
+				document.frmMain.rdoMed_NHH.disabled = true;
+				document.frmMain.rdoMed_Wel.disabled = true;
+
+				document.frmMain.rdoMed_Ame.checked = false;
+				document.frmMain.rdoMed_Med.checked = false;
+				document.frmMain.rdoMed_Mer.checked = false;
+				document.frmMain.rdoMed_NHH.checked = false;
+				document.frmMain.rdoMed_Wel.checked = false;
+
+				document.frmMain.AHMemId.value = "";
 				document.frmMain.MHPnum.value = "";
 				document.frmMain.NHHFnum.value = "";
 				document.frmMain.WSHPnum.value = "";
 				document.frmMain.MCnum.value = "";
+
 				document.frmMain.chkawk.disabled = true;
+				document.frmMain.AHMemId.disabled = true;
+				document.frmMain.MCnum.disabled = true;
 				document.frmMain.MHPnum.disabled = true;
 				document.frmMain.NHHFnum.disabled = true;
 				document.frmMain.WSHPnum.disabled = true;
-				document.frmMain.MCnum.disabled = true;
 			}
 		}
 		<% End If %>
@@ -697,37 +731,43 @@ End If
 			}				
 		}	
 		function SelPlan() {
+				document.frmMain.AHMemId.disabled = true;
 				document.frmMain.MHPnum.disabled = true;
 				document.frmMain.NHHFnum.disabled = true;
 				document.frmMain.WSHPnum.disabled = true;
 				document.frmMain.MCnum.disabled = true;
-				if (document.frmMain.radiomed[0].checked == true) {
+				if (document.frmMain.rdoMed_Mer.checked == true) {
 					document.frmMain.MHPnum.disabled = false;
 					document.frmMain.NHHFnum.value = "";
 					document.frmMain.WSHPnum.value = "";
-					//document.frmMain.MCnum.value = "";
 					document.frmMain.MCnum.disabled = false;
 				}
-				if (document.frmMain.radiomed[1].checked == true) {
+				if (document.frmMain.rdoMed_NHH.checked == true) {
 					document.frmMain.NHHFnum.disabled = false;
 					document.frmMain.MHPnum.value = "";
 					document.frmMain.WSHPnum.value = "";
 					//document.frmMain.MCnum.value = "";
 					document.frmMain.MCnum.disabled = false;
 				}
-				if (document.frmMain.radiomed[2].checked == true) {
+				if (document.frmMain.rdoMed_Wel.checked == true) {
 					document.frmMain.WSHPnum.disabled = false;
 					document.frmMain.NHHFnum.value = "";
 					document.frmMain.MHPnum.value = "";
 					//document.frmMain.MCnum.value = "";
 					document.frmMain.MCnum.disabled = false;
 				}
-				if (document.frmMain.radiomed[3].checked == true) {
+				if (document.frmMain.rdoMed_Med.checked == true) {
 					//document.frmMain.MCnum.disabled = false;
 					document.frmMain.NHHFnum.value = "";
 					document.frmMain.WSHPnum.value = "";
 					document.frmMain.MHPnum.value = "";
 					document.frmMain.MCnum.disabled = false;
+				}
+				if (document.frmMain.rdoMed_Ame.checked == true) {
+					document.frmMain.MHPnum.value = "";
+					document.frmMain.NHHFnum.value = "";
+					document.frmMain.WSHPnum.value = "";
+					document.frmMain.AHMemId.disabled = false;
 				}
 			}
 			function Chkdrg(tmpdept) {
@@ -1039,24 +1079,32 @@ End If
 												Medicaid:<input type='text' class='main' maxlength='14' name='MCnum' value="<%=MCNum%>">
 											</td>
 										</tr>
-										<tr>
-												<td align='right'></td>
-												<td colspan='3'>
-													<input type='radio' name='radiomed' <%=radiomed1%> value='1' onclick='SelPlan();'>
-													Meridian Health Plan
-													<input type='text' class='main' maxlength='14' name='MHPnum' value="<%=MHPnum%>"><br>
-													<input type='radio' name='radiomed' <%=radiomed2%> value='2' onclick='SelPlan();'>
-													NH Healthy Families
-													<input type='text' class='main' maxlength='14' name='NHHFnum' value="<%=NHHFnum%>" onkeyup='bawalletters(this);'><br>
-													<input type='radio' name='radiomed' <%=radiomed3%> value='3' onclick='SelPlan();'>
-													Well Sense Health Plan
-													<input type='text' class='main' maxlength='14' name='WSHPnum' value="<%=WSHPnum%>"><span class='formatsmall' onmouseover="this.className='formatbig'" onmouseout="this.className='formatsmall'">(Well Sense number MUST contain NH (eg: NHXXXXXXX).)</span><br>
-													<input type='radio' name='radiomed' <%=radiomed4%> value='4' onclick='SelPlan();'>
-													Medicaid
-													<span class='formatsmall' onmouseover="this.className='formatbig'" onmouseout="this.className='formatsmall'">(Directly Billed to Medicaid/Straight Medicaid/Non-MCO)</span> 
-													<br><br>
-												</td>
-											</tr>
+										<tr><td align='right'></td><td colspan='3'>
+							<!-- START :: new for 2019-11-22: AMERIHEALTH AND AMERIHEALTH MEMBER ID  -->
+							<input type='radio' name='radiomed' <%=radiomed5%> id="rdoMed_Ame" value='5' onclick='SelPlan();'>
+							AmeriHealth
+							<input type='text' class='main' maxlength='9' minlength="9" placeholder="member ID"
+								name='AHMemId' value="<%=AHMemId%>" /><br/>
+							<!-- END :: for 2019-11-22: AMERIHEALTH AND AMERIHEALTH MEMBER ID  -->
+
+							<input type='radio' name='radiomed' <%=radiomed1%> id="rdoMed_Mer" value='1' onclick='SelPlan();'>
+							Meridian Health Plan
+							<input type='text' class='main' maxlength='14' name='MHPnum' value="<%=MHPnum%>"><br>
+
+							<input type='radio' name='radiomed' <%=radiomed2%> id="rdoMed_NHH" value='2' onclick='SelPlan();'>
+							NH Healthy Families
+							<input type='text' class='main' maxlength='14' name='NHHFnum' value="<%=NHHFnum%>" onkeyup='bawalletters(this);'><br>
+
+							<input type='radio' name='radiomed' <%=radiomed3%> id="rdoMed_Wel" value='3' onclick='SelPlan();'>
+							Well Sense Health Plan
+							<input type='text' class='main' maxlength='14' name='WSHPnum' value="<%=WSHPnum%>"><span class='formatsmall' onmouseover="this.className='formatbig'" onmouseout="this.className='formatsmall'">(Well Sense number MUST contain NH (eg: NHXXXXXXX).)</span><br>
+
+							<input type='radio' name='radiomed' <%=radiomed4%> id="rdoMed_Med" value='4' onclick='SelPlan();'>
+							Medicaid
+							<span class='formatsmall' onmouseover="this.className='formatbig'" onmouseout="this.className='formatsmall'">(Directly Billed to Medicaid/Straight Medicaid/Non-MCO)</span> 
+							<br>
+
+												<br /></td></tr>
 											<tr>
 												<td>&nbsp;</td>
 												<td colspan="3" align="left">
