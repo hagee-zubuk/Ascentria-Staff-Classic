@@ -975,7 +975,7 @@ End If
 										<td colspan="3" align="left">
 											<input type='checkbox' name='chkleave' value='1' <%=chkleave%> onclick='chkleavemsg();'>
 											If a patient/client does not answer the phone and his answering machine/voice mail picks up a call or family member answers the phone, can interpreter provide/give full appointment<br>
-											info (date, time, location, name of hospital/clinic/department, providers name) on patient/client voice message or give this info to patient/client’s family member?
+											info (date, time, location, name of hospital/clinic/department, providers name) on patient/client voice message or give this info to patient/clientï¿½s family member?
 											<br><br>
 										</td>
 									</tr>
