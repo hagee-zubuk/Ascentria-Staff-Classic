@@ -2,9 +2,10 @@
 Function Z_getmedicaid(reqid)
 	Z_getmedicaid = ""
 	Set rsMed = Server.CreateObject("ADODB.RecordSet")
-	rsMed.Open "SELECT medicaid, meridian, nhhealth, wellsense FROM request_T WHERE [index] = " & reqid, g_strCONN, 3, 1
+	rsMed.Open "SELECT amerihealth, medicaid, meridian, nhhealth, wellsense FROM request_T WHERE [index] = " & reqid, g_strCONN, 3, 1
 	If Not rsMed.EOF Then
 		hmo = Trim(Ucase(Z_FixNull(rsMed("medicaid")))) 
+		If hmo = "" Then hmo = Trim(Ucase(Z_FixNull(rsMed("amerihealth"))))
 		If hmo = "" Then hmo = Trim(Ucase(Z_FixNull(rsMed("meridian"))))
 		If hmo = "" Then hmo = Trim(Ucase(Z_FixNull(rsMed("nhhealth"))))
 		If hmo = "" Then hmo = Trim(Ucase(Z_FixNull(rsMed("wellsense")))) 
@@ -14,7 +15,7 @@ End Function
 Function Z_MedicaidCheck(appid)
 	Z_MedicaidCheck = True
 	Set rsMed = Server.CreateObject("ADODB.RecordSet")
-	rsMed.Open "SELECT clname, cfname, dob, medicaid, meridian, nhhealth, wellsense FROM [request_T] WHERE [index] = " & appid, g_strCONN, 3, 1
+	rsMed.Open "SELECT clname, cfname, dob, amerihealth, medicaid, meridian, nhhealth, wellsense FROM [request_T] WHERE [index] = " & appid, g_strCONN, 3, 1
 	If Not rsMed.EOF Then
 		lname = Trim(Ucase(rsMed("clname")))
 		fname = Trim(Ucase(rsMed("cfname")))
@@ -24,15 +25,10 @@ Function Z_MedicaidCheck(appid)
 		'If hmo = "" Then hmo = Trim(Ucase(Z_FixNull(rsMed("nhhealth"))))
 		'If hmo = "" Then hmo = Trim(Ucase(Z_FixNull(rsMed("wellsense")))) 
 		hmo = Z_FixNull(Ucase(Trim(rsMed("medicaid")))) 
-		If Z_FixNull(rsMed("meridian")) <> "" Then 
-			hmo = Z_FixNull(Ucase(Trim(rsMed("meridian"))))
-		End If
-		If Z_FixNull(rsMed("nhhealth")) <> "" Then 
-			hmo = Z_FixNull(Ucase(Trim(rsMed("nhhealth"))))
-		End If
-		If Z_FixNull(rsMed("wellsense")) <> "" Then 
-			hmo = Z_FixNull(Ucase(Trim(rsMed("wellsense")))) 
-		End If
+		If hmo = "" Then hmo = Trim(Ucase(Z_FixNull(rsMed("amerihealth"))))
+		If hmo = "" Then hmo = Trim(Ucase(Z_FixNull(rsMed("meridian"))))
+		If hmo = "" Then hmo = Trim(Ucase(Z_FixNull(rsMed("nhhealth"))))
+		If hmo = "" Then hmo = Trim(Ucase(Z_FixNull(rsMed("wellsense")))) 
 	End If
 	rsMed.close
 	set rsMed = nothing

@@ -929,6 +929,7 @@ Function Progcode(hmoused)
 	If hmoused = 1 Then Progcode = "MHP"
 	If hmoused = 2 Then Progcode = "NHHF"
 	If hmoused = 3 Then Progcode = "WSHP"
+	If hmoused = 4 Then Progcode = "AHC"
 	'If Z_Czero(wid) = 0 Then Exit Function 
 	'Progcode = "LB" & Right("00" & wid, 3)
 End Function

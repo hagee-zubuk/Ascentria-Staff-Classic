@@ -76,6 +76,7 @@ If Request("Clone") <> "" Then
 		hasmed = 0
 		If rsClone("hasmed") Then hasmed = 1
 		tmpmed = rsClone("medicaid")
+		AMHnum = rsClone("amerihealth")
 		MHPnum = rsClone("meridian")
 		NHHFnum = rsClone("nhhealth")
 		WSHPnum = rsClone("wellsense")
@@ -142,6 +143,7 @@ If Request("Clone") <> "" Then
 	rsMain("hasmed") = false
 	If hasmed = 1 Then rsMain("hasmed") = true	
 	rsMain("medicaid") = tmpmed
+	rsMain("amerihealth") = AMHnum
 	rsMain("meridian") = MHPnum
 	rsMain("nhhealth") = NHHFnum
 	rsMain("wellsense") = WSHPnum
