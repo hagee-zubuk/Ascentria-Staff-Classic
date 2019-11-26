@@ -22,6 +22,7 @@ Function GetInstAdr(zzz)
 	rsInst.Close
 	Set rsInst = Nothing
 End Function
+
 If Request("ctrl") = 1 Then
 	If Request("txtNewInst") = "" Then
 		myInst = Request("selInst")
@@ -264,6 +265,7 @@ ElseIf Request("ctrl") = 4 Then
 			rsMain("meridian") = Request("MHPnum")
 			rsMain("nhhealth") = Request("NHHFnum")
 			rsMain("wellsense") = Request("WSHPnum")
+			rsMain("amerihealth") = Request("AHMemId")
 			rsMain("acknowledge") = false
 			If Request("chkawk") <> "" Then rsMain("acknowledge") = True
 			rsMain("autoacc") = False
@@ -319,28 +321,31 @@ ElseIf Request("ctrl") = 4 Then
 			x = 1
 			'On error resume next
 			'response.write "xxx: " & rsLB.Fields.Count & "<br>"
-	    Do Until x = rsLB.Fields.Count
-	    	If ctrApp > 1 Then 
-	    		If x = 3 Or x = 4 Or x = 5 Then 'Date
-	    			If x = 3 Then rsLB.Fields(3).value = Request("txtAppDate" & ctrApp)
-	    			If x = 4 Then rsLB.Fields(4).value = Request("txtAppDate" & ctrApp)  & " " & Request("txtAppTFrom" & ctrApp)
-	    			If x = 5 Then rsLB.Fields(5).value = Request("txtAppDate" & ctrApp)  & " " & Request("txtAppTTo" & ctrApp)
-	    		Else
-	        	rsLB.Fields(x).Value = Z_NullFix(rsWiz.Fields(x).Value)
-	        End If
-	      Else
+	    	Do Until x = rsLB.Fields.Count
+	    	' TODO: CHANGE THIS to something more meaningful, like iterate thru the field names!!
+	    		If ctrApp > 1 Then 
+	    			If x = 3 Or x = 4 Or x = 5 Then 'Date
+	    				If x = 3 Then rsLB.Fields(3).value = Request("txtAppDate" & ctrApp)
+	    				If x = 4 Then rsLB.Fields(4).value = Request("txtAppDate" & ctrApp)  & " " & Request("txtAppTFrom" & ctrApp)
+	    				If x = 5 Then rsLB.Fields(5).value = Request("txtAppDate" & ctrApp)  & " " & Request("txtAppTTo" & ctrApp)
+	    			Else
+	        			rsLB.Fields(x).Value = Z_NullFix(rsWiz.Fields(x).Value)
+	        		End If
+				Else
 	      	'response.write "x: " & x & "<br>"
-	    		rsLB.Fields(x).Value = Z_NullFix(rsWiz.Fields(x).Value)
-	    	End If 	
-	        x = x + 1
-	    Loop
-	    rsLB("timestamp") = TimeNow 
-	    rsLB.Update
-	  	myID = rsLB("index")
-	  	rsLB.Close
-	  	Set rsLB = Nothing
-	  	'LOG UPLOAD
-	  	If FileUpload(Request("h_tmpfilename")) Then  'save Form on DB
+'	      		If rsWiz.Fields.Contains(x) Then
+	    			rsLB.Fields(x).Value = Z_NullFix(rsWiz.Fields(x).Value)
+'	    		End If
+				End If 	
+	        	x = x + 1
+	    	Loop
+	    	rsLB("timestamp") = TimeNow 
+	    	rsLB.Update
+	  		myID = rsLB("index")
+	  		rsLB.Close
+	  		Set rsLB = Nothing
+	  		'LOG UPLOAD
+	  		If FileUpload(Request("h_tmpfilename")) Then  'save Form on DB
 				Set rsFile = Server.CreateObject("ADODB.RecordSet")
 				sqlFile = "SELECT * FROM pdf_T"
 				rsFile.Open sqlFile, g_strCONN, 1, 3
@@ -352,8 +357,8 @@ ElseIf Request("ctrl") = 4 Then
 				rsFile.Close
 				Set rsFile = Nothing
 			End If
-	  	'SAVE HISTORY
-	
+	  		
+	  		'SAVE HISTORY
 			Set rsHist = Server.CreateObject("ADODB.RecordSet")
 			sqlHist = "SELECT * FROM History_T WHERE [index] = 0"
 			rsHist.Open sqlHist, g_strCONNHist, 1, 3 
@@ -389,12 +394,10 @@ ElseIf Request("ctrl") = 4 Then
 				'send job to intr
 				call Z_EmailJob(myID) 
 			End If
-	  	ctrApp = ctrApp + 1
-	  Loop
+		  	ctrApp = ctrApp + 1
+		Loop
 	End If
-	
 	rsWiz.Close
-
 	Set rsWiz = Nothing
 	
 	'DELETE RECORD ON WIZARD DB
