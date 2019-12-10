@@ -94,6 +94,7 @@ Do While Not rsRep.EOF
 	FPHrsHP = 0
 	thours = 0
 	bhrs = 0
+	PHrs = 0
 	'  2019-11-22 FIX:: END
 
 	If rsRep("overpayhrs") Then 
@@ -148,10 +149,20 @@ Do While Not rsRep.EOF
 				ReDim Preserve tmpTrngIntr(xt)
 				ReDim Preserve tmpTrng_Hrs(xt)
 				tmpTrngIntr(xt) = strIntr
-				tmpTrng_Hrs(xt) = Z_CZero(Z_FormatNumber(IntrBillHrs(rsRep("appTimeFrom"), rsRep("appTimeTo")), 2))
+				tmpTrng_Hrs(xt) = Z_Czero(PHrs) ' Changed on 2019-12-10 to use Pay Hours variable
+				' was:Z_CZero(Z_FormatNumber(IntrBillHrs(rsRep("appTimeFrom"), rsRep("appTimeTo")), 2))
+				' DEBUG: Start
+				' If strIntr = 461 Then _
+				'		Response.Write "INIT[" & xt & "] ::tmpTrng_Hrs =" & tmpTrng_Hrs(xt) & "<br />" & vbCrLf
+				' DEBUG: END
 				xt = xt + 1
 			Else
-				tmpTrng_Hrs(lngIdx) = tmpTrng_Hrs(lngIdx) + Z_CZero( Z_FormatNumber(IntrBillHrs(rsRep("appTimeFrom"), rsRep("appTimeTo")), 2) )
+				tmpTrng_Hrs(lngIdx) = tmpTrng_Hrs(lngIdx) + Z_Czero(PHrs) ' Changed on 2019-12-10 to use Pay Hours variable
+				' was Z_CZero( Z_FormatNumber(IntrBillHrs(rsRep("appTimeFrom"), rsRep("appTimeTo")), 2) )
+				' DEBUG: Start
+				' If strIntr = 461 Then _
+				'		Response.Write "INIT[" & lngIdx & "] ::tmpTrng_Hrs =" & tmpTrng_Hrs(lngIdx) & "<br />" & vbCrLf
+				' DEBUG: END
 			End If
 		End If
 	End If
@@ -174,6 +185,10 @@ Do While Not rsRep.EOF
 		tmpTrain(x) = thours
 		tmpIHTrain(x) = ihthours
 		tmpbhrs(x) = bhrs
+		' DEBUG: Start
+		' If strIntr = 461 Then _
+		'		Response.Write "INIT[" & x & "] ::tmpHrs =" & tmpHrs(x) & "<br />" & vbCrLf
+		' DEBUG: END
 		x = x + 1
 	Else	
 		tmpHrs(lngIdx) = tmpHrs(lngIdx) + FPHrs
@@ -182,6 +197,10 @@ Do While Not rsRep.EOF
 		tmpTrain(lngIdx) = tmpTrain(lngIdx) + thours
 		tmpIHTrain(lngIdx) = tmpIHTrain(lngIdx) + ihthours
 		tmpbhrs(lngIdx) = tmpbhrs(lngIdx) + bhrs
+		' DEBUG: Start
+		' If strIntr = 461 Then _
+		'		Response.Write "UPDT[" & x & "] ::tmpHrs =" & tmpHrs(lngIdx) & "<br />" & vbCrLf
+		' DEBUG: END
 	End If
 	rsRep.MoveNext
 Loop
