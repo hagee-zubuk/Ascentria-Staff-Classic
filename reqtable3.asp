@@ -662,17 +662,11 @@ if x > 1 then btndis = ""
 								</tr>
 								<% If Session("MSG") <> "" Then %>
 									<tr><td>&nbsp;</td></tr>
-									<tr>
-										<td colspan='14' align='left'>
+									<tr><td colspan='14' align='left'>
 											<div name="dErr" style="width:300px; height:40px;OVERFLOW: auto;">
-												<table border='0' cellspacing='1'>		
-													<tr>
-														<td><span class='error'><%=Session("MSG")%></span></td>
-													</tr>
-												</table>
+												<span class='error'><%=Session("MSG")%></span>
 											</div>
-										</td>
-									</tr>
+										</td></tr>
 									<tr><td>&nbsp;</td></tr>
 								<% End If %>
 								<tr>
