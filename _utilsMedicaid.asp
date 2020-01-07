@@ -65,6 +65,12 @@ Function Z_NameMed(ReqID)
 	rsMed.Close
 	Set rsMed = Nothing
 End Function
+Function Z_NameMed2(rsMed)
+	Z_NameMed2 = "NOT*AVAILABLE"
+	If NOT IsEmpty(rsMed) Then
+		Z_NameMed2 = Z_RemoveDlbQuote(Ucase(Trim(rsMed("clname")))) & "*" & Z_RemoveDlbQuote(Ucase(Trim(rsMed("cfname"))))
+	End If
+End Function
 Function Z_DOBMed(ReqID)
 	Z_DOBMed = ""
 	If Z_Czero(ReqID) = 0 Then Exit Function
@@ -81,6 +87,18 @@ Function Z_DOBMed(ReqID)
 	End If
 	rsMed.Close
 	Set rsMed = Nothing
+End Function
+Function Z_DOBMed2(rsMed)
+	Z_DOBMed2 = ""
+	If NOT IsNull(rsMed) Then
+		If IsDate(rsMed("DOB")) Then
+			dte = FormatDateTime(rsMed("DOB"), 2)
+			dteYr = Year(dte)
+			dteMn = Right("0" & Month(dte), 2)
+			dteDy = Right("0" & Day(dte), 2)
+			Z_DOBMed2 = dteYr & dteMn & dteDy
+		End If
+	End If
 End Function
 Function Z_GenderMed(ReqID)
 	If Z_Czero(ReqID) = 0 Then Exit Function
@@ -102,6 +120,19 @@ Function Z_GenderMed(ReqID)
 	rsMed.Close
 	Set rsMed = Nothing
 End Function
+Function Z_GenderMed2(rsMed)
+	Z_GenderMed2 = "U"
+	If IsNull(rsMed) Then Exit Function
+	If IsNull(rsMed("gender")) Then
+		Z_GenderMed2 = "U"
+	Else
+		If rsMed("gender") = 1 Then
+			Z_GenderMed2 = "F"
+		Else
+			Z_GenderMed2 = "M"
+		End If
+	End If
+End Function
 Function Z_DateMed(ReqID)
 	Z_DateMed = ""
 	If Z_Czero(ReqID) = 0 Then Exit Function
@@ -116,5 +147,17 @@ Function Z_DateMed(ReqID)
 	End If
 	rsMed.Close
 	Set rsMed = Nothing
+End Function
+Function Z_DateMed2(rsMed)
+	Z_DateMed2 = ""
+	If NOT IsNull(rsMed) Then
+		If IsDate(rsMed("appDate")) Then
+			dte = FormatDateTime(rsMed("appdate"), 2)
+			dteYr = Year(dte)
+			dteMn = Right("0" & Month(dte), 2)
+			dteDy = Right("0" & Day(dte), 2)
+			Z_DateMed2 = dteYr & dteMn & dteDy
+		End If
+	End If
 End Function
 %>
