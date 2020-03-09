@@ -5120,6 +5120,9 @@ ElseIf tmpReport(0) = 74 Then ' Interpreter Appt Response
 ElseIf tmpReport(0) = 75 Then ' Interpreter Frequency
 	Response.Redirect "rep_intrfreq.asp"
 	Response.End
+ElseIf tmpReport(0) = 76 Then
+	Response.Redirect "rep_courtsumm.asp"
+	Response.End
 End If
 tmpBills = Request("Bill")
 If Request("csv") <> 1 Then
