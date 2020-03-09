@@ -40,16 +40,16 @@ Function MyStatus(xxx)
 			MyStatus = ""
 	End Select
 End Function
-Function GetMyDept(xxx)
-	GetMyDept = ""
-	Set rsDept = Server.CreateObject("ADODB.RecordSet")
-	sqlDept = " SELECT Dept FROM dept_T WHERE [index] = " & xxx
-	rsDept.Open sqlDept, g_strCONN, 3, 1
-	If Not rsDept.EOF Then
-		GetMyDept = " - " & rsDept("Dept")
-	End If
-	rsDept.Close
-	Set rsDept = Nothing
+Function Z_YMDDate(dtDate)
+DIM lngTmp, strDay, strTmp
+	If Not IsDate(dtDate) Then Exit Function
+	Z_YMDDate = DatePart("yyyy", dtDate) & "-"
+	lngTmp = Z_CLng(DatePart("m", dtDate))
+	If lngTmp < 10 Then Z_YMDDate = Z_YMDDate & "0"
+	Z_YMDDate = Z_YMDDate & lngTmp & "-"
+	lngTmp = Z_CLng(DatePart("d", dtDate))
+	If lngTmp < 10 Then Z_YMDDate = Z_YMDDate & "0"
+	Z_YMDDate = Z_YMDDate & lngTmp
 End Function
 tmpPage = "document.frmTbl."
 radioApp = ""
@@ -62,90 +62,79 @@ radioUnass2 = ""
 x = 0
 If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 Then
 'response.write "TEST"
-		sqlReq = "SELECT Happen, Billable, dob, medicaid, meridian, nhhealth, wellsense, vermed, autoacc, wcomp, drg, XID, request_T.InstID, IntrID, LangID, InstRate, ProcessedMedicaid, Status, DeptID, request_T.[index], " & _
-			"clname, cfname, appDate " & _
-			"FROM request_T, institution_T, language_T, interpreter_T, requester_T, dept_T " & _
-			"WHERE request_T.[instID] <> 479 AND request_T.InstID = institution_T.[index] " & _
-			"AND LangId = language_T.[index] " & _
-			"AND IntrId = interpreter_T.[index] " & _
-			"AND request_T.DeptId = dept_T.[index] " & _
-			"AND ReqID = requester_T.[index] " & _
-			"AND outpatient = 1 AND hasmed = 1 AND autoacc <> 1 AND wcomp <> 1 AND drg = 1 AND (medicaid <> '' OR NOT medicaid IS NULL OR meridian <> '' OR NOT meridian IS NULL OR nhhealth <> '' OR NOT nhhealth IS NULL OR wellsense <> '' OR NOT wellsense IS NULL)"
+	sqlReq = "SELECT req.[index], req.appDate, COALESCE(ins.[facility], 'N/A') AS [facility] " & _
+			", req.happen, req.Billable, req.dob, req.amerihealth, req.medicaid " & _
+			", req.meridian, req.nhhealth, req.wellsense, req.vermed, req.autoacc " & _
+			", req.wcomp, req.InstID, req.DeptID, req.IntrID, req.LangID, req.InstRate " & _
+			", req.[Status], req.ProcessedMedicaid, req.clname, req.cfname, req.[gender] " & _
+			", dep.[drg], lan.[Language], itr.[XID], dep.[dept] " & _
+			", COALESCE(itr.[last name], '') AS [last name] " & _
+			", COALESCE(itr.[first name], '') AS [first name] " & _
+			"FROM [request_T] AS req " & _
+			"INNER JOIN [dept_T] AS dep ON req.[deptID] = dep.[index] " & _
+			"INNER JOIN [institution_T] AS ins ON req.[instid]=ins.[index] " & _
+			"INNER JOIN [language_T] AS lan ON req.[langID]=lan.[index] " & _
+			"INNER JOIN [interpreter_T] AS itr ON req.[intrID]=itr.[index] " & _
+			"WHERE req.[instID] <> 479 " & _
+			"AND req.[autoacc] <> 1 " & _
+			"AND dep.[drg] = 1 " & _
+			"AND req.[hasmed] = 1 " & _
+			"AND req.[outpatient] = 1 " & _
+			"AND req.[wcomp] <> 1 " & _
+			"AND (medicaid <> '' OR NOT medicaid IS NULL OR meridian <> '' OR NOT meridian IS NULL OR nhhealth <> '' OR NOT nhhealth IS NULL OR wellsense <> '' OR NOT wellsense IS NULL) "
 			'If Request("ctrlX") = 1 Then
-				If Request("radioAss") = 0 Then	
-					sqlReq = sqlReq & "AND (status = 4 OR status = 1) AND (vermed = 0 OR vermed IS NULL)"
-					radioAss = "checked"
-					radioUnass = ""
-					radioUnass2 = ""
-					noAppr = ""
-				ElseIf Request("radioAss") = 1 Then	
-					sqlReq = sqlReq & "AND (status = 4 OR status = 1) AND vermed = 1"
-					radioAss = ""
-					radioUnass = "checked"
-					radioUnass2 = ""
-					noAppr = "disabled"
-				ElseIf Request("radioAss") = 2 Then	
-					sqlReq = sqlReq & "AND (status = 4 OR status = 1) AND vermed = 2"
-					radioAss = ""
-					radioUnass = ""
-					radioUnass2 = "checked"
-					noAppr = "disabled"
-				Else
-					radioAss = "checked"
-					radioUnass = ""
-					radioUnass2 = ""
-				End If
-			'Else
-			'	If Request("radioAss") = 0 Then	
-			'		sqlReq = sqlReq & "AND (status = 0 OR status = 4) AND vermed = 0"
-			'		radioAss = "checked"
-			'		radioUnass = ""
-			'		radioUnass2 = ""
-			'		noAppr = ""
-			'	ElseIf Request("radioAss") = 1 Then	
-			'		sqlReq = sqlReq & "AND (status = 1 OR status = 4) AND vermed = 1"
-			'		radioAss = ""
-			'		radioUnass = "checked"
-			'		radioUnass2 = ""
-			'		noAppr = "disabled"
-			'	Else
-			'		radioAss = ""
-			'		radioUnass = ""
-			'		radioUnass2 = "checked"
-			'	End If
-			'End If
-	
-	
+	If Request("radioAss") = 0 Then	
+		sqlReq = sqlReq & "AND (status IN (0, 1, 4)) AND ([vermed] = 0 OR [vermed] IS NULL)  AND [ApproveHrs] = 1 "
+		radioAss = "checked"
+		radioUnass = ""
+		radioUnass2 = ""
+		noAppr = ""
+	ElseIf Request("radioAss") = 1 Then	
+		sqlReq = sqlReq & "AND (status IN (1, 4)) AND vermed = 1"
+		radioAss = ""
+		radioUnass = "checked"
+		radioUnass2 = ""
+		noAppr = "disabled"
+	ElseIf Request("radioAss") = 2 Then	
+		sqlReq = sqlReq & "AND (status IN (1, 4)) AND vermed = 2"
+		'sqlReq = sqlReq & "AND (status = 4 OR status = 1) AND vermed = 2"
+		radioAss = ""
+		radioUnass = ""
+		radioUnass2 = "checked"
+		noAppr = "disabled"
+	Else
+		radioAss = "checked"
+		radioUnass = ""
+		radioUnass2 = ""
+	End If
 	'FIND
 	If Request("radioStat") = 0 Then
 		radioApp = "checked"
 		radioID = ""
 		radioAll = ""
-		If Request("txtFromd8") <> "" Then
-			If IsDate(Request("txtFromd8")) Then
-				sqlReq = sqlReq & " AND appDate >= '" & Request("txtFromd8") & "' "
-				tmpFromd8 = Request("txtFromd8") 
-			Else
-				Session("MSG") = "ERROR: Invalid Appointment Date Range (From)."
-				Response.Redirect "reqtable4.asp"
-			End If
+		dtFr = Z_CDate(Request("txtFromd8"))
+		dtTo = Z_CDate(Request("txtTod8"))
+		If dtFr <> "" Then
+			sqlReq = sqlReq & " AND [appDate] >= '" & Z_YMDDate(dtFr) & "' "
+		Else
+			Session("MSG") = "ERROR: Invalid Appointment Date Range (From)."
+			Response.Redirect "reqtable4.asp"
 		End If
-		If Request("txtTod8") <> "" Then
-			If IsDate(Request("txtTod8")) Then
-				sqlReq = sqlReq & " AND appDate <= '" & Request("txtTod8") & "' "
-				tmpTod8 = Request("txtTod8")
-			Else
-				Session("MSG") = "ERROR: Invalid Appointment Date Range (To)."
-				Response.Redirect "reqtable4.asp"
-			End If
+		tmpFromd8 = Z_MDYDate(dtFr)
+		If dtTo <> "" Then
+			sqlReq = sqlReq & " AND [appDate] <= '" & Z_YMDDate(dtTo) & "' "
+		Else
+			Session("MSG") = "ERROR: Invalid Appointment Date Range (To)."
+			Response.Redirect "reqtable4.asp"
 		End If
+		tmpTod8 = Z_MDYDate(dtTo)
 	ElseIf Request("radioStat") = 1 Then
 		radioApp = ""
 		radioID = "checked"
 		radioAll = ""
 		If Request("txtFromID") <> "" Then
 			If IsNumeric(Request("txtFromID")) Then
-				sqlReq = sqlReq & " AND request_T.[index] >= " & Request("txtFromID")
+				sqlReq = sqlReq & " AND req.[index] >= " & Request("txtFromID")
 				tmpFromID = Request("txtFromID")
 			Else
 				Session("MSG") = "ERROR: Invalid Appointment ID Range (From)."
@@ -154,7 +143,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 		End If
 		If Request("txtToID") <> "" Then
 			If IsNumeric(Request("txtToID")) Then
-				sqlReq = sqlReq & " AND request_T.[index] <= " & Request("txtToID")
+				sqlReq = sqlReq & " AND req.[index] <= " & Request("txtToID")
 				tmpToID = Request("txtToID")
 			Else
 				Session("MSG") = "ERROR: Invalid Appointment ID Range (To)."
@@ -170,7 +159,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 	xInst = Cint(Request("selInst"))
 	If xInst <> -1 Then 
 		sqlReq = sqlReq & " AND "
-		sqlReq = sqlReq & "request_T.InstID = " & xInst
+		sqlReq = sqlReq & "req.InstID = " & xInst
 	End If
 	xLang = Cint(Request("selLang"))
 	If xLang <> -1 Then 
@@ -201,9 +190,14 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 	selmer = ""
  	selnh = ""
  	selwell = ""
+ 	selamer = ""
 	If xMCO > 0 Then
 		If xMCO = 1 Then 
-			sqlReq = sqlReq & " AND medicaid <> '' AND (meridian = '' OR meridian IS NULL) AND (nhhealth = '' OR  nhhealth IS NULL) AND (wellsense = '' OR wellsense IS NULL) "
+			sqlReq = sqlReq & " AND medicaid <> '' AND " & _
+					"(amerihealth = '' OR amerihealth IS NULL) AND " & _
+					"(meridian = '' OR meridian IS NULL) AND " & _
+					"(nhhealth = '' OR  nhhealth IS NULL) AND " & _
+					"(wellsense = '' OR wellsense IS NULL) "
 			selmed = "SELECTED"
 		End If
 		If xMCO = 2 Then 
@@ -217,6 +211,10 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 		If xMCO = 4 Then 
 			sqlReq = sqlReq & " AND wellsense <> '' "
 			selwell = "SELECTED"
+		End If
+		If xMCO = 5 Then 
+			sqlReq = sqlReq & " AND amerihealth <> '' "
+			selamer = "SELECTED"
 		End If
 	End If
 	'ADMIN ONLY
@@ -249,7 +247,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 	'End If
 'End If
 	If Request("sort") <> "" Then
-			If Request("sort") = 1 Then sqlReq = sqlReq & " ORDER BY Request_T.[index]"
+			If Request("sort") = 1 Then sqlReq = sqlReq & " ORDER BY req.[index]"
 			If Request("sort") = 2 Then sqlReq = sqlReq & " ORDER BY Facility"
 			If Request("sort") = 3 Then sqlReq = sqlReq & " ORDER BY [Language]"
 			If Request("sort") = 4 Then sqlReq = sqlReq & " ORDER BY Clname"
@@ -259,7 +257,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 			If Request("sort") = 8 Then sqlReq = sqlReq & " ORDER BY XID"
 			If Request("sort") = 9 Then sqlReq = sqlReq & " ORDER BY appdate"
 			If Request("sort") = 10 Then sqlReq = sqlReq & " ORDER BY Billable"
-			If Request("sort") = 11 Then sqlReq = sqlReq & " ORDER BY Medicaid, meridian, nhhealth, wellsense"
+			If Request("sort") = 11 Then sqlReq = sqlReq & " ORDER BY Medicaid, amerihealth, meridian, nhhealth, wellsense"
 			If Request("sort") = 12 Then sqlReq = sqlReq & " ORDER BY Happen"	
 		
 
@@ -296,49 +294,23 @@ strMedHdr = "ISA*00*          *00*          *ZZ*" & tradingnumber & "*" & idnum 
 	"GS*HS*NH100496*026000618*" & dteYr & dteMn & dteDy & "*" & tme & "*1*X*005010X279A1~"
 'GET REQUESTS
 Set rsReq = Server.CreateObject("ADODB.RecordSet")
+' Response.Write "<code>" & sqlReq & "</code><br />"
 rsReq.Open sqlReq, g_strCONN, 3, 1
 x = 1
 If Not rsReq.EOF Then
 	Do Until rsReq.EOF
 		kulay = ""
 		If Not Z_IsOdd(x) Then kulay = "#FBEEB7"
-		'GET INSTITUTION
-		Set rsInst = Server.CreateObject("ADODB.RecordSet")
-		sqlInst = "SELECT Facility FROM institution_T WHERE [index] = " & rsReq("InstID")
-		rsInst.Open sqlInst, g_strCONN, 3, 1
-		If Not rsInst.EOF Then
-			tmpIname = rsInst("Facility")  
-			'If rsInst("Department") <> "" Then tmpIname = tmpIname & " <br> " & rsInst("Department")
-		Else
-			tmpIname = "N/A"
-		End If
-		rsInst.Close
-		Set rsInst = Nothing 
-		'GET INTERPRETER INFO
-		Set rsIntr = Server.CreateObject("ADODB.RecordSet")
-		sqlIntr = "SELECT [last name], [first name] FROM interpreter_T WHERE [index] = " & rsReq("IntrID")
-		rsIntr.Open sqlIntr, g_strCONN, 3, 1
-		If Not rsIntr.EOF Then
-			tmpInName = rsIntr("last name") & ", " & rsIntr("first name")
-		Else
-			tmpInName = "N/A"
-		End If
-		rsIntr.Close
-		Set rsIntr = Nothing
-		'GET LANGUAGE
-		Set rsLang = Server.CreateObject("ADODB.RecordSet")
-		sqlLang  = "SELECT [language] FROM language_T WHERE [index] = " & rsReq("LangID")
-		rsLang.Open sqlLang , g_strCONN, 3, 1
-		If Not rsLang.EOF Then
-			tmpSalita = rsLang("language") 
-		Else
-			tmpSalita = "N/A"
-		End If
-		rsLang.Close
-		Set rsLang = Nothing 
+		' GET INSTITUTION
+		tmpInst = rsReq("Facility")  
+		' GET INTERPRETER
+		tmpInName = TRIM(rsReq("last name") & ", " & rsReq("first name"))
+		If Len(tmpInName) < 2 Then tmpInName = "N/A"
+		' GET LANGUAGE
+		tmpSalita = rsReq("Language")
 	
 		Stat = MyStatus(rsReq("Status") )
-		myDept =  GetMyDept(rsReq("DeptID"))
+		myDept =  Trim(rsReq("Dept"))
 
 		If rsReq("vermed") = 1 Then 
 			apprHrs = "checked disabled"
@@ -357,6 +329,7 @@ If Not rsReq.EOF Then
 			End if
 		End If
 			hmolabel = "" 'Z_FixNull(rsReq("medicaid")) 
+			If hmolabel = "" Then hmolabel = Z_FixNull(rsReq("amerihealth"))
 			If hmolabel = "" Then hmolabel = Z_FixNull(rsReq("meridian"))
 			If hmolabel = "" Then hmolabel = Z_FixNull(rsReq("nhhealth"))
 			If hmolabel = "" Then hmolabel = Z_FixNull(rsReq("wellsense"))
@@ -382,7 +355,7 @@ If Not rsReq.EOF Then
 			strtbl = strtbl & "<tr bgcolor='" & kulay & "'>" & vbCrLf & _ 
 				"<td class='tblgrn2' width='10px'>" & Stat & "</td>" & vbCrLf & _
 				"<td class='tblgrn2' ><input type='hidden' name='ID" & x & "' value='" & rsReq("Index") & "'><a class='link2' href='reqconfirm.asp?ID=" & rsReq("Index") & "'><b>" & rsReq("Index") & "</b></a></td>" & vbCrLf & _
-				"<td class='tblgrn2' ><nobr>" & tmpIname & myDept & "</td>" & vbCrLf & _
+				"<td class='tblgrn2' ><nobr>" & tmpInst & " - " &  myDept & "</td>" & vbCrLf & _
 				"<td class='tblgrn2' >" & tmpSalita & "</td>" & vbCrLf & _
 				"<td class='tblgrn2' >" & Z_RemoveDlbQuote(rsReq("clname")) & ", " & Z_RemoveDlbQuote(rsReq("cfname")) & "</td>" & vbCrLf & _
 				"<td class='tblgrn2' >" & rsReq("dob") & "</td>" & vbCrLf & _
@@ -409,9 +382,9 @@ If Not rsReq.EOF Then
 			strMedBody = strMedBody & "NM1*1P*" & ptype & "*" & nm11p1 & "~" & _
 				refeo & _
 				"HL*3*2*22*0~" & _
-				"NM1*IL*1*" & Z_NameMed(rsReq("index")) & "****MI*" & Trim(cleanhmo) & "~" & _
-				"DMG*D8*" & Z_DOBMed(rsReq("index")) & "*" & Z_GenderMed(rsReq("index")) & "~" & _
-				"DTP*291*RD8*" & Z_DateMed(rsReq("index")) & "-" & Z_DateMed(rsReq("index")) & "~" & _
+				"NM1*IL*1*" & Z_NameMed2(rsReq) & "****MI*" & Trim(cleanhmo) & "~" & _
+				"DMG*D8*" & Z_DOBMed2(rsReq) & "*" & Z_GenderMed2(rsReq) & "~" & _
+				"DTP*291*RD8*" & Z_DateMed2(rsReq) & "-" & Z_DateMed2(rsReq) & "~" & _
 				"EQ*30~"
 			segCount = 13
 			If refeo = "" Then segCount = 12
@@ -805,6 +778,9 @@ if x > 1 then btndis = ""
 				</table>
 
 <div id="tabResults" style='width:100%; position: relative;'>
+<!-- TODO: START: remove this when you go live! -->
+<!--	<code><%= sqlReq %></code><br /> -->
+<!-- TODO: END: remove this when you go live! -->
 	<table class="reqtble" width='100%'>	
 		<thead>
 			<tr class="noscroll">	
@@ -925,10 +901,12 @@ if x > 1 then btndis = ""
 					</select>
 					&nbsp;Medicaid/MCO:
 					<select class='seltxt' style='width: 100px;' name='selMCO'>
+						<option value='5' <%=selamer%>>AmeriHealth</option>
 						<option value='1' <%=selmed%>>Medicaid</option>
 						<option value='2' <%=selmer%>>Meridian Health Plan</option>
 						<option value='3' <%=selnh%>>NH Healthy Families</option>
 						<option value='4' <%=selwell%>>Well Sense Health Plan</option>
+
 					</select>
 				</td>
 				<td>&nbsp;</td>

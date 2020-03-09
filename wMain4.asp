@@ -498,7 +498,7 @@ End If
 							var strAHMid = Trim(document.frmMain.AHMemId.value);
 							if (strAHMid == "") {
 								alert("Please input client's AmeriHealth member ID.")
-							} else if (strAHMid.length != 9) {
+							} else if ((strAHMid.length < 8) || (strAHMid.length > 9) ) {
 								alert("Client's AmeriHealth member ID is invalid.");
 								return;
 							}
@@ -1083,7 +1083,7 @@ End If
 							<!-- START :: new for 2019-11-22: AMERIHEALTH AND AMERIHEALTH MEMBER ID  -->
 							<input type='radio' name='radiomed' <%=radiomed5%> id="rdoMed_Ame" value='5' onclick='SelPlan();'>
 							AmeriHealth
-							<input type='text' class='main' maxlength='9' minlength="9" placeholder="member ID"
+							<input type='text' class='main' maxlength='9' minlength="8" placeholder="member ID"
 								name='AHMemId' value="<%=AHMemId%>" /><br/>
 							<!-- END :: for 2019-11-22: AMERIHEALTH AND AMERIHEALTH MEMBER ID  -->
 

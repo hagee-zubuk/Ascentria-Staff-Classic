@@ -439,7 +439,7 @@ ElseIf Request("ctrl")= 2 Then
 			CleanFname = Replace(Ucase(Trim(rsRep("fname"))), "'", "''")
 			Set rsCli = Server.CreateObject("ADODB.RecordSet")
 			sqlCli = "SELECT * FROM clientuploaded_T WHERE lname = '" & CleanLname & "' AND fname = '" & CleanFname & _
-				"' AND medicaid = '" & medicaid & "' AND dob = '" & rsRep("dob") & "' " ' & strGender
+				"' AND medicaid = '" & medicaid & "' AND dob = '" & rsRep("dob") & "'" & strGender
 			'" AND gender = " & gender2
 			rsCli.Open sqlCli, g_strCONN, 1, 3
 			If rsCli.EOF Then
@@ -484,6 +484,8 @@ ElseIf Request("ctrl")= 2 Then
 			"<td class='tblgrn'>Date</td>" & vbCrlf & _
 			"<td class='tblgrn'>Institution</td>" & vbCrlf & _
 			"<td class='tblgrn'>Department</td>" & vbCrlf
+		CSVHead = "Intr Last Name,Intr First Name,Yes,No,""N/A"",Timestamp,ID,Date,Institution,Department"
+		CSVBody = ""
 		Set rsRep = Server.CreateObject("ADODB.RecordSet")
 		sqlRep = "SELECT DISTINCT(appt_t.[IntrID]) AS myIntrID FROM appt_T, request_T WHERE request_T.[index] = appt_T.appid"
 		If Request("txtRepFrom") <> "" Then
@@ -504,103 +506,94 @@ ElseIf Request("ctrl")= 2 Then
 		Do Until rsRep.EOF
 			'YES
 			YesIntr = 0
-			Set rsYes = Server.CreateObject("ADODB.RecordSet")
-			sqlYes = "SELECT appID, appdate, facility, dept, ansTS FROM appt_T, request_T, Institution_T, dept_T WHERE request_T.[InstID] = Institution_T.[index] AND " & _
-				"request_T.[index] = appt_T.appid AND DeptID = dept_T.[index] AND accept = 1 AND appt_T.IntrID = " & _
-				rsRep("myIntrID")
+			Set rsQry = Server.CreateObject("ADODB.RecordSet")
+			sqlQry = "SELECT appID, app.[accept], appdate, facility, dept, ansTS, itr.[Last Name], itr.[First Name] " & _
+					"FROM [appt_T] AS app " & _
+					"INNER JOIN [request_T] AS req ON app.[appID]=req.[index] " & _
+					"INNER JOIN [Institution_T] AS ins ON req.[InstID]=ins.[index] " & _
+					"INNER JOIN [dept_T] AS dep ON req.[DeptID]=dep.[index] " & _
+					"LEFT JOIN [interpreter_T] AS itr ON app.[IntrID]=itr.[index] " & _
+					"WHERE app.IntrID = " & rsRep("myIntrID")
 			If Request("txtRepFrom") <> "" Then
-				sqlYes = sqlYes & " AND appdate >= '" & Request("txtRepFrom") & "'"
+				sqlQry = sqlQry & " AND appdate >= '" & Request("txtRepFrom") & "' "
 			End If
 			If Request("txtRepTo") <> "" Then
-				sqlYes = sqlYes & " AND appdate <= '" & Request("txtRepTo") & "'"
+				sqlQry = sqlQry & " AND appdate <= '" & Request("txtRepTo") & "' "
 			End If
 			'response.write sqlYes & "<br>"
 			x = 0
 			yesIntr = 0
-			rsYes.Open sqlYes, g_strCONN, 3, 1
-			If Not rsYes.EOF Then
-				'YesIntr = rsYes("myCount")
-				Do Until rsYes.EOF
-					kulay = "#FFFFFF"
-					If Not Z_IsOdd(x) Then kulay = "#F5F5F5"
-					strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & GetIntr(Request("selIntr")) & "</td>" & vbCrLf & _
-					"<td class='tblgrn2'><nobr>YES</td>" & _
-					"<td class='tblgrn2'><nobr>" & rsYes("ansTS") & "</td>" & _
-					"<td class='tblgrn2'><nobr>" & rsYes("appID") & "</td>" & _
-					"<td class='tblgrn2'><nobr>" & rsYes("appDate") & "</td>" & _
-					"<td class='tblgrn2'><nobr>" & rsYes("Facility") & "</td>" & _
-					"<td class='tblgrn2'><nobr>" & rsYes("dept") & "</td>" & _
-					"</tr>"
-					x = x + 1
-					yesIntr = yesIntr + 1
-					rsYes.MoveNext
-				Loop
-			End If
-			rsYes.Close
-			Set rsYes = Nothing
-			'NO
 			NoIntr = 0
-			Set rsNo = Server.CreateObject("ADODB.RecordSet")
-			sqlNo = "SELECT appID, appdate, facility, dept, ansTS FROM appt_T, request_T, Institution_T, dept_T WHERE request_T.[InstID] = Institution_T.[index] AND " & _
-				"request_T.[index] = appt_T.appid AND DeptID = dept_T.[index] AND accept = 2 AND appt_T.IntrID = " & _
-				rsRep("myIntrID")
-			If Request("txtRepFrom") <> "" Then
-				sqlNo = sqlNo & " AND appdate >= '" & Request("txtRepFrom") & "'"
-			End If
-			If Request("txtRepTo") <> "" Then
-				sqlNo = sqlNo & " AND appdate <= '" & Request("txtRepTo") & "'"
-			End If
-			rsNo.Open sqlNo, g_strCONN, 3, 1
-			If Not rsNo.EOF Then
-				Do Until rsNo.EOF
-					kulay = "#FFFFFF"
-					If Not Z_IsOdd(x) Then kulay = "#F5F5F5"
-					strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & GetIntr(Request("selIntr")) & "</td>" & vbCrLf & _
-					"<td class='tblgrn2'><nobr>NO</td>" & _
-					"<td class='tblgrn2'><nobr>" & rsNo("ansTS") & "</td>" & _
-					"<td class='tblgrn2'><nobr>" & rsNo("appID") & "</td>" & _
-					"<td class='tblgrn2'><nobr>" & rsNo("appDate") & "</td>" & _
-					"<td class='tblgrn2'><nobr>" & rsNo("Facility") & "</td>" & _
-					"<td class='tblgrn2'><nobr>" & rsNo("dept") & "</td>" & _
-					"</tr>"
-					x = x + 1
-					NoIntr = NoIntr + 1
-					rsNo.MoveNext
-				Loop
-			End If
-			rsNo.Close
-			Set rsNo = Nothing
-			'NA
 			NAIntr = 0
-			Set rsNA = Server.CreateObject("ADODB.RecordSet")
-			sqlNA = "SELECT COUNT(UID) AS myCount FROM appt_T, request_T WHERE request_T.[index] = appt_T.appid AND accept = 0 AND appt_T.IntrID = " & _
-				rsRep("myIntrID")
-			If Request("txtRepFrom") <> "" Then
-				sqlNA = sqlNA & " AND appdate >= '" & Request("txtRepFrom") & "'"
-			End If
-			If Request("txtRepTo") <> "" Then
-				sqlNA = sqlNA & " AND appdate <= '" & Request("txtRepTo") & "'"
-			End If
-			rsNA.Open sqlNA, g_strCONN, 3, 1
-			If Not rsNA.EOF Then
-				NAIntr = rsNA("myCount")
+			sqlQry = sqlQry & " ORDER BY [ansTS]"
+			'Response.Write sqlQry
+			'Response.End
+			rsQry.Open sqlQry, g_strCONN, 3, 1
+			If Not rsQry.EOF Then
+				'YesIntr = rsYes("myCount")
+				strIntr = rsQry("Last Name") & ", " & rsQry("First Name")
+				strIntrCSV = """" & rsQry("Last Name") & """,""" & rsQry("First Name") & """"
+				
+				Do Until rsQry.EOF
+					lngAc = Z_CLng(rsQry("accept"))
+					strAC = ""
+					If lngAC = 1 Then
+						yesIntr = yesIntr + 1
+						strCSVAC = """YES"","""","""""
+						strAC = "YES"
+					ElseIf lngAC = 2 Then
+						NoIntr = NoIntr + 1
+						strAC = "NO"
+						strCSVAC = """"",""NO"","""""
+					ElseIf lngAC = 0 Then
+						NAIntr = NAIntr + 1
+						strAC = ""
+						strCSVAC = """"","""",""NA"""
+					End If
+
+					If strAC <> "" Then
+						kulay = "#FFFFFF"
+						If Not Z_IsOdd(x) Then kulay = "#F5F5F5"
+						strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & strIntr & "</nobr></td>" & vbCrLf
+						strBody = strBody & "<td class='tblgrn2'><nobr>" & strAC & "</td>"
+						strBody = strBody & "<td class='tblgrn2'><nobr>" & rsQry("ansTS") & "</td>" & _
+								"<td class='tblgrn2'><nobr>" & rsQry("appID") & "</td>" & _
+								"<td class='tblgrn2'><nobr>" & rsQry("appDate") & "</td>" & _
+								"<td class='tblgrn2'><nobr>" & rsQry("Facility") & "</td>" & _
+								"<td class='tblgrn2'><nobr>" & rsQry("dept") & "</td>" & _
+								"</tr>" & vbCrLf
+						x = x + 1				
+					End If
+					CSVBody = CSVBody & strIntrCSV & _
+							"," & strCSVAC & _
+							",""" & Trim(rsQry("ansTS")) & """" & _
+							",""" & Trim(rsQry("appID")) & """" & _
+							",""" & Trim(rsQry("appDate")) & """" & _
+							",""" & Trim(rsQry("Facility")) & """" & _
+							",""" & Trim(rsQry("Dept")) & """" & vbCrLf
+
+					rsQry.MoveNext
+				Loop
+
 				kulay = "#FFFFFF"
 				If Not Z_IsOdd(x) Then kulay = "#F5F5F5"
-				strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & GetIntr(Request("selIntr")) & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>COUNT</td>" & _
-				"<td class='tblgrn2' colspan='5' style='text-align: left;'><nobr><i>YES: " & YesIntr & "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO: " & NoIntr & "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NA: " & NAIntr & "</i></td>" & _
-				"</tr>"
+				strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & strIntr & "</nobr></td>" & vbCrLf & _
+							"<td class='tblgrn2'><nobr>COUNT</td>" & _
+							"<td class='tblgrn2' colspan='5' style='text-align: left;'><nobr><i>YES: " & YesIntr & _
+							"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO: " & NoIntr & "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NA: " & NAIntr & "</i></td>" & _
+							"</tr>" & vbCrLf
+				CSVBody = CSVBody & strIntrCSV & _
+								",""COUNT""" & _
+								",""YES:""" & _
+								"," & YesIntr & _
+								",""NO:""" & _
+								"," & NoIntr & _
+								",""n/r:""" & _
+								"," & NaIntr & vbCrLf
 			End If
-			rsNA.Close
-			Set rsNA = Nothing
-			'kulay = "#FFFFFF"
-			'If Not Z_IsOdd(y) Then kulay = "#F5F5F5"
-			'tmpName = GetIntr(rsRep("myIntrID"))
-			'strBody = strBody & "<tr bgcolor='" & kulay & "'><td class='tblgrn2'><nobr>" & tmpName & "</td>" & vbCrLf & _
-			'		"<td class='tblgrn2'><nobr>" & YesIntr & "</td>" & _
-			'		"<td class='tblgrn2'><nobr>" & NoIntr & "</td>" & _
-			'		"<td class='tblgrn2'><nobr>" & NAIntr & "</td>" & _
-			'		"</tr>"
+			rsQry.Close
+			Set rsQry = Nothing		
+
 			rsRep.MoveNext
 			y = y + 1
 		Loop

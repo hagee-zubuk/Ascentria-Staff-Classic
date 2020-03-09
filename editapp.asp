@@ -785,8 +785,8 @@ frm.rdoMed_Wel.disabled = true;
 						} else {
 							if (Trim(frm.AHMemId.value) != "") {
 								var chrmed = Trim(frm.AHMemId.value);
-								if (chrmed.length != 9) {
-									alert("Invalid Amerihealth number length(9).")
+								if ((chrmed.length < 8) || (chrmed.length > 9)){
+									alert("Invalid Amerihealth number length(8/9).")
 									return;
 								}
 							}
@@ -1395,7 +1395,7 @@ function SelPlan() {
 												<!-- START :: new for 2019-11-22: AMERIHEALTH AND AMERIHEALTH MEMBER ID  -->
 												<input type='radio' id="rdoMed_Ame" name='radiomed' <%=radiomed5%> value='5' onclick='SelPlan();'>
 												AmeriHealth
-												<input type='text' class='main' maxlength='9' minlength="9" placeholder="member ID"
+												<input type='text' class='main' maxlength='9' minlength="8" placeholder="member ID"
 														name='AHMemId' value="<%=AHMemId%>" /><br/>
 												<!-- END :: new for 2019-11-22: AMERIHEALTH AND AMERIHEALTH MEMBER ID  -->
 

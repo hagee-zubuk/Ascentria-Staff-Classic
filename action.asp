@@ -2546,7 +2546,7 @@ ElseIf Request("ctrl") = 18 Then 'save timsheet/mileage
 	
 	End If
 	Response.Redirect "reqconfirm.asp?ID=" & Request("ReqID")
-ElseIf Request("ctrl") = 19 Then'apprve hrs bill inst
+ElseIf Request("ctrl") = 19 Then ' approve hrs bill inst
 	Set rsTBL = Server.CreateObject("ADODB.RecordSet")
 	sqlTBL = "SELECT * FROM [request_T]"
 	If Request("txtFromd8") <> "" Then
@@ -2585,7 +2585,6 @@ ElseIf Request("ctrl") = 19 Then'apprve hrs bill inst
 						If rsTBL("InstRate") <> 0 And NOT isNull(rsTBL("Billable")) Then 'not saving med due to Billable1
 							If Request("ctrlX") = 1 Then
 								rsTBL("ApproveHrs") = True
-								
 								strLog = Now & vbTab & "Institution Hours approved (ID: " & tmpID & ") by " & Request.Cookies("LBUsrName") & "."
 								LogMe.WriteLine strLog
 							Else
@@ -2597,17 +2596,18 @@ ElseIf Request("ctrl") = 19 Then'apprve hrs bill inst
 								'Set LogMe = Nothing
 								'Set fso = Nothing
 							End If
-							If GetStatus(tmpID) = 4 Then
+							If rsTBL("status") <> 4 Then
+							'If GetStatus(tmpID) = 4 Then
 								' do nothing
-							Else
-								rsTBL("Status") = 1
+							'Else
+								rsTBL("status") = 1
 								rsTBL("completed") = strNow
-								rsTBL.Update
 								lngYY = lngYY + 1
 							End If
+							rsTBL.Update
 						End If
 						If isNull(rsTBL("Billable")) Then
-							strMesg = "| ID: " & tmpID & " has NULL billable flag " & strMesg
+							strMesg = "| ID: " & tmpID & " has unset/NULL billable flag " & strMesg
 							strLog = Now & vbTab & "ID: " & tmpID & " has billable set to NULL!"
 							LogMe.WriteLine strLog
 						End If
@@ -2621,29 +2621,32 @@ ElseIf Request("ctrl") = 19 Then'apprve hrs bill inst
 	rsTBL.Close
 	Set rsTBL = Nothing
 	Session("MSG") = lngYY & " checked Entries Approved." & strMesg
-	Response.Redirect "reqtable3.asp?radioStat=" & Request("radioStat") & "&txtFromd8=" & Request("txtFromd8") & "&txtTod8=" & Request("txtTod8") & _
-		"&txtFromID=" & Request("txtFromID") & "&txtToID=" & Request("txtToID") & "&selInst=" & Request("selInst") & "&selLang=" & Request("selLang") & "&tmpclilname=" & Request("txtclilname") & "&tmpclifname=" & Request("txtclifname") & _
-		"&selIntr=" & Request("selIntr") & "&selClass=" & Request("selClass") & "&selAdmin=" & Request("selAdmin") & "&action=3&ctrlX=" & Request("ctrlX")
-ElseIf Request("ctrl") = 20 Then'save bill inst
-		Set rsTBL = Server.CreateObject("ADODB.RecordSet")
-		sqlTBL = "SELECT * FROM request_T WHERE "
-		If Request("txtFromd8") <> "" Then
-			If IsDate(Request("txtFromd8")) Then
-				sqlTBL = sqlTBL & "appDate >= '" & Request("txtFromd8") & "' AND "
-			End If
+	Response.Redirect "reqtable3.asp?radioStat=" & Request("radioStat") & "&txtFromd8=" & Request("txtFromd8") & "&txtTod8=" & _
+			Request("txtTod8") & "&txtFromID=" & Request("txtFromID") & "&txtToID=" & Request("txtToID") & "&selInst=" & _
+			Request("selInst") & "&selLang=" & Request("selLang") & "&tmpclilname=" & Request("txtclilname") & "&tmpclifname=" & _
+			Request("txtclifname") & "&selIntr=" & Request("selIntr") & "&selClass=" & Request("selClass") & "&selAdmin=" & _
+			Request("selAdmin") & "&action=3&ctrlX=" & Request("ctrlX")
+ElseIf Request("ctrl") = 20 Then' Save bill inst
+	Set rsTBL = Server.CreateObject("ADODB.RecordSet")
+	sqlTBL = "SELECT * FROM request_T WHERE "
+	If Request("txtFromd8") <> "" Then
+		If IsDate(Request("txtFromd8")) Then
+			sqlTBL = sqlTBL & "appDate >= '" & Request("txtFromd8") & "' AND "
 		End If
-		If Request("txtTod8") <> "" Then
-			If IsDate(Request("txtTod8")) Then
-				'sqlReq = sqlReq & " AND appDate <= '" & Request("txtTod8") & "' "
-				sqlTBL = sqlTBL & "appDate <= '" & Request("txtTod8") & "' AND "
-			End If
+	End If
+	If Request("txtTod8") <> "" Then
+		If IsDate(Request("txtTod8")) Then
+			'sqlReq = sqlReq & " AND appDate <= '" & Request("txtTod8") & "' "
+			sqlTBL = sqlTBL & "appDate <= '" & Request("txtTod8") & "' AND "
 		End If
-		If Request("txtFromd8") <> "" And Request("txtTod8") <> "" Then
-			If IsDate(Request("txtFromd8")) And IsDate(Request("txtTod8")) Then
-				sqlTBL = sqlTBL & "appDate >= '" & Request("txtFromd8") & "' AND appDate <= '" & Request("txtTod8") & "' AND "
-			End If
+	End If
+	If Request("txtFromd8") <> "" And Request("txtTod8") <> "" Then
+		If IsDate(Request("txtFromd8")) And IsDate(Request("txtTod8")) Then
+			sqlTBL = sqlTBL & "appDate >= '" & Request("txtFromd8") & "' AND appDate <= '" & Request("txtTod8") & "' AND "
 		End If
-		sqlTBL = sqlTBL &  "Processed IS NULL AND NOT AStarttime IS NULL AND NOT AEndtime IS NULL AND instID <> 479"
+	End If
+	sqlTBL = sqlTBL &  "Processed IS NULL AND NOT AStarttime IS NULL AND NOT AEndtime IS NULL AND instID <> 479"
+	
 	rsTBL.Open sqlTBL, g_strCONN, 1, 3 
 	If Not rsTBL.EOF Then 
 		y = Request("Hctr")
@@ -2681,10 +2684,12 @@ ElseIf Request("ctrl") = 20 Then'save bill inst
 	rsTBL.Close
 	Set rsTBL = Nothing
 	Session("MSG") = "Entries Saved."
-	Response.Redirect "reqtable3.asp?radioStat=" & Request("radioStat") & "&txtFromd8=" & Request("txtFromd8") & "&txtTod8=" & Request("txtTod8") & _
-		"&txtFromID=" & Request("txtFromID") & "&txtToID=" & Request("txtToID") & "&selInst=" & Request("selInst") & "&selLang=" & Request("selLang") & "&tmpclilname=" & Request("txtclilname") & "&tmpclifname=" & Request("txtclifname") & _
-		"&selIntr=" & Request("selIntr") & "&selClass=" & Request("selClass") & "&selAdmin=" & Request("selAdmin") & "&action=3&ctrlX=" & Request("ctrlX")
-ElseIf Request("ctrl") = 21 Then'approve 604a
+	Response.Redirect "reqtable3.asp?radioStat=" & Request("radioStat") & "&txtFromd8=" & Request("txtFromd8") & "&txtTod8=" & _
+			Request("txtTod8") & "&txtFromID=" & Request("txtFromID") & "&txtToID=" & Request("txtToID") & "&selInst=" & _
+			Request("selInst") & "&selLang=" & Request("selLang") & "&tmpclilname=" & Request("txtclilname") & "&tmpclifname=" & _
+			Request("txtclifname") & "&selIntr=" & Request("selIntr") & "&selClass=" & Request("selClass") & "&selAdmin=" & _
+			Request("selAdmin") & "&action=3&ctrlX=" & Request("ctrlX")
+ElseIf Request("ctrl") = 21 Then'approve 604a from Form604A
 	Set rsTBL = Server.CreateObject("ADODB.RecordSet")
 	sqlTBL = "SELECT approvePDF, HPID FROM Request_T WHERE [index] = " & Request("h_ID")
 	rsTBL.Open sqlTBL, g_strCONN, 1, 3

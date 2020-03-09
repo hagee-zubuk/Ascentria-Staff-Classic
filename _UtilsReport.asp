@@ -1016,7 +1016,7 @@ Function FixDateFormat(xxx)
 Function GetLBCode(hrs, medicaid, wid, appdate, hmoused)
 	tmplbcode = ""
 	tmplbcode = """" & medicaid & """,""" & wid & """,""" & hmoused & """,""" & "LBHR" & """,""" & "" & """,""" & _
-		FixDateFormat(appdate) & """,""" & FixDateFormat(appdate) & """,""" & "1" & """,""" & """" & vbCrLf 
+			FixDateFormat(appdate) & """,""" & FixDateFormat(appdate) & """,""" & "1" & """,""" & """" & vbCrLf 
 	If hrs > 2 Then
 		newhrs = hrs - 2
 		If Z_Mod(newhrs, 0.25) = 0 Then
@@ -1047,9 +1047,13 @@ Function GetLBCode(hrs, medicaid, wid, appdate, hmoused)
 	'				FixDateFormat(appdate) & """,""" & FixDateFormat(appdate) & """,""" & "1" & """,""" & """" & vbCrLf 
 	GetLBCode = tmplbcode
 End Function
-Function PaytoMedicaid(outpatient, hasmed, vermed, autoacc, wcomp, drg, intrID, medicaid, meridian, nhhealth, wellsense)
+Function PaytoMedicaid(outpatient, hasmed, vermed, autoacc, wcomp, drg, intrID, medicaid, meridian, nhhealth, wellsense, amerihealth)
 	PaytoMedicaid = False
-	If Z_FixNull(medicaid) <> "" Or Z_FixNull(meridian) <> "" Or Z_FixNull(nhhealth) <> "" Or Z_FixNull(wellsense) <> "" Then
+	If (Z_FixNull(amerihealth) <> "") Or _
+			(Z_FixNull(medicaid) <> "") Or _
+			(Z_FixNull(meridian) <> "") Or _
+			(Z_FixNull(nhhealth) <> "") Or _
+			(Z_FixNull(wellsense) <> "") Then
 		If outpatient And hasmed And (vermed = 1 Or vermed = 0) AND autoacc = false AND wcomp = False AND drg Then PaytoMedicaid = True
 		If outpatient And hasmed And vermed = 2 AND autoacc = false AND wcomp = False AND drg Then PaytoMedicaid = False
 	End If

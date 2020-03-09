@@ -46,9 +46,34 @@ ctr = 10
 tmpDate = Z_YMDDate(Date)
 Set rsRep = Server.CreateObject("ADODB.RecordSet")
 
+
+Set rsRep = Server.CreateObject("ADODB.RecordSet")
+strHead = "<td class='tblgrn'>Request ID</td>" & vbCrlf & _ 
+		"<td class='tblgrn'>Institution</td>" & vbCrlf & _
+		"<td class='tblgrn'>Department</td>" & vbCrlf & _
+		"<td class='tblgrn'>Appointment Date</td>" & vbCrlf & _
+		"<td class='tblgrn'>Client Name</td>" & vbCrlf & _
+		"<td class='tblgrn'>Medicaid</td>" & vbCrlf & _
+		"<td class='tblgrn'>MCO</td>" & vbCrlf & _
+		"<td class='tblgrn'>Language</td>" & vbCrlf & _
+		"<td class='tblgrn'>Interpreter Name</td>" & vbCrlf & _
+		"<td class='tblgrn'>Appointment Time</td>" & vbCrlf & _
+		"<td class='tblgrn'>Hours</td>" & vbCrlf & _
+		"<td class='tblgrn'>Rate</td>" & vbCrlf & _
+		"<td class='tblgrn'>Travel Time</td>" & vbCrlf & _
+		"<td class='tblgrn'>Mileage</td>" & vbCrlf & _
+		"<td class='tblgrn'>Emergency Surcharge</td>" & vbCrlf & _
+		"<td class='tblgrn'>Total</td>" & vbCrlf & _
+		"<td class='tblgrn'>Comment</td>" & vbCrlf & _
+		"<td class='tblgrn'>DOB</td>" & vbCrlf & _
+		"<td class='tblgrn'>DHHS</td>" & vbCrlf 
+
+	strMSG = "Medicaid/MCO Billing request report "
+
+
+
 RepCSV 			= "ALLXBillReq" & tmpdate & "-" & tmpTime & ".csv" 
 RepCSVBill 		= "MedicaidXBillReqNew" & tmpdate & "-" & tmpTime & ".csv" 
-RepCSVBillMeri 	= "MeridianXBillReqNew" & tmpdate & "-" & tmpTime & ".csv" 
 RepCSVBillLB 	= "LBXBill" & tmpdate & "-" & tmpTime & ".csv"
 RepCSVBillMHP 	= "MHPXBill" & tmpdate & "-" & tmpTime & ".csv"
 RepCSVBillNHHF 	= "NHHFXBill" & tmpdate & "-" & tmpTime & ".csv"
@@ -61,65 +86,55 @@ csvBodyMHP 		= ""
 csvBodyNHHF 	= ""
 csvBodyWSHP 	= ""
 
-strHead = "<th class='tblgrn'>Request ID</th>" & vbCrlf & _ 
-		"<th class='tblgrn'>Institution</th>" & vbCrlf & _
-		"<th class='tblgrn'>Department</th>" & vbCrlf & _
-		"<th class='tblgrn'>Appointment Date</th>" & vbCrlf & _
-		"<th class='tblgrn'>Client Name</th>" & vbCrlf & _
-		"<th class='tblgrn'>Medicaid</th>" & vbCrlf & _
-		"<th class='tblgrn'>MCO</th>" & vbCrlf & _
-		"<th class='tblgrn'>Language</th>" & vbCrlf & _
-		"<th class='tblgrn'>Interpreter Name</th>" & vbCrlf & _
-		"<th class='tblgrn'>Appointment Time</th>" & vbCrlf & _
-		"<th class='tblgrn'>Hours</th>" & vbCrlf & _
-		"<th class='tblgrn'>Rate</th>" & vbCrlf & _
-		"<th class='tblgrn'>Travel Time</th>" & vbCrlf & _
-		"<th class='tblgrn'>Mileage</th>" & vbCrlf & _
-		"<th class='tblgrn'>Emergency Surcharge</th>" & vbCrlf & _
-		"<th class='tblgrn'>Total</th>" & vbCrlf & _
-		"<th class='tblgrn'>Comment</th>" & vbCrlf & _
-		"<th class='tblgrn'>DOB</th>" & vbCrlf & _
-		"<th class='tblgrn'>DHHS</th>" & vbCrlf 
 	
 CSVHead = "Request ID, Institution, Department, Appointment Date, Client Last Name" & _
 		", Client First Name, Medicaid, MCO, Language, Interpreter Last Name" & _
 		", Interpreter First Name, Appointment Start Time, Appointment End Time, Hours, Rate" & _
 		", Travel Time, Mileage, Emergency Surcharge, Total, Comments, DOB, DHHS"
+CSVSimH = CSVHead
 	' add vermed = 1 AND if medicaid billing is go 
-sqlRep = "SELECT req.[syscom], itr.[wid], req.[medicaid], req.[meridian]" & _
-		", req.[nhhealth], req.[wellsense], req.[vermed]" & _
-		", req.[autoacc], req.[wcomp], dep.[drg], itr.[pid]" & _
-		", req.[index] as myindex, req.[amerihealth]" & _
-		", req.[status], itr.[Last Name], itr.[First Name]" & _
-		", req.[Clname], req.[Cfname], req.[Billable], req.[DOB]" & _
-		", req.[AStarttime], req.[AEndtime], req.[M_Inst]" & _
-		", req.[emerFEE], dep.[class], req.[TT_Inst]" & _
-		", req.[InstID] as myinstID, req.[DeptID], req.[processedmedicaid]" & _
-		", req.[LangID], req.[appDate], req.[InstRate]" & _
-		", req.[bilComment], dep.[custID], dep.[ccode]" & _
-		", dep.[billgroup], req.[IntrID], req.[billingTrail] " & _
-		"FROM [request_T] AS req " & _
+sqlRep = "SELECT req.[index] as myindex, req.[billingTrail], req.[syscom]" & _
+		", req.[medicaid], req.[amerihealth], req.[meridian], req.[nhhealth], req.[wellsense]" & _
+		", req.[status], req.[vermed], req.[autoacc], req.[wcomp]" & _
+		", dep.[dept], dep.[drg], dep.[class], dep.[billgroup], dep.[ccode], dep.[custID]" & _
+		", itr.[pid], itr.[wid], itr.[Last Name], itr.[First Name]" & _
+		", COALESCE(ins.[facility], 'N/A') AS [institution]" & _
+		", lan.[language]" & _
+		", COALESCE(usr.[user], 'N/A') AS [user]" & _
+		", req.[Clname], req.[Cfname], req.[AStarttime], req.[AEndtime]" & _
+		", req.[Billable], req.[DOB], req.[emerFEE], req.[TT_Inst], req.[M_Inst]" & _
+		", req.[InstID] as myinstID" & _
+		", req.[DeptID], req.[LangID], req.[appDate], req.[InstRate], req.[bilComment]" & _
+		", req.[IntrID], req.[ProcessedMedicaid] " & _
+	"FROM [request_T] AS req " & _
 		"INNER JOIN [interpreter_T] AS itr ON req.[intrID]=itr.[index] " & _
-		"INNER JOIN [dept_T] AS dep ON req.[deptid]=dep.[index] " & _
-		"WHERE req.[instID] <> 479 " & _
+		"INNER JOIN [dept_T] AS dep ON req.[deptID]=dep.[index] " & _
+		"LEFT  JOIN [institution_T] AS ins ON req.[instID]=ins.[index] " & _
+		"LEFT  JOIN [language_T] AS lan ON req.[langID]=lan.[index] " & _
+		"LEFT  JOIN [interpreterSQL].dbo.[Appointment_T] AS app ON req.[HPID]=app.[index] " & _
+		"LEFT  JOIN [interpreterSQL].dbo.[User_T] AS usr ON req.[instID]=usr.[InstID] AND app.[UID]=usr.[index] " & _
+	"WHERE req.[instID] <> 479 " & _
 		"AND req.[outpatient] = 1 " & _
 		"AND req.[hasmed] = 1 " & _
 		"AND req.[vermed] = 1 " & _
 		"AND req.[autoacc] <> 1 " & _
 		"AND req.[wcomp] <> 1 " & _
-		"AND dep.[drg] = 1 " & _
-		"AND (medicaid <> '' OR NOT medicaid IS NULL OR meridian <> '' OR NOT meridian IS NULL) " & _
-		"AND (req.[Status]=1 OR req.[Status]=4) " & _
+		"AND dep.[drg] = 1  " & _
+		"AND (req.[medicaid] <> ''  " & _
+				"OR NOT req.[medicaid] IS NULL " & _
+				"OR req.[meridian] <> ''  " & _
+				"OR NOT req.[meridian] IS NULL)  " & _
+		"AND req.[Status] IN (1, 4) " & _
 		"AND req.[ProcessedMedicaid] IS NULL " & _
 		"AND req.[Processed] IS NULL "
 strMSG = "Medicaid/MCO Billing request report (simulated)"
 	
 If tmpReport(1) <> "" Then
-	sqlRep = sqlRep & " AND appDate >= '" & tmpReport(1) & "'"
+	sqlRep = sqlRep & " AND req.[appDate] >= '" & tmpReport(1) & "'"
 	strMSG = strMSG & " from " & tmpReport(1)
 End If
 If tmpReport(2) <> "" Then
-	sqlRep = sqlRep & " AND appDate <= '" & tmpReport(2) & "'"
+	sqlRep = sqlRep & " AND req.[appDate] <= '" & tmpReport(2) & "'"
 	strMSG = strMSG & " to " & tmpReport(2)
 End If
 strMSG = strMSG & ". * - Cancelled Billable."
@@ -127,27 +142,29 @@ If tmpReport(9) = "" Then tmpReport(9) = 0
 If tmpReport(9) <> 0 Then
 	If tmpReport(6) = "" Then tmpReport(6) = 0
 	If tmpReport(6) <> 0 Then 
-		sqlRep = sqlRep & " AND LangID = " & tmpReport(6)
+		sqlRep = sqlRep & " AND req.[LangID] = " & tmpReport(6)
 	End If
 	If tmpReport(7) = "" Then tmpReport(7) = 0
 	If tmpReport(7) <> "0" Then
 		tmpCli = Split(tmpReport(7), ",")
-		sqlRep = sqlRep & " AND Clname = '" & Trim(tmpCli(0)) & "' AND Cfname = '" & Trim(tmpCli(1)) & "'"
+		sqlRep = sqlRep & " AND req.[Clname] = '" & Trim(tmpCli(0)) & "' AND req.[Cfname] = '" & Trim(tmpCli(1)) & "'"
 	End If
 	If tmpReport(8) = "" Then tmpReport(8) = 0
 	If tmpReport(8) <> 0 Then 
-		sqlRep = sqlRep & " AND Class = " & tmpReport(8)
+		sqlRep = sqlRep & " AND dep.[Class] = " & tmpReport(8)
 	End If
 End If
-sqlRep = sqlRep & " ORDER BY CustID ASC, AppDate DESC"
-'
-'response.write sqlRep
-'
+sqlRep = sqlRep & " ORDER BY dep.[CustID] ASC, req.[AppDate] DESC"
+
+'Response.Write "<pre>" & sqlRep & "</pre>" & vbCrLf
+'Response.End
+
 If blnWeaponized Then
 	rsRep.Open sqlRep, g_strCONN, 1, 3
 Else
 	rsRep.Open sqlRep, g_strCONN, 3, 1
 End If
+
 'EMERGENCY RATE
 tmpFeeL = 0
 tmpFeeL = 0
@@ -164,6 +181,7 @@ Set rsRate = Nothing
 If Not rsRep.EOF Then 
 	x = 0
 	tmpCID = ""
+	
 	Do Until rsRep.EOF
 		kulay = "#FFFFFF"
 		If Not Z_IsOdd(x) Then kulay = "#F5F5F5"
@@ -172,95 +190,78 @@ If Not rsRep.EOF Then
 		strIntrName = rsRep("Last Name") & ",  " & rsRep("First Name")
 		strCliName =  rsRep("Clname") & ", " & rsRep("Cfname")
 		strATime =  cTime(rsRep("AStarttime")) & " -  " & cTime(rsRep("AEndtime"))
-		'totHrs =  DateDiff("n", CDate(rsRep("AStarttime")) , CDate(rsRep("AEndtime")))
 		BillHours =  rsRep("Billable")
 		tmpPay = (BillHours * rsRep("InstRate")) + Z_CZero(rsRep("TT_Inst")) + Z_CZero(rsRep("M_Inst"))
 
 		totalPay = Z_FormatNumber(tmpPay, 2)
 		hmoused = 0
 		hmo = Z_FixNull(rsRep("medicaid")) 
-		If Z_FixNull(rsRep("amerihealth")) <> "" Then
-			hmo = Trim(Ucase(Z_FixNull(rsRep("amerihealth"))))
-			hmoused = 4
-		End If
-		If Z_FixNull(rsRep("meridian")) <> "" Then
-			hmo = Trim(Ucase(Z_FixNull(rsRep("meridian"))))
+		If Z_FixNull(rsRep("meridian")) <> "" Then 
+			hmo = Z_FixNull(rsRep("meridian"))
 			hmoused = 1
 		End If
-		If Z_FixNull(rsRep("nhhealth")) <> "" Then
-			hmo = Trim(Ucase(Z_FixNull(rsRep("nhhealth"))))
+		If Z_FixNull(rsRep("nhhealth")) <> "" Then 
+			hmo = Z_FixNull(rsRep("nhhealth"))
 			hmoused = 2
 		End If
 		If Z_FixNull(rsRep("wellsense")) <> "" Then 
-			hmo = Trim(Ucase(Z_FixNull(rsRep("wellsense")))) 
+			hmo = Z_FixNull(rsRep("wellsense")) 
 			hmoused = 3
 		End If
+		If Z_FixNull(rsRep("amerihealth")) <> "" Then 
+			hmo = Z_FixNull(rsRep("amerihealth")) 
+			hmoused = 4
+		End If
 		strBody = strBody & "<tr bgcolor='" & kulay & "' onclick='PassMe(" & rsRep("myindex") & ")'>" & _
-				"<td class='tblgrn2'>" & CB & rsRep("myindex") & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'>" & GetInst2(rsRep("myinstID")) & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'>" & Replace(GetMyDept(rsRep("DeptID")), " - ", "") & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'>" & rsRep("appDate") & "</td>" & vbCrLf & _
+				"<td class='tblgrn2'><nobr>" & CB & rsRep("myindex") & "</nobr></td>" & vbCrLf & _
+				"<td class='tblgrn2'><nobr>" & rsRep("institution") & "</nobr></td>" & vbCrLf & _
+				"<td class='tblgrn2'><nobr>" & rsRep("Dept") & "</nobr></td>" & vbCrLf & _
+				"<td class='tblgrn2'><nobr>" & rsRep("appDate") & "</nobr></td>" & vbCrLf & _
 				"<td class='tblgrn2'><nobr>" & strCliName & "</nobr></td>" & vbCrLf & _
-				"<td class='tblgrn2'>" & rsRep("medicaid") & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'>" & hmo & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'>" & GetLang(rsRep("LangID")) & "</td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & strIntrName & "</nobr></td>" & vbCrLf & _
-				"<td class='tblgrn2'><nobr>" & strATime & "</nobr></td>" & vbCrLf & _
+				"<td class='tblgrn2'><nobr>" & rsRep("medicaid") & "</nobr></td>" & vbCrLf & _
+				"<td class='tblgrn2'><nobr>" & hmo & "</nobr></td>" & vbCrLf & _
+				"<td class='tblgrn2'><nobr>" & rsRep("Language") & "</nobr></td>" & vbCrLf & _
+				"<td class='tblgrn2'>" & strIntrName & "</td>" & vbCrLf & _
+				"<td class='tblgrn2'>" & strATime & "</td>" & vbCrLf & _
 				"<td class='tblgrn2'>" & BillHours & "</td>" & vbCrLf
 		strBody = strBody & "<td class='tblgrn2'>$" & rsRep("InstRate") & "</td>" & vbCrLf
 		strBody = strBody & "<td class='tblgrn2'>$" & Z_CZero(rsRep("TT_Inst")) & "</td>" & vbCrLf & _
 				"<td class='tblgrn2'>$" & Z_CZero(rsRep("M_Inst")) & "</td>" & vbCrLf 
 		strBody = strBody & "<td class='tblgrn2'>$0.00</td>" & vbCrLf
-		'bilcomment = Replace(Z_fixNull(rsRep("bilComment") & rsRep("syscom")), "<br>Ap", "Ap")
+			
 		bilcomment = Z_fixNull(rsRep("bilComment") & rsRep("syscom"))
 		If (Left(bilcomment, 4) = "<br>") Then bilComment = Right(bilcomment, Len(bilcomment) - 4)
+
 		strBody = strBody & "<td class='tblgrn2'><b>$" & totalPay & "</b></td>" & vbCrLf & _
 				"<td class='tblgrn2'>" & bilcomment & "</td><td class='tblgrn2'><nobr>" & rsRep("DOB") & "</td>"
 		If rsRep("myinstID") = 108 Then
-			strBody = strBody & "<td class='tblgrn2'>" & GetUserID(rsRep("DeptID")) & "</td><tr>" & vbCrLf 
+			strBody = strBody & "<td class='tblgrn2'>" & rsRep("user") & "</td><tr>" & vbCrLf 
 		Else
 			strBody = strBody & "<td class='tblgrn2'>&nbsp;</td><tr>" & vbCrLf 
 		End If
-
+		
 		bilcommentcsv = Replace(bilcomment, "<br>", " / ")
 
-		CSVBody = CSVBody & """" & CB & rsRep("myindex") & """,""" & GetInst2(rsRep("myinstID")) & """,""" & _
-				Replace(GetMyDept(rsRep("DeptID")), " - ", "") & """,""" & rsRep("appDate") & """,""" & rsRep("Clname") & """,""" & _
-				rsRep("Cfname") & """,""" & rsRep("medicaid") & """,""" & hmo &  """,""" & GetLang(rsRep("LangID")) & """,""" & rsRep("Last Name") & _
+		csvBodyLin = """" & CB & rsRep("myindex") & """,""" & rsRep("institution") & """,""" & _
+				rsRep("Dept") & """,""" & rsRep("appDate") & """,""" & rsRep("Clname") & """,""" & _
+				rsRep("Cfname") & """,""" & rsRep("medicaid") & """,""" & hmo &  """,""" & rsRep("language") & """,""" & rsRep("Last Name") & _
 				""",""" & rsRep("First Name") & ""","""  & cTime(rsRep("AStarttime")) & """,""" & cTime(rsRep("AEndtime")) & """,""" & BillHours & _
 				""",""" & rsRep("InstRate") & """,""" & Z_CZero(rsRep("TT_Inst")) & """,""" & Z_CZero(rsRep("M_Inst")) & """,""" & "0.00" & _
 				""",""" & totalPay & """,""" & bilcommentcsv & """,""" & rsRep("DOB")
 		If rsRep("myinstID") = 108 Then
-			CSVBody = CSVBody & """,""" & GetUserID(rsRep("DeptID")) & """" & vbCrLf 
+			csvBodyLin = csvBodyLin & """,""" & rsRep("user") & """" & vbCrLf 
 		Else
-			CSVBody = CSVBody & """" & vbCrLf 
+			csvBodyLin = csvBodyLin & """" & vbCrLf 
 		End If
-		csvBodyMCO = """" & CB & rsRep("myindex") & """,""" & GetInst2(rsRep("myinstID")) & """,""" & _
-				Replace(GetMyDept(rsRep("DeptID")), " - ", "") & """,""" & rsRep("appDate") & """,""" & rsRep("Clname") & """,""" & _
-				rsRep("Cfname") & """,""" & rsRep("medicaid") & """,""" & hmo &  """,""" & GetLang(rsRep("LangID")) & """,""" & rsRep("Last Name") & _
-				""",""" & rsRep("First Name") & ""","""  & cTime(rsRep("AStarttime")) & """,""" & cTime(rsRep("AEndtime")) & """,""" & BillHours & _
-				""",""" & rsRep("InstRate") & """,""" & Z_CZero(rsRep("TT_Inst")) & """,""" & Z_CZero(rsRep("M_Inst")) & """,""" & "0.00" & _
-				""",""" & totalPay & """,""" & bilcommentcsv & """,""" & rsRep("DOB")
-		If rsRep("myinstID") = 108 Then
-			csvBodyMCO = csvBodyMCO & """,""" & GetUserID(rsRep("DeptID")) & """" & vbCrLf 
-		Else
-			csvBodyMCO = csvBodyMCO & """" & vbCrLf 
-		End If
+
+		CSVBody = CSVBody & csvBodyLin
+		
 		mycode = Progcode(hmoused)
-		'NEW CSV
-		If mycode = "LB" Then 'medicaid
-			csvBodyLB = csvBodyLB & csvBodyMCO
-		ElseIf mycode = "AHC" Then 'meridian
-			csvBodyAHC = csvBodyMHP & csvBodyMCO
-		ElseIf mycode = "MHP" Then 'meridian
-			csvBodyMHP = csvBodyMHP & csvBodyMCO
-		ElseIf mycode = "NHHF" Then 'healthy fam
-			csvBodyNHHF = csvBodyNHHF & csvBodyMCO
-		ElseIf mycode = "WSHP" Then 'wellsense
-			csvBodyWSHP = csvBodyWSHP & csvBodyMCO
-		End If
-		' ' ' ' ' ' ' '
+		csvBodyMCO = GetLBCode(BillHours, hmo, rsRep("wid"), rsRep("appDate"), mycode)
+
+
 		If BillHours >= 2 Then
+			'If BillHours = 2 Then
 			If hmoused <> 1 Then 'not meridian
 				CSVBodyBill = CSVBodyBill & GetLBCode(BillHours, hmo, rsRep("wid"), rsRep("appDate"), mycode)
 			Else
@@ -275,12 +276,37 @@ If Not rsRep.EOF Then
 				CSVBodyBillMer = CSVBodyBillMer & GetLBCode(tmpLbhrs, hmo, rsRep("wid"), rsRep("appDate"), mycode)
 			End If
 		End If
-		x = x + 1
+		x = x + 1		
 
 		If blnWeaponized Then
 			rsRep("billingTrail") = rsRep("billingTrail") & "<br>Billed to Medicaid/MCO " & Date
 			rsRep("processedmedicaid") = Date
 			rsRep.Update
+			'NEW CSV
+			If mycode = "LB" Then 'medicaid
+				csvBodyLB = csvBodyLB & csvBodyMCO
+			ElseIf mycode = "MHP" Then 'meridian
+				csvBodyMHP = csvBodyMHP & csvBodyMCO
+			ElseIf mycode = "NHHF" Then 'healthy fam
+				csvBodyNHHF = csvBodyNHHF & csvBodyMCO
+			ElseIf mycode = "WSHP" Then 'wellsense
+				csvBodyWSHP = csvBodyWSHP & csvBodyMCO
+			ElseIf mycode = "AHC" Then 'amerihealth
+				csvBodyAHC = csvBodyAHC & csvBodyMCO			
+			End If
+			''''''''
+		Else
+			If mycode = "LB" Then 'medicaid
+				csvBodyLB = csvBodyLB & csvBodyLin
+			ElseIf mycode = "MHP" Then 'meridian
+				csvBodyMHP = csvBodyMHP & csvBodyLin
+			ElseIf mycode = "NHHF" Then 'healthy fam
+				csvBodyNHHF = csvBodyNHHF & csvBodyLin
+			ElseIf mycode = "WSHP" Then 'wellsense
+				csvBodyWSHP = csvBodyWSHP & csvBodyLin
+			ElseIf mycode = "AHC" Then 'amerihealth
+				csvBodyAHC = csvBodyAHC & csvBodyLin			
+			End If
 		End If
 
 		rsRep.MoveNext
@@ -301,63 +327,68 @@ Prt.WriteLine CSVHead
 Prt.WriteLine CSVBody
 Prt.Close	
 Set Prt = Nothing
-	
-Set Prt2 = fso.CreateTextFile(RepPath &  RepCSVBill, True)
-'Prt.WriteLine "LANGUAGE BANK - REPORT"
-Prt2.WriteLine CSVHeadBill
-Prt2.Write CSVBodyBill
-Prt2.Close	
-Set Prt2 = Nothing
-fso.CopyFile RepPath & RepCSVBill, BackupStr
-		
-Set Prt3 = fso.CreateTextFile(RepPath &  RepCSVBillMeri, True)
-'Prt.WriteLine "LANGUAGE BANK - REPORT"
-Prt3.WriteLine CSVHeadBill
-Prt3.WriteLine CSVBodyBillMer
-Prt3.Close	
-Set Prt3 = Nothing
-fso.CopyFile RepPath & RepCSVBillMeri, BackupStr
 		
 'NEW CSV
 Set Prt2 = fso.CreateTextFile(RepPath & RepCSVBillLB, True) 'LB
-Prt2.WriteLine "LANGUAGE BANK - REPORT"
-Prt2.WriteLine "LB/Medicaid," & strMSG
-Prt2.WriteLine CSVHead
+If blnWeaponized Then
+	Prt2.WriteLine CSVHeadBill
+Else
+	Prt2.WriteLine "LANGUAGE BANK - REPORT"
+	Prt2.WriteLine strMSG
+	Prt2.WriteLine CSVSimH
+End If
 Prt2.WriteLine csvBodyLB
 Prt2.Close	
 Set Prt2 = Nothing
 fso.CopyFile RepPath & RepCSVBillLB, BackupStr
 
 Set Prt2 = fso.CreateTextFile(RepPath & RepCSVBillAHC, True) 'AHC
-Prt2.WriteLine "LANGUAGE BANK - REPORT"
-Prt2.WriteLine "AHC," & strMSG
-Prt2.WriteLine CSVHead
+If blnWeaponized Then
+	Prt2.WriteLine CSVHeadBill
+Else
+	Prt2.WriteLine "LANGUAGE BANK - REPORT"
+	Prt2.WriteLine strMSG
+	Prt2.WriteLine CSVSimH
+End If
 Prt2.WriteLine csvBodyAHC
 Prt2.Close	
 Set Prt2 = Nothing
 fso.CopyFile RepPath & RepCSVBillAHC, BackupStr
 		
 Set Prt2 = fso.CreateTextFile(RepPath & RepCSVBillMHP, True) 'MHP
-Prt2.WriteLine "LANGUAGE BANK - REPORT"
-Prt2.WriteLine "MHP," & strMSG
-Prt2.WriteLine CSVHead
+If blnWeaponized Then
+	Prt2.WriteLine CSVHeadBill
+Else
+	Prt2.WriteLine "LANGUAGE BANK - REPORT"
+	Prt2.WriteLine strMSG
+	Prt2.WriteLine CSVSimH
+End If
 Prt2.WriteLine csvBodyMHP
 Prt2.Close	
 Set Prt2 = Nothing
 fso.CopyFile RepPath & RepCSVBillMHP, BackupStr
 		
 Set Prt2 = fso.CreateTextFile(RepPath & RepCSVBillNHHF, True) 'NHHF
-Prt2.WriteLine "LANGUAGE BANK - REPORT"
-Prt2.WriteLine "NHHF," &CSVHead
+If blnWeaponized Then
+	Prt2.WriteLine CSVHeadBill
+Else
+	Prt2.WriteLine "LANGUAGE BANK - REPORT"
+	Prt2.WriteLine strMSG
+	Prt2.WriteLine CSVSimH
+End If
 Prt2.WriteLine csvBodyNHHF
 Prt2.Close	
 Set Prt2 = Nothing
 fso.CopyFile RepPath & RepCSVBillNHHF, BackupStr
 
 Set Prt2 = fso.CreateTextFile(RepPath & RepCSVBillWSHP, True) 'WSHP
-Prt2.WriteLine "LANGUAGE BANK - REPORT"
-Prt2.WriteLine "WSHP," &strMSG
-Prt2.WriteLine CSVHead
+If blnWeaponized Then
+	Prt2.WriteLine CSVHeadBill
+Else
+	Prt2.WriteLine "LANGUAGE BANK - REPORT"
+	Prt2.WriteLine strMSG
+	Prt2.WriteLine CSVSimH
+End If
 Prt2.WriteLine csvBodyWSHP
 Prt2.Close	
 Set Prt2 = Nothing
@@ -368,8 +399,6 @@ fso.CopyFile RepPath & RepCSV, BackupStr
 Set fso = Nothing
 'EXPORT CSV
 tmpstring 		= "dl_csv.asp?FN=" & Z_DoEncrypt(repCSV)
-tmpstring2 		= "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBill)
-tmpstring5 		= "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillMeri)
 tmpstringMED 	= "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillLB)
 tmpstringMHP 	= "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillMHP)
 tmpstringNHHF 	= "dl_csv.asp?FN=" & Z_DoEncrypt(RepCSVBillNHHF)
@@ -436,14 +465,10 @@ tbody td { border-bottom: 1px dotted #bbb; }
 								onmouseover="this.className='hovbtn'"
 								onmouseout="this.className='btn'"
 								onclick="document.location='<%=tmpstring%>';" />
-						<input class='btn' type='button' value='Medicaid Billing CSV'
+<!--						<input class='btn' type='button' value='Meridian Billing CSV'
 								onmouseover="this.className='hovbtn'"
 								onmouseout="this.className='btn'"
-								onclick="document.location='<%=tmpstring2%>';" />
-						<input class='btn' type='button' value='Meridian Billing CSV'
-								onmouseover="this.className='hovbtn'"
-								onmouseout="this.className='btn'"
-								onclick="document.location='<%=tmpstring5%>';" />
+								onclick="document.location='<%=tmpstring5%>';" /> -->
 						<input class='btn' type='button' value='LB CSV'
 								onmouseover="this.className='hovbtn'"
 								onmouseout="this.className='btn'"
