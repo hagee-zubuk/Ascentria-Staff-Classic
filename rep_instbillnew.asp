@@ -439,7 +439,7 @@ If Not rsRep.EOF Then
 					Else
 						reqname = GetReq(rsRep("reqID"))
 					End If
-					CSVBodyCourt = CSVBodyCourt & CSVBodyLine & """,""" & reqname & """,""" & rsRep("HPUser") & """" & vbCrLf
+					CSVBodyCourt = CSVBodyCourt & CSVBodyLine & """,""" & reqname & """,""" & rsRep("HPUser") & """,""" & rsRep("docnum") & """" & vbCrLf
 				End If
 				CSVBody = CSVBody & CSVBodyLine & """" & vbCrLf
 			
@@ -508,7 +508,7 @@ If Z_CZero(tmpReport(0)) = 3 Or Z_CZero(tmpReport(0)) = 16 Then 'additional csv 
 		Set Prt = fso.CreateTextFile(RepPath &  RepCSVBillCourts, True)
 		Prt.WriteLine "LANGUAGE BANK - REPORT"
 		Prt.WriteLine strMSG
-		Prt.WriteLine CSVHead
+		Prt.WriteLine CSVHead & ", Docket Num"
 		Prt.WriteLine CSVBodyCourt
 		Prt.Close	
 		Set Prt = Nothing
