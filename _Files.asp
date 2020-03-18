@@ -64,7 +64,7 @@ clientListDone = "C:\work\LSS-LBIS\client\clientdone.txt"
 
 'x12
 x12path = "C:\work\LSS-LBIS\web\x12\"
-x12pathbackup = "C:\work\LSS-LBIS\x12\"
+x12pathbackup = "\\10.10.16.30\VForm\00.x12\"
 
 '271
 f271Str = "C:\work\LSS-LBIS\271\"

@@ -9,6 +9,14 @@ If Request.Cookies("LBUSERTYPE") <> 1 Then
 	Session("MSG") = "Invalid account."
 	Response.Redirect "default.asp"
 End If
+Function Z_MakeUniqueFileName()
+	Set objWSHNetwork = Server.CreateObject("WScript.Network")
+  	svr = objWSHNetwork.ComputerName
+	tmpdate = Replace(Now, "/", "") 
+	tmpdate = Replace(tmpdate, " ", "") 
+	tmpdate = Replace(tmpdate, ":", "") 
+	Z_MakeUniqueFileName = svr & "." & tmpdate
+End Function
 Function Z_sqlsinglequote(xxx)
 	'CHAR(39)
 	Z_sqlsinglequote = xxx
@@ -62,14 +70,15 @@ radioUnass2 = ""
 x = 0
 If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 Then
 'response.write "TEST"
-	sqlReq = "SELECT req.[index], req.appDate, COALESCE(ins.[facility], 'N/A') AS [facility] " & _
-			", req.happen, req.Billable, req.dob, req.amerihealth, req.medicaid " & _
-			", req.meridian, req.nhhealth, req.wellsense, req.vermed, req.autoacc " & _
-			", req.wcomp, req.InstID, req.DeptID, req.IntrID, req.LangID, req.InstRate " & _
-			", req.[Status], req.ProcessedMedicaid, req.clname, req.cfname, req.[gender] " & _
-			", dep.[drg], lan.[Language], itr.[XID], dep.[dept] " & _
-			", COALESCE(itr.[last name], '') AS [last name] " & _
-			", COALESCE(itr.[first name], '') AS [first name] " & _
+	sqlReq = "SELECT req.[index], req.appDate, COALESCE(ins.[facility], 'N/A') AS [facility]" & _
+			", req.happen, req.Billable, req.dob, req.amerihealth, req.medicaid" & _
+			", req.meridian, req.nhhealth, req.wellsense, req.vermed, req.autoacc" & _
+			", req.wcomp, req.InstID, req.DeptID, req.IntrID, req.LangID, req.InstRate" & _
+			", req.[Status], req.ProcessedMedicaid, req.clname, req.cfname, req.[gender]" & _
+			", dep.[drg], lan.[Language], itr.[XID], dep.[dept]" & _
+			", COALESCE(itr.[last name], '') AS [last name]" & _
+			", COALESCE(itr.[first name], '') AS [first name]" & _
+			", req.[syscom] " & _
 			"FROM [request_T] AS req " & _
 			"INNER JOIN [dept_T] AS dep ON req.[deptID] = dep.[index] " & _
 			"INNER JOIN [institution_T] AS ins ON req.[instid]=ins.[index] " & _
@@ -80,23 +89,22 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 			"AND dep.[drg] = 1 " & _
 			"AND req.[hasmed] = 1 " & _
 			"AND req.[outpatient] = 1 " & _
-			"AND req.[wcomp] <> 1 " & _
-			"AND (medicaid <> '' OR NOT medicaid IS NULL OR meridian <> '' OR NOT meridian IS NULL OR nhhealth <> '' OR NOT nhhealth IS NULL OR wellsense <> '' OR NOT wellsense IS NULL) "
+			"AND req.[wcomp] <> 1 " 
 			'If Request("ctrlX") = 1 Then
 	If Request("radioAss") = 0 Then	
-		sqlReq = sqlReq & "AND (status IN (0, 1, 4)) AND ([vermed] = 0 OR [vermed] IS NULL)  AND [ApproveHrs] = 1 "
+		sqlReq = sqlReq & "AND ([status] IN (0, 1, 4)) AND ([vermed] = 0 OR [vermed] IS NULL)  AND [ApproveHrs] = 1 "
 		radioAss = "checked"
 		radioUnass = ""
 		radioUnass2 = ""
 		noAppr = ""
 	ElseIf Request("radioAss") = 1 Then	
-		sqlReq = sqlReq & "AND (status IN (1, 4)) AND vermed = 1"
+		sqlReq = sqlReq & "AND ([status] IN (1, 4)) AND [vermed] = 1"
 		radioAss = ""
 		radioUnass = "checked"
 		radioUnass2 = ""
 		noAppr = "disabled"
 	ElseIf Request("radioAss") = 2 Then	
-		sqlReq = sqlReq & "AND (status IN (1, 4)) AND vermed = 2"
+		sqlReq = sqlReq & "AND ([status] IN (1, 4)) AND [vermed] = 2"
 		'sqlReq = sqlReq & "AND (status = 4 OR status = 1) AND vermed = 2"
 		radioAss = ""
 		radioUnass = ""
@@ -158,32 +166,28 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 	'FILTER
 	xInst = Cint(Request("selInst"))
 	If xInst <> -1 Then 
-		sqlReq = sqlReq & " AND "
-		sqlReq = sqlReq & "req.InstID = " & xInst
+		sqlReq = sqlReq & " AND req.[InstID] = " & xInst
 	End If
 	xLang = Cint(Request("selLang"))
 	If xLang <> -1 Then 
-		sqlReq = sqlReq & " AND "
-		sqlReq = sqlReq & "LangID = " & xLang
+		sqlReq = sqlReq & " AND [LangID] = " & xLang
 	End If
 	If Cint(Request.Cookies("LBUSERTYPE")) <> 4 Then
 			If Trim(Request("txtclilname")) <> "" Then
-				sqlReq = sqlReq & " AND Upper(Clname) LIKE '" & CleanMe2(Ucase(Trim(Request("txtclilname")))) & "%'"
+				sqlReq = sqlReq & " AND Upper([Clname]) LIKE '" & CleanMe2(Ucase(Trim(Request("txtclilname")))) & "%'"
 			End If
 			If Trim(Request("txtclifname")) <> "" Then
-				sqlReq = sqlReq & " AND Upper(Cfname) LIKE '" & CleanMe2(Ucase(Trim(Request("txtclifname")))) & "%'"
+				sqlReq = sqlReq & " AND Upper([Cfname]) LIKE '" & CleanMe2(Ucase(Trim(Request("txtclifname")))) & "%'"
 			End If
 
 	End If
 	xIntr = Cint(Request("selIntr"))
 	If xIntr <> -1 Then 
-		sqlReq = sqlReq & " AND "
-		sqlReq = sqlReq & "IntrID = " & xIntr
+		sqlReq = sqlReq & " AND req.[IntrID] = " & xIntr
 	End If
 	xClass = Cint(Request("selClass"))
 	If xClass <> -1 Then 
-		sqlReq = sqlReq & " AND "
-		sqlReq = sqlReq & "Class = " & xClass
+		sqlReq = sqlReq & " AND dep.[Class] = " & xClass
 	End If
 	xMCO = Cint(Request("selMCO"))
 	selmed = ""
@@ -193,52 +197,58 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
  	selamer = ""
 	If xMCO > 0 Then
 		If xMCO = 1 Then 
-			sqlReq = sqlReq & " AND medicaid <> '' AND " & _
-					"(amerihealth = '' OR amerihealth IS NULL) AND " & _
-					"(meridian = '' OR meridian IS NULL) AND " & _
-					"(nhhealth = '' OR  nhhealth IS NULL) AND " & _
-					"(wellsense = '' OR wellsense IS NULL) "
+			sqlReq = sqlReq & " AND [medicaid] <> '' AND " & _
+					"([amerihealth] = '' OR [amerihealth] IS NULL) AND " & _
+					"([meridian] = '' OR [meridian] IS NULL) AND " & _
+					"([nhhealth] = '' OR  [nhhealth] IS NULL) AND " & _
+					"([wellsense] = '' OR [wellsense] IS NULL) "
 			selmed = "SELECTED"
 		End If
 		If xMCO = 2 Then 
-			sqlReq = sqlReq & " AND meridian <> '' "
+			sqlReq = sqlReq & " AND [meridian] <> '' "
 			selmer= "SELECTED"
 		End If
 		If xMCO = 3 Then 
-			sqlReq = sqlReq & " AND nhhealth <> '' "
+			sqlReq = sqlReq & " AND [nhhealth] <> '' "
 			selnh = "SELECTED"
 		End If
 		If xMCO = 4 Then 
-			sqlReq = sqlReq & " AND wellsense <> '' "
+			sqlReq = sqlReq & " AND [wellsense] <> '' "
 			selwell = "SELECTED"
 		End If
 		If xMCO = 5 Then 
-			sqlReq = sqlReq & " AND amerihealth <> '' "
+			sqlReq = sqlReq & " AND [amerihealth] <> '' "
 			selamer = "SELECTED"
 		End If
+	Else 
+		sqlReq = sqlReq & "AND (medicaid <> '' OR NOT medicaid IS NULL " & _
+				"OR amerihealth <> '' OR NOT amerihealth IS NULL " & _
+				"OR meridian <> '' OR NOT meridian IS NULL " & _
+				"OR nhhealth <> '' OR NOT nhhealth IS NULL " & _
+				"OR wellsense <> '' OR NOT wellsense IS NULL) "
 	End If
 	'ADMIN ONLY
 	xAdmin = Z_CZero(Request("selAdmin"))
 	If xAdmin = 1 Then
-		sqlReq = sqlReq & " AND (Status = 1) AND ProcessedMedicaid IS NULL"
+		sqlReq = sqlReq & " AND ([Status] = 1) AND ProcessedMedicaid IS NULL"
 		meUnBilled = "selected"
 	ElseIf xAdmin = 2 Then
-		sqlReq = sqlReq & " AND (Status = 1 OR Status = 4) AND NOT ProcessedMedicaid IS NULL"
+		sqlReq = sqlReq & " AND ([Status] = 1 OR [Status] = 4) AND NOT ProcessedMedicaid IS NULL"
 		meBilled = "selected"
 	ElseIf xAdmin = 3 Then
-		sqlReq = sqlReq & " AND (Status = 2)"
+		sqlReq = sqlReq & " AND ([Status] = 2)"
 		meMisded = "selected"
 	ElseIf xAdmin = 4 Then
-		sqlReq = sqlReq & " AND (Status = 3)"
+		sqlReq = sqlReq & " AND ([Status] = 3)"
 		meCanceled = "selected"
 	ElseIf xAdmin = 5 Then
-		sqlReq = sqlReq & " AND (Status = 4)"
+		sqlReq = sqlReq & " AND ([Status] = 4)"
 		meCanceledBill = "selected"
 	ElseIf xAdmin = 6 Then
-		sqlReq = sqlReq & " AND (Status = 0)"
+		sqlReq = sqlReq & " AND ([Status] = 0)"
 		mePending = "selected"
 	Else
-		sqlReq = sqlReq & " AND ProcessedMedicaid IS NULL "'sqlReq = sqlReq & " AND IsNull(Processed)"
+		sqlReq = sqlReq & " AND [ProcessedMedicaid] IS NULL "'sqlReq = sqlReq & " AND IsNull(Processed)"
 	End If
 	'If Request("ctrlX") = 1 Then
 		'sqlReq = sqlReq & " AND ProcessedMedicaid IS NULL " 'ORDER BY appDate, Facility, [last name], [first name]"
@@ -246,6 +256,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 	'	sqlReq = sqlReq & " AND (NOT medicaid IS NULL OR medicaid <> '') AND Processed IS NULL AND NOT AStarttime IS NULL AND NOT AEndtime IS NULL ORDER BY appDate, Facility, [last name], [first name]"
 	'End If
 'End If
+	strSQLScript = sqlReq
 	If Request("sort") <> "" Then
 			If Request("sort") = 1 Then sqlReq = sqlReq & " ORDER BY req.[index]"
 			If Request("sort") = 2 Then sqlReq = sqlReq & " ORDER BY Facility"
@@ -294,7 +305,7 @@ strMedHdr = "ISA*00*          *00*          *ZZ*" & tradingnumber & "*" & idnum 
 	"GS*HS*NH100496*026000618*" & dteYr & dteMn & dteDy & "*" & tme & "*1*X*005010X279A1~"
 'GET REQUESTS
 Set rsReq = Server.CreateObject("ADODB.RecordSet")
-' Response.Write "<code>" & sqlReq & "</code><br />"
+
 rsReq.Open sqlReq, g_strCONN, 3, 1
 x = 1
 If Not rsReq.EOF Then
@@ -353,8 +364,9 @@ If Not rsReq.EOF Then
 			If rsReq("happen") = 1 Then happen = "NO"
 			If rsReq("happen") = 2 Then happen = "YES"
 			strtbl = strtbl & "<tr bgcolor='" & kulay & "'>" & vbCrLf & _ 
-				"<td class='tblgrn2' width='10px'>" & Stat & "</td>" & vbCrLf & _
-				"<td class='tblgrn2' ><input type='hidden' name='ID" & x & "' value='" & rsReq("Index") & "'><a class='link2' href='reqconfirm.asp?ID=" & rsReq("Index") & "'><b>" & rsReq("Index") & "</b></a></td>" & vbCrLf & _
+				"<td class='tblgrn2' >" & Stat & "</td>" & vbCrLf & _
+				"<td class='tblgrn2' ><input type='hidden' name='ID" & x & "' value='" & rsReq("Index") & _
+						"'><a class='link2' href='reqconfirm.asp?ID=" & rsReq("Index") & "'><b>" & rsReq("Index") & "</b></a></td>" & vbCrLf & _
 				"<td class='tblgrn2' ><nobr>" & tmpInst & " - " &  myDept & "</td>" & vbCrLf & _
 				"<td class='tblgrn2' >" & tmpSalita & "</td>" & vbCrLf & _
 				"<td class='tblgrn2' >" & Z_RemoveDlbQuote(rsReq("clname")) & ", " & Z_RemoveDlbQuote(rsReq("cfname")) & "</td>" & vbCrLf & _
@@ -396,19 +408,17 @@ If Not rsReq.EOF Then
 	strMedFtr = "GE*" & x - 1 & "*1~IEA*1*000000007~"
 	strMed = Trim(strMedHdr & strMedBody & strMedFtr)
 	'CREATE x12
-	tmpdate = replace(date, "/", "") 
-	tmpTime = replace(FormatDateTime(time, 3), ":", "")
-	tmpTime = replace(tmpTime, " ", "")
-	Repx12 =  "x12270-" & tmpdate & tmpTime & ".x12" 
+	Repx12 =  "x12270-" & Z_MakeUniqueFileName() & ".x12" 
 	Set fso = CreateObject("Scripting.FileSystemObject")
 	' Response.Write x12Path & Repx12
 	Set ofilex12 = fso.CreateTextFile(x12Path & Repx12, 8, True) 
 	ofilex12.Write strMed
 	Set ofilex12 = Nothing
 	' Response.Write "<br /><br /><br />" & x12Path & Repx12 & " to " & x12pathbackup
+	
 	fso.CopyFile x12Path & Repx12, x12pathbackup
 	Set fso = Nothing
-	tmpstring = "x12/" & Repx12
+	tmpstring = "dl_x12.asp?NF=" & Z_DoEncrypt("x12.txt") & "&FN=" & Z_DoEncrypt( Repx12 )
 Else
 	strtbl = "<tr><td colspan='20' align='center'><i>&lt -- No records found. -- &gt</i></td></tr>"
 End If
@@ -554,12 +564,12 @@ if x > 1 then btndis = ""
 			document.frmTbl.txtTod8.disabled = true;
 			document.frmTbl.txtFromID.disabled = true;
 			document.frmTbl.txtToID.disabled = true;
-			if (document.frmTbl.radioStat[0].checked == true)
+			if (document.frmTbl.radioStat_range.checked == true)
 			{
 				document.frmTbl.txtFromd8.disabled = false;
 				document.frmTbl.txtTod8.disabled = false;
 			}
-			if (document.frmTbl.radioStat[1].checked == true)
+			if (document.frmTbl.radioStat_id.checked == true)
 			{
 				document.frmTbl.txtFromID.disabled = false;
 				document.frmTbl.txtToID.disabled = false;
@@ -619,55 +629,54 @@ if x > 1 then btndis = ""
 				}	
 			}
 		}
-		function checkme2(xxx)
-		{
+		function checkme2(xxx) {
 			var tmpElem;
 			var tmpElem2;
 			var z;
-			if (document.frmTbl.chkall2.checked == true)
-			{
-				for(z = 1; z <= xxx; z ++)
-				{
+			if (document.frmTbl.chkall2.checked == true) {
+				for(z = 1; z <= xxx; z ++) {
 					tmpElem = "chkX" + z;
 					tmpElem2 = "chkM" + z;
 					document.getElementById(tmpElem).checked = true;
 					document.getElementById(tmpElem2).checked = false;
 				}	
-			}
-			else
-			{
-				for(z = 1; z <= xxx; z ++)
-				{
+			} else {
+				for(z = 1; z <= xxx; z ++) {
 					tmpElem = "chkX" + z;
 					document.getElementById(tmpElem).checked = false;
-				}	
+				}
 			}
 		}
 		
 
-			function ApproveMe()
-			{
-				if (document.frmTbl.txtFromd8.value == "" || document.frmTbl.txtTod8.value == "") {
-					var ans = window.confirm("You did not select a date range.\nThis will take a considerable amount of time to complete.\nClick Cancel to stop.");
-					if (ans)
-					{
-						var ans = window.confirm("This action will approve/disapprove medicaid in all checked entries inside the table to the database.\nDisaaproved entries will be billed to institution.\nAppointments will only be billable to Medicaid if certain rules are met, even if Medicaid is approved.\nClick Cancel to stop.");
-						if (ans)
-						{
-							document.frmTbl.action = "action.asp?ctrl=22";
-							document.frmTbl.submit();
-						}
-					}
-				}
-				else {
-					var ans = window.confirm("This action will approve/disapprove medicaid in all checked entries inside the table to the database.\nDisaaproved entries will be billed to institution.\nAppointments will only be billable to Medicaid if certain rules are met, even if Medicaid is approved.\nClick Cancel to stop.");
-					if (ans)
-					{
-						document.frmTbl.action = "action.asp?ctrl=22";
-						document.frmTbl.submit();
-					}
-				}
+function ApproveMe() {
+	if (document.frmTbl.txtFromd8.value == "" || document.frmTbl.txtTod8.value == "") {
+		var ans = window.confirm("You did not select a date range.\n" + 
+				"This will take a considerable amount of time to complete.\n" + 
+				"Click Cancel to stop.");
+		if (ans) {
+			var ans = window.confirm("This action will approve/disapprove medicaid in " +
+					"all checked entries inside the table to the database.\nDisaaproved " +
+					"entries will be billed to institution.\nAppointments will only be " +
+					"billable to Medicaid if certain rules are met, even if Medicaid is " + 
+					"approved.\nClick Cancel to stop.");
+			if (ans) {
+				document.frmTbl.action = "action.asp?ctrl=22";
+				document.frmTbl.submit();
 			}
+		}
+	} else {
+		var ans = window.confirm("This action will approve/disapprove medicaid in all " +
+				"checked entries inside the table to the database.\nDisaaproved entries " +
+				"will be billed to institution.\nAppointments will only be billable to " + 
+				"Medicaid if certain rules are met, even if Medicaid is approved.\n" +
+				"Click Cancel to stop.");
+		if (ans) {
+			document.frmTbl.action = "action.asp?ctrl=22";
+			document.frmTbl.submit();
+		}
+	}
+}
 		//function verMed() {
 		//	document.frmTbl.action = "action.asp?ctrl=23";
 		//	document.frmTbl.submit();
@@ -685,21 +694,12 @@ if x > 1 then btndis = ""
 		-->
 		</script>
 		<style type="text/css">
-	 	.container
-	      {
-	          border: solid 1px black;
-	          overflow: auto;
-	      }
-	      .noscroll
-	      {
-	          position: relative;
-	          background-color: white;
-	          top:expression(this.offsetParent.scrollTop);
-	      }
-	      th
-	      {
-	          text-align: left;
-	      }
+.container { border: solid 1px black; overflow: auto; }
+.noscroll { position: relative; background-color: white; top:expression(this.offsetParent.scrollTop); }
+select.seltxt { height: 1.6em; }
+div.boxitem { display: inline-block; margin-bottom: 2px;}
+th { text-align: left; }
+input.main[type='text']	{ padding: 1px 3px; }
 		</style>
 		<body onload='FixSort(); TblFix();'>
 			<form method='POST' name='frmTbl' action='reqtable4.asp'>
@@ -720,7 +720,7 @@ if x > 1 then btndis = ""
 												<td align='left' width='800px' style='vertical-align: bottom;'>
 													Legend: <font color='#FF00FF' size='+3'>•</font>&nbsp;-&nbsp;Canceled (billable)
 													&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-													Admin Sort:
+													Admin Filter:
 														<select class='seltxt' style='width:100px;' name='selAdmin'>
 															<option value='0'>&nbsp;</option>
 															<option <%=mePending%> value='6'>Pending</option>
@@ -778,9 +778,6 @@ if x > 1 then btndis = ""
 				</table>
 
 <div id="tabResults" style='width:100%; position: relative;'>
-<!-- TODO: START: remove this when you go live! -->
-<!--	<code><%= sqlReq %></code><br /> -->
-<!-- TODO: END: remove this when you go live! -->
 	<table class="reqtble" width='100%'>	
 		<thead>
 			<tr class="noscroll">	
@@ -827,71 +824,81 @@ if x > 1 then btndis = ""
 </div>	
 
 
-		<table cellSpacing='0' cellPadding='0' width='1005px' border='0' style="border: solid 1px; position: relative;">
-			<tr bgcolor='#FBEEB7'>
-				<td align='right' style='border-bottom: solid 1px;'><b>Sort:</b></td>
-				<td style='border-right: solid 1px;border-bottom: solid 1px;'>
-					<input type='radio' name='radioStat' value='0' <%=radioApp%> onclick='FixSort();'>&nbsp;<b>App. Date Range:</b>
-					&nbsp;&nbsp;
-					<input class='main' size='10' maxlength='10' name='txtFromd8' value='<%=tmpFromd8%>'>
-					&nbsp;-&nbsp;
-					<input class='main' size='10' maxlength='10' name='txtTod8' value='<%=tmpTod8%>'>
-					<span class='formatsmall' onmouseover="this.className='formatbig'" onmouseout="this.className='formatsmall'">mm/dd/yyyy</span>
-					&nbsp;&nbsp;
-					<input type='radio' name='radioStat' value='1' <%=radioID%> onclick='FixSort();'>&nbsp;<b>Request ID Range:</b>
-					&nbsp;&nbsp;
-					<input class='main' size='7' maxlength='7' name='txtFromID' value='<%=tmpFromID%>'>
-					&nbsp;-&nbsp;
-					<input class='main' size='7' maxlength='7' name='txtToID' value='<%=tmpToID%>'>
-					&nbsp;&nbsp;
-					<input type='radio' name='radioStat' value='2' <%=radioAll%> onclick='FixSort();'>&nbsp;<b>All</b>
+		<table cellSpacing="0" cellPadding="0" style="border: solid 1px; position: relative; width: 80%; min-width: 600px; margin: 0px auto; background-color: #fbeeb7;">
+			<tr>
+				<td align='right' rowspan="3" style='border-right: solid 1px; padding: 2px;'>&nbsp;<b>Show:</b></td>
+				<td style='border-right: solid 1px; border-bottom: solid 1px;'>
+					<div class="boxitem">
+						<input type='radio' name='radioStat' id="radioStat_range" value='0' <%=radioApp%> onclick='FixSort();'><b>App.&nbsp;Date&nbsp;Range:</b>
+							<input class='main' size='10' maxlength='10' name='txtFromd8' 
+									value='<%=tmpFromd8%>'>&nbsp;&mdash;&nbsp;<input class='main' size='10'
+									maxlength='10' name='txtTod8' value='<%=tmpTod8%>'>
+							<span class='formatsmall' onmouseover="this.className='formatbig'"
+							onmouseout="this.className='formatsmall'">mm/dd/yyyy</span>
+					</div>
+					<div class="boxitem">
+						<input type='radio' name='radioStat' id="radioStat_id" value='1' <%=radioID%> onclick='FixSort();'
+							>&nbsp;<b>Request ID Range:</b>&nbsp;&nbsp;<input class='main' size='7' maxlength='7'
+							name='txtFromID' value='<%=tmpFromID%>'>&nbsp;&mdash;&nbsp;<input class='main'
+							size='7' maxlength='7' name='txtToID' value='<%=tmpToID%>'>
+					</div>
+					<div class="boxitem">
+						<input type='radio' name='radioStat' id="radioStat_all" value='2' <%=radioAll%> onclick='FixSort();'>&nbsp;<b>All</b>
+					</div>
 				</td>
-				<td align='right' style='border-bottom: solid 1px;'><b>&nbsp;&nbsp;</b></td>
 				<td style='border-bottom: solid 1px;'>
-					<input type='radio' name='radioAss' value='0' <%=radioAss%> onclick='FixSort();'>&nbsp;<b>For Review</b>
-					&nbsp;&nbsp;
-					<input type='radio' name='radioAss' value='1' <%=radioUnAss%> onclick='FixSort();'>&nbsp;<b>Approved</b>
-					&nbsp;&nbsp;
-					<input type='radio' name='radioAss' value='2' <%=radioUnAss2%> onclick='FixSort();'>&nbsp;<b>Disapprove</b>
+					<div class="boxitem">
+						<input type='radio' name='radioAss' value='0' <%=radioAss%> onclick='FixSort();'>&nbsp;<b>For Review</b>
+					</div>
+					<div class="boxitem">
+						<input type='radio' name='radioAss' value='1' <%=radioUnAss%> onclick='FixSort();'>&nbsp;<b>Approved</b>
+					</div>
+					<div class="boxitem">
+						<input type='radio' name='radioAss' value='2' <%=radioUnAss2%> onclick='FixSort();'>&nbsp;<b>Disapprove</b>
+					</div>
 					<!--<input type='radio' name='radioAss' value='2' <%=radioUnAss2%> onclick='FixSort();'>&nbsp;<b>ALL</b>
 					&nbsp;&nbsp;//-->
 				</td>
-				<td align='right' style='border-left: solid 1px;' rowspan='3'>
-					<input class='btntbl' type='button' value='Find' style='height: 35px;' onmouseover="this.className='hovbtntbl'" onmouseout="this.className='btntbl'" onclick='FindMe(<%=Request("ctrlX")%>);'>
-				</td>
-				</td>
-			</tr>
-			<tr bgcolor='#FBEEB7'>
-				<td align='left' colspan='4'>
-					Institution:
-					<select class='seltxt' style='width: 285px;' name='selInst'>
-						<option value='-1'>&nbsp;</option>
-						<%=strInst%>
-					</select>
-					&nbsp;Language:
-					<select class='seltxt' style='width: 150px;' name='selLang'>
-						<option value='-1'>&nbsp;</option>
-						<%=strLang%>
-					</select>
+				<td align='right' style='border-left: solid 1px; padding: 0px 4px;' rowspan='3'>
+					<input class='btntbl' type='button' value='Find' style='height: 35px;'
+							onmouseover="this.className='hovbtntbl'"
+							onmouseout="this.className='btntbl'"
+							onclick='FindMe(<%=Request("ctrlX")%>);'
+						>
+				</td></tr>
+			<tr><td align='left' colspan='2' style="padding-top: 5px;">
 					<% If Cint(Request.Cookies("LBUSERTYPE")) <> 4 Then %>
-						&nbsp;Client:
-						<input class='main' size='20' maxlength='20' name='txtclilname' value="<%=tmpclilname%>">
-						&nbsp;,&nbsp;&nbsp;
-						<input class='main' size='20' maxlength='20' name='txtclifname' value="<%=tmpclifname%>">
-						<span class='formatsmall' onmouseover="this.className='formatbig'" onmouseout="this.className='formatsmall'">Last name, First name</span>
+					<div class="boxitem">
+						Client:&nbsp;<input type="text" class="main" size='20' maxlength="20" name="txtclilname"
+								value="<%=tmpclilname%>" placeholder="LAST name" />&nbsp;,&nbsp;<input type="text"
+								class="main" size='20' maxlength="20" name="txtclifname" value="<%=tmpclifname%>"
+								placeholder="first name" />
+						<span class='formatsmall' onmouseover="this.className='formatbig'" onmouseout="this.className='formatsmall'">Last, First</span>
+					</div>
 					<% End If %>
-					
-					&nbsp;
+					<div class="boxitem">
+						Institution:
+						<select class='seltxt' style='width: 250px;' name='selInst'>
+							<option value='-1'>&nbsp;</option><%=strInst%>
+						</select>
+					</div>
+					<div class="boxitem">
+						Language:
+						<select class='seltxt' style='width: 150px;' name='selLang'>
+							<option value='-1'>&nbsp;</option><%=strLang%>
+						</select>
+					</div>
 				</td>
 			</tr>
-			<tr bgcolor='#FBEEB7'>
-				<td align='left' colspan='4'>
+			<tr><td align='left' colspan='2' style=" padding-top: 5px;">
+				<div class="boxitem">
 					Interpreter:
 					<select class='seltxt' name='selIntr'>
-						<option value='-1'>&nbsp;</option>
-						<%=strIntr%>
+						<option value='-1'>&nbsp;</option><%=strIntr%>
 					</select>
-					&nbsp;Classification:
+				</div>
+				<div class="boxitem">
+					Classification:
 					<select class='seltxt' style='width: 100px;' name='selClass'>
 						<option value='-1'>&nbsp;</option>
 						<option value='1' <%=SocSer%>>Social Services</option>
@@ -899,19 +906,24 @@ if x > 1 then btndis = ""
 						<option value='3' <%=Legal%>>Legal</option>
 						<option value='4' <%=Med%>>Medical</option>
 					</select>
-					&nbsp;Medicaid/MCO:
+				</div>
+				<div class="boxitem">
+					Medicaid/MCO:
 					<select class='seltxt' style='width: 100px;' name='selMCO'>
+						<option value='0' >&mdash;(any)&mdash;</option>
 						<option value='5' <%=selamer%>>AmeriHealth</option>
 						<option value='1' <%=selmed%>>Medicaid</option>
 						<option value='2' <%=selmer%>>Meridian Health Plan</option>
 						<option value='3' <%=selnh%>>NH Healthy Families</option>
 						<option value='4' <%=selwell%>>Well Sense Health Plan</option>
-
 					</select>
-				</td>
-				<td>&nbsp;</td>
-			</tr>
+				</div>
+				</td></tr>
 		</table>
+		<input type="hidden" name="sql_script" id="sql_script" value="<%= Z_DoEncrypt(strSQLScript) %>" />
+<%
+' Response.Write "Debug:<br /><code>" & sqlReq & "</code><br />"
+%>
 <!-- footer! -->
 <table cellSpacing='0' cellPadding='0' width="100%" border='0' class='bgstyle2'>
 	<tr><td height='50px' valign='bottom'>
