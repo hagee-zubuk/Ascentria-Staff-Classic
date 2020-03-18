@@ -231,19 +231,19 @@ If Not rsRep.EOF Then
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
 								rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & " - " & _
 								Replace(rsRep("Dept"), " - ", "") & """,""" & date & """,""" & _
-								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
+								rsRep("distcode") & """,""" & BillHours & """,""" & rsRep("docnum") & """" & vbCrLf
 					ElseIf rsRep("myinstID") = 15 Or rsRep("myinstID") = 33 Or rsRep("myinstID") = 41 _
 							Or rsRep("myinstID") =  70 Or rsRep("DeptID") = 645 Then
 						'concord hosp, fam and mchc and com council nashua, riverbend
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
 								rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & " - " & _
 								rsRep("Language") & """,""" & date & """,""" & _
-								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
+								rsRep("distcode") & """,""" & BillHours & """,""" & rsRep("docnum") & """" & vbCrLf
 					ElseIf rsRep("deptID") = 1058 Then 'man welfare
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
 								rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & " - MW" & _
 								rsRep("myindex") & """,""" & date & """,""" & _
-								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
+								rsRep("distcode") & """,""" & BillHours & """,""" & rsRep("docnum") & """" & vbCrLf
 					ElseIf rsRep("myinstID") = 39 Or rsRep("myinstID") = 52 _
 							Or rsRep("myinstID") = 168 Or rsRep("myinstID") = 130 _
 							Or rsRep("myinstID") = 199 Or rsRep("myinstID") = 724 _
@@ -262,12 +262,12 @@ If Not rsRep.EOF Then
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
 								rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & _
 								" (Req: " & reqp & ")"",""" & date & """,""" & _
-								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
+								rsRep("distcode") & """,""" & BillHours & """,""" & rsRep("docnum") & """" & vbCrLf
 					ElseIf rsRep("myinstID") = 860 Then ' UMass Med
 						CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
 								rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & " - " & _
 								rsRep("Language") & " - " & Replace(rsRep("DeptID"), " - ", "") & """,""" & date & """,""" & _
-								rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
+								rsRep("distcode") & """,""" & BillHours & """,""" & rsRep("docnum") & """" & vbCrLf
 					Else
 						If rsRep("myInstID") = 240 Then
 							CSVBodyBillSigma = CSVBodyBillSigma & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
@@ -278,7 +278,7 @@ If Not rsRep.EOF Then
 								CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
 										rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & " " & _
 										rsRep("DOB") & """,""" & date & """,""" & _
-										rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
+										rsRep("distcode") & """,""" & BillHours & """,""" & rsRep("docnum") & """" & vbCrLf
 							Else
 								If rsRep("class") = 3 Then
 									If rsRep("emerFEE") = True Then
@@ -293,12 +293,12 @@ If Not rsRep.EOF Then
 									CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
 											rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & _
 											" -Interpretation" &  """,""" & date & """,""" & _
-											"langbankma" & """,""" & BillHours & """" & vbCrLf
+											"langbankma" & """,""" & BillHours & """,""" & rsRep("docnum") & """" & vbCrLf
 								Else
 									CSVBodyBill = CSVBodyBill & """" & "DOTC" & """,""0"",""" & tmpccode & """,""" & _
 											rsRep("appDate") & " " & Trim(rsRep("Cfname") & " " & rsRep("Clname")) & _
 											" -Interpretation" &  """,""" & date & """,""" & _
-											rsRep("distcode") & """,""" & BillHours & """" & vbCrLf
+											rsRep("distcode") & """,""" & BillHours & """,""" & rsRep("docnum") & """" & vbCrLf
 								End If
 							End If
 						End If
