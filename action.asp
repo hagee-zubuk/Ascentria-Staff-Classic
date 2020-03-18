@@ -2716,25 +2716,11 @@ ElseIf Request("ctrl") = 21 Then'approve 604a from Form604A
 	Session("MSG") = "Form 604A Apporved."
 	Response.Redirect "f603A.asp?ID=" & Request("h_ID") 
 ElseIf Request("ctrl") = 22 Then 'Approve Medicaid
+	strCrypt = Request("sql_script")
+	strSQL = Z_DoDecrypt(strCrypt)  & " ORDER BY req.[index]"
+	'TODO: what happens if it's missing??
 	Set rsTBL = Server.CreateObject("ADODB.RecordSet")
-	sqlTBL = "SELECT * FROM request_T"
-	If Request("txtFromd8") <> "" Then
-		If IsDate(Request("txtFromd8")) Then
-			sqlTBL = "SELECT * FROM request_T WHERE appDate >= '" & Request("txtFromd8") & "' AND autoacc <> 1 AND wcomp <> 1 AND (medicaid <> '' OR NOT medicaid IS NULL OR meridian <> '' OR NOT meridian IS NULL)"
-		End If
-	End If
-	If Request("txtTod8") <> "" Then
-		If IsDate(Request("txtTod8")) Then
-			sqlReq = sqlReq & " AND appDate <= '" & Request("txtTod8") & "' "
-			sqlTBL = "SELECT * FROM request_T WHERE appDate <= '" & Request("txtTod8") & "'  AND autoacc <> 1 AND wcomp <> 1 AND (medicaid <> '' OR NOT medicaid IS NULL OR meridian <> '' OR NOT meridian IS NULLL)"
-		End If
-	End If
-	If Request("txtFromd8") <> "" And Request("txtTod8") <> "" Then
-		If IsDate(Request("txtFromd8")) And IsDate(Request("txtTod8")) Then
-			sqlTBL = "SELECT * FROM request_T WHERE appDate >= '" & Request("txtFromd8") & "' AND appDate <= '" & Request("txtTod8") & "'  AND autoacc <> 1 AND wcomp <> 1 AND (medicaid <> '' OR NOT medicaid IS NULL OR meridian <> '' OR NOT meridian IS NULL)"
-		End If
-	End If
-	rsTBL.Open sqlTBL, g_strCONN, 1, 3 
+	rsTBL.Open strSQL, g_strCONN, 1, 3 
 	ts = now
 	If Not rsTBL.EOF Then 
 		y = Request("Hctr")
