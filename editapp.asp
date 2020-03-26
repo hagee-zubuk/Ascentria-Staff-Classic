@@ -11,7 +11,7 @@ If Cint(Request.Cookies("LBUSERTYPE")) = 2 Then
 	Response.Redirect "default.asp"
 End If
 Function GetMyStatus(xxx)
-	Select Case xxx
+	Select Case (xxx)
 		Case 1
 			GetMyStatus = "COMPLETED"
 		Case 2
@@ -409,11 +409,11 @@ If Not rsInst.EOF Then
 			End If
 		End If
 		If rsInst("mco") = "AmeriHealth" Then
-			If rsInst("active") Then
+			'If rsInst("active") Then
 				allowMCO = allowMCO & "frm.rdoMed_Ame.disabled = false; " & vbCrLf 
-			Else
-				allowMCO = allowMCO & "frm.rdoMed_Ame.disabled = true; " & vbCrLf 
-			End If
+			'Else
+			''	allowMCO = allowMCO & "frm.rdoMed_Ame.disabled = true; " & vbCrLf 
+			'End If
 		End If
 		If rsInst("mco") = "Meridian" Then
 			If rsInst("active") Then
