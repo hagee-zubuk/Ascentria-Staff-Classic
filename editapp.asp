@@ -11,7 +11,7 @@ If Cint(Request.Cookies("LBUSERTYPE")) = 2 Then
 	Response.Redirect "default.asp"
 End If
 Function GetMyStatus(xxx)
-	Select Case (xxx)
+	Select Case xxx
 		Case 1
 			GetMyStatus = "COMPLETED"
 		Case 2
@@ -167,6 +167,10 @@ If Not rsConfirm.EOF Then
 	chkcomp = ""
 	If rsConfirm("wcomp") Then chkcomp = "CHECKED"
 	tmpsecIns = rsConfirm("secins")
+	' NEW for 2020-03-24 
+	chkteleh = ""
+	If rsConfirm("telehealth") = TRUE Then chkteleh = "CHECKED"
+	' ^^^^^^^^^^^^^^^^^^ 
 	'timestamp on sent/print
 	tmpSentReq = "Request email has not been sent to Requesting Person."
 	If rsConfirm("SentReq") <> "" Then tmpSentReq = "Request email was last sent to Requesting Person on <b>" & rsConfirm("SentReq") & "</b>."
@@ -409,11 +413,11 @@ If Not rsInst.EOF Then
 			End If
 		End If
 		If rsInst("mco") = "AmeriHealth" Then
-			'If rsInst("active") Then
+			If rsInst("active") Then
 				allowMCO = allowMCO & "frm.rdoMed_Ame.disabled = false; " & vbCrLf 
-			'Else
-			''	allowMCO = allowMCO & "frm.rdoMed_Ame.disabled = true; " & vbCrLf 
-			'End If
+			Else
+				allowMCO = allowMCO & "frm.rdoMed_Ame.disabled = true; " & vbCrLf 
+			End If
 		End If
 		If rsInst("mco") = "Meridian" Then
 			If rsInst("active") Then
@@ -1417,6 +1421,16 @@ function SelPlan() {
 												<br><br>
 											</td>
 										</tr>
+<!-- NEW for 2020-03-24 :: TGS -->
+			<tr style="vertical-align: center;"><td>&nbsp;</td><td colspan="3" >
+				<div style="display: inline-block; background-color: #fef; border-radius: 6px; width: 250px; padding: 5px 10px 8px 24px; border: 1px dotted #cbc; margin-bottom: 10px;">
+					<input type="checkbox" name="chkteleh" id="chkteleh" value="1" <%=chkteleh%> 
+						style="padding-top: 3px;"
+					/>
+					This is a TELEHEALTH appointment
+				</div>
+				</td></tr>
+<!-- ^^^^^^^^^^^^^^^^^^^^^^^^^ -->
 										<tr>
 											<td>&nbsp;</td>
 											<td colspan="3" align="left">

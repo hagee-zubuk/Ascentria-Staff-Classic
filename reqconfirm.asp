@@ -144,6 +144,9 @@ If Not rsConfirm.EOF Then
 	tmpcombil = rsConfirm("bilcomment")
 	tmpLBcom = rsConfirm("LBcomment")
 	tmpHPID = Z_CZero(rsConfirm("HPID"))
+	tmpTelehealth = "<img src=""images/nok.gif"" alt=""no"" title="""" />"
+	If rsConfirm("Telehealth") = True Then tmpTelehealth = "<img src=""images/ok.gif"" alt=""YES"" title=""YES"" />"
+	
 	mrrec = rsConfirm("mrrec")
 	cc_email = Z_FixNull( rsConfirm("cc_addr") )
 	chkPaid = ""
@@ -1211,6 +1214,13 @@ If Z_CZero(tmpIntr) > 0 Then canremove = ""
 									<td align='right'>Appointment Location:</td>
 									<td class='confirm'><%=tmpAppLoc%></td>
 								</tr>
+								<!-- NEW for 2020-03-24 -->
+								<tr><td>&nbsp;</td></tr>
+								<tr>
+									<td align='right'>Telehealth:</td>
+									<td class='confirm'><%=tmpTelehealth%></td>
+								</tr>
+
 								<tr><td>&nbsp;</td></tr>
 								<tr>
 									<td align='right'><b>For Medicaid/MCO Billing:</b></td>

@@ -175,14 +175,14 @@ ElseIf Request("ctrl") = 3 Then
 	Set rsReqDept = Nothing
 	Response.Redirect "wMain4.asp?tmpID=" & Request("tmpID")
 ElseIf Request("ctrl") = 4 Then
-	Response.Cookies("LBREQUESTW4") = Z_DoEncrypt(Request("tmpID") & "|" & Request("txtClilname") & "|" & Request("txtClifname") & _
-		"|" & Request("chkClient") & "|" & Request("txtCliAddrI") & "|" & Request("txtCliAdd") & "|" & Request("chkClientAdd") & _
-		"|" & Request("txtCliFon") & "|" & Request("txtCliCity") & "|" & Request("txtCliState") & "|" & Request("txtCliZip") & _
-		"|" & Request("txtAlter") & "|" & Request("txtCliDir") & "|" & Request("txtCliCir") & "|" & Request("txtDOB") & _
-		"|" & Request("selLang") & "|" & Request("txtAppDate") & "|" & Request("txtAppTFrom") & "|" & Request("txtAppTTo") & _
-		"|" & Request("txtAppLoc") & "|" & Request("txtDocNum") & "|" & Request("txtCrtNum") & "|" & Request("txtcom")& _
-		"|" & Request("selGender") & "|" & Request("chkMinor") & "|" & Request("chkout") & "|" & Request("chkmed") & "|" & Request("MCnum")& _
-		"|" & Request("txtJudge") & "|" & Request("txtClaim") & "|" & Request("chkcall") & "|" & Request("chkleave"))
+	Response.Cookies("LBREQUESTW4") = Z_DoEncrypt(Request("tmpID") & "|" & _
+		Request("txtClilname") & "|" & Request("txtClifname") & "|" & Request("chkClient") & "|" & Request("txtCliAddrI") & "|" & Request("txtCliAdd") & "|" & _
+		Request("chkClientAdd") & "|" & Request("txtCliFon") & "|" & Request("txtCliCity") & "|" & Request("txtCliState") & "|" & Request("txtCliZip") & "|" & _
+		Request("txtAlter") & "|" & Request("txtCliDir") & "|" & Request("txtCliCir") & "|" & Request("txtDOB") & "|" & Request("selLang") & "|" & _
+		Request("txtAppDate") & "|" & Request("txtAppTFrom") & "|" & Request("txtAppTTo") & "|" & Request("txtAppLoc") & "|" & Request("txtDocNum") & "|" & _
+		Request("txtCrtNum") & "|" & Request("txtcom") & "|" & Request("selGender") & "|" & Request("chkMinor") & "|" & Request("chkout") & "|" & _
+		Request("chkmed") & "|" & Request("MCnum") & "|" & Request("txtJudge") & "|" & Request("txtClaim") & "|" & Request("chkcall") & "|" & _
+		Request("chkleave") & "|" & Request("chkteleh") )
 	If Request("txtDOB") <> "" Then
 		If Not IsDate(Request("txtDOB")) Then Session("MSG") = Session("MSG") & "ERROR: Invalid Date of Birth."
 	End If
@@ -289,6 +289,9 @@ ElseIf Request("ctrl") = 4 Then
 			If Request("chkcall") <> "" Then rsMain("courtcall") = True
 			rsMain("leavemsg") = false
 			If Request("chkleave") <> "" Then rsMain("leavemsg") = True
+			rsMain("telehealth") = FALSE
+			If Request("chkteleh") <> "" Then rsMain("telehealth") = True
+				
 			rsMain.Update
 			myDept = rsMain("DeptID")
 			myAppNum = rsMain("AppNum")

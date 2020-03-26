@@ -37,13 +37,13 @@ server.scripttimeout = 360000
 Function MyStatus(xxx)
 	Select Case xxx
 		Case 1
-			MyStatus = "<font color='#000000' size='+3'>•</font>"
+			MyStatus = "<div class=""status comp"">&#x25C9;</div>"
 		Case 2
-			MyStatus = "<font color='#0000FF' size='+3'>•</font>"
+			MyStatus = "<div class=""status misd"">&#x25C9;</div>"
 		Case 3
-			MyStatus = "<font color='#FF0000' size='+3'>•</font>"
+			MyStatus = "<div class=""status cacl"">&#x25C9;</div>"
 		Case 4
-			MyStatus = "<font color='#FF00FF' size='+3'>•</font>"
+			MyStatus = "<div class=""status cbil"">&#x25C9;</div>"
 		Case Else
 			MyStatus = ""
 	End Select
@@ -71,7 +71,7 @@ x = 0
 If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 Then
 'response.write "TEST"
 	sqlReq = "SELECT req.[index], req.appDate, COALESCE(ins.[facility], 'N/A') AS [facility]" & _
-			", req.happen, req.Billable, req.dob, req.amerihealth, req.medicaid" & _
+			", req.happen, req.Billable, req.dob, req.[telehealth], req.amerihealth, req.medicaid" & _
 			", req.meridian, req.nhhealth, req.wellsense, req.vermed, req.autoacc" & _
 			", req.wcomp, req.InstID, req.DeptID, req.IntrID, req.LangID, req.InstRate" & _
 			", req.[Status], req.ProcessedMedicaid, req.clname, req.cfname, req.[gender]" & _
@@ -142,7 +142,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 		radioAll = ""
 		If Request("txtFromID") <> "" Then
 			If IsNumeric(Request("txtFromID")) Then
-				sqlReq = sqlReq & " AND req.[index] >= " & Request("txtFromID")
+				sqlReq = sqlReq & " AND req.[index] >= " & Request("txtFromID") & " "
 				tmpFromID = Request("txtFromID")
 			Else
 				Session("MSG") = "ERROR: Invalid Appointment ID Range (From)."
@@ -151,7 +151,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 		End If
 		If Request("txtToID") <> "" Then
 			If IsNumeric(Request("txtToID")) Then
-				sqlReq = sqlReq & " AND req.[index] <= " & Request("txtToID")
+				sqlReq = sqlReq & " AND req.[index] <= " & Request("txtToID") & " "
 				tmpToID = Request("txtToID")
 			Else
 				Session("MSG") = "ERROR: Invalid Appointment ID Range (To)."
@@ -221,7 +221,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST"  Or Request("action") = 3 
 			selamer = "SELECTED"
 		End If
 	Else 
-		sqlReq = sqlReq & "AND (medicaid <> '' OR NOT medicaid IS NULL " & _
+		sqlReq = sqlReq & " AND (medicaid <> '' OR NOT medicaid IS NULL " & _
 				"OR amerihealth <> '' OR NOT amerihealth IS NULL " & _
 				"OR meridian <> '' OR NOT meridian IS NULL " & _
 				"OR nhhealth <> '' OR NOT nhhealth IS NULL " & _
@@ -380,7 +380,13 @@ If Not rsReq.EOF Then
 				"<td class='tblgrn2' >" & happen & "</td>" & vbCrLf & _
 				"<td class='tblgrn2' ><input type='checkbox' ID='chkM" & x & "' name='chkM" & x & "' " & apprHrs & " value='" & rsReq("Index") & "' onclick='if(this.checked) {document.frmTbl.chkX" & x & ".checked=false;}'></td>" & vbCrLf & _
 				"<td class='tblgrn2' ><input type='checkbox' ID='chkX" & x & "' name='chkX" & x & "' " & apprHrs2 & " value='" & rsReq("Index") & "' onclick='if(this.checked) {document.frmTbl.chkM" & x & ".checked=false;}'></td>" & vbCrLf & _
-				"</tr>" & vbCrLf
+				"<td style=""vertical-align: top;""><img style=""position: relative; top: 0px; right: 0px;"" src=""images/"
+			If rsReq("telehealth") = TRUE Then
+				strtbl = strtbl & "ok.gif"" alt=""Y"" title=""TeleHealth appointment"""
+			Else
+				strtbl = strtbl & "nok.gif"" alt=""N"" title=""regular appointment"""
+			End If
+			strtbl = strtbl & " /></td></tr>" & vbCrLf
 			'x12 270 body
 			STnum = Right("0000" & x, 4)
 			cleanhmo = Replace(hmo, " ", "")
@@ -697,6 +703,12 @@ function ApproveMe() {
 .container { border: solid 1px black; overflow: auto; }
 .noscroll { position: relative; background-color: white; top:expression(this.offsetParent.scrollTop); }
 select.seltxt { height: 1.6em; }
+.status { font-size: 150%; line-height: 80%; }
+.comp { color: #000000; }
+.comp { color: #000000; }
+.misd { color: #0000FF; }
+.cacl { color: #ff0000; }
+.cbil { color: #ff00ff; }
 div.boxitem { display: inline-block; margin-bottom: 2px;}
 th { text-align: left; }
 input.main[type='text']	{ padding: 1px 3px; }
@@ -805,6 +817,7 @@ input.main[type='text']	{ padding: 1px 3px; }
 				
 					<input type='checkbox' name='chkall2' <%=noAppr%> onclick='if(this.checked) {document.frmTbl.chkall.checked=false;} checkme2(<%=x%>);'>
 				</td>
+				<td class='tblgrn' onmouseover="this.className='tblgrnhover'" onmouseout="this.className='tblgrn'">tele-<br/>health</td>
 			</tr>
 		</thead>
 		<tbody style="OVERFLOW: auto;">
@@ -922,7 +935,7 @@ input.main[type='text']	{ padding: 1px 3px; }
 		</table>
 		<input type="hidden" name="sql_script" id="sql_script" value="<%= Z_DoEncrypt(strSQLScript) %>" />
 <%
-' Response.Write "Debug:<br /><code>" & sqlReq & "</code><br />"
+'Response.Write "Debug:<br /><code>" & sqlReq & "</code><br />"
 %>
 <!-- footer! -->
 <table cellSpacing='0' cellPadding='0' width="100%" border='0' class='bgstyle2'>

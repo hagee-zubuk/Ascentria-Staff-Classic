@@ -1988,7 +1988,7 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 		Request("txtBilMInst") & "|" & Request("txtBilMIntr") & "|" & Request("txtHPID") & "|" & Request("txtCliAddrI")& "|" & Request("chkout") & "|" & _
 		Request("chkmed") & "|" & Request("MCnum") & "|" & Request("txtPDamount") & "|" & Request("h_tmpfilename") & "|" & Request("sellateres") & "|" & _
 		Request("MHPnum") & "|" & Request("NHHFnum") & "|" & Request("WSHPnum") & "|" & Request("chkawk") & "|" & Request("txtjudge") & "|" & _
-		Request("txtclaim") & "|" & Request("chkcall") & "|" & Request("chkleave") & "|" & Request("AHMemId")		)
+		Request("txtclaim") & "|" & Request("chkcall") & "|" & Request("chkleave") & "|" & Request("AHMemId") & "|" & Request("chkteleh")	)
 	'CHECK REQUIRED FIELDS
 	If Request("txtClilname") = "" Or Request("txtClifname") = "" Then Session("MSG") = Session("MSG") & "<br>ERROR: Client's full name is required."
 	If Request("selLang") = "-1" Then Session("MSG") = Session("MSG") & "<br>ERROR: Language is required."
@@ -2104,6 +2104,8 @@ ElseIf Request("ctrl") = 13 Then 'EDIT APPOINTMENT INFORMATION
 			If Request("chkcall") <> "" Then rsMain("courtcall") = True
 			rsMain("leavemsg") = False
 			If Request("chkleave") <> "" Then rsMain("leavemsg") = True
+			rsMain("telehealth") = FALSE
+			If Request("chkteleh") <> "" Then rsMain("telehealth") = True
 			rsMain.Update
 			block = 0
 			If rsMain("blocksched") Then block = 1

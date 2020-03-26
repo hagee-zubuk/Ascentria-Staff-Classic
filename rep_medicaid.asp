@@ -27,6 +27,16 @@ Function Z_Time24(dtDate)
 	If lngTmp < 10 Then Z_Time24 = Z_Time24 & "0"
 	Z_Time24 = Z_Time24 & lngTmp
 End Function
+Function IsTeleHealth(rsRep)
+	IsTeleHealth=""
+On Error Resume Next
+	If rsRep("telehealth") = TRUE Then
+		IsTeleHealth="Y"
+	Else
+		IsTeleHealth="N"
+	End If
+On Error Goto 0
+End Function 
 %>
 <%
 DIM tmpIntr(), tmpTown(), tmpIntrName(), tmpLang(), tmpClass(), tmpBill(), tmpAhrs(), tmpApp(), tmpInst(), tmpDept(), tmpAmt(), tmpFac(), tmpMonthYr(), tmpCtr(), tmpMonthYr2(), tmpMonthYr3()
@@ -66,7 +76,8 @@ strHead = "<td class='tblgrn'>Request ID</td>" & vbCrlf & _
 		"<td class='tblgrn'>Total</td>" & vbCrlf & _
 		"<td class='tblgrn'>Comment</td>" & vbCrlf & _
 		"<td class='tblgrn'>DOB</td>" & vbCrlf & _
-		"<td class='tblgrn'>DHHS</td>" & vbCrlf 
+		"<td class='tblgrn'>DHHS</td>" & vbCrlf & _
+		"<td class='tblgrn'>T/<br />H</td>" & vbCrlf 
 
 	strMSG = "Medicaid/MCO Billing request report "
 
@@ -90,12 +101,12 @@ csvBodyWSHP 	= ""
 CSVHead = "Request ID, Institution, Department, Appointment Date, Client Last Name" & _
 		", Client First Name, Medicaid, MCO, Language, Interpreter Last Name" & _
 		", Interpreter First Name, Appointment Start Time, Appointment End Time, Hours, Rate" & _
-		", Travel Time, Mileage, Emergency Surcharge, Total, Comments, DOB, DHHS"
+		", Travel Time, Mileage, Emergency Surcharge, Total, Comments, DOB, DHHS, Telehealth"
 CSVSimH = CSVHead
 	' add vermed = 1 AND if medicaid billing is go 
 sqlRep = "SELECT req.[index] as myindex, req.[billingTrail], req.[syscom]" & _
 		", req.[medicaid], req.[amerihealth], req.[meridian], req.[nhhealth], req.[wellsense]" & _
-		", req.[status], req.[vermed], req.[autoacc], req.[wcomp]" & _
+		", req.[status], req.[vermed], req.[autoacc], req.[wcomp], req.[telehealth]" & _
 		", dep.[dept], dep.[drg], dep.[class], dep.[billgroup], dep.[ccode], dep.[custID]" & _
 		", itr.[pid], itr.[wid], itr.[Last Name], itr.[First Name]" & _
 		", COALESCE(ins.[facility], 'N/A') AS [institution]" & _
@@ -235,11 +246,16 @@ If Not rsRep.EOF Then
 		strBody = strBody & "<td class='tblgrn2'><b>$" & totalPay & "</b></td>" & vbCrLf & _
 				"<td class='tblgrn2'>" & bilcomment & "</td><td class='tblgrn2'><nobr>" & rsRep("DOB") & "</td>"
 		If rsRep("myinstID") = 108 Then
-			strBody = strBody & "<td class='tblgrn2'>" & rsRep("user") & "</td><tr>" & vbCrLf 
+			strBody = strBody & "<td class='tblgrn2'>" & rsRep("user") & "</td><td>"
 		Else
-			strBody = strBody & "<td class='tblgrn2'>&nbsp;</td><tr>" & vbCrLf 
+			strBody = strBody & "<td class='tblgrn2'>&nbsp;</td><td>"
 		End If
-		
+		If rsRep("telehealth") = TRUE Then
+			strBody = strBody & "&#x2611;"
+		Else
+			strBody = strBody & "&#x2610;"
+		End If
+		strBody = strBody & "</td></tr>" & vbCrLf
 		bilcommentcsv = Replace(bilcomment, "<br>", " / ")
 
 		csvBodyLin = """" & CB & rsRep("myindex") & """,""" & rsRep("institution") & """,""" & _
@@ -249,11 +265,12 @@ If Not rsRep.EOF Then
 				""",""" & rsRep("InstRate") & """,""" & Z_CZero(rsRep("TT_Inst")) & """,""" & Z_CZero(rsRep("M_Inst")) & """,""" & "0.00" & _
 				""",""" & totalPay & """,""" & bilcommentcsv & """,""" & rsRep("DOB")
 		If rsRep("myinstID") = 108 Then
-			csvBodyLin = csvBodyLin & """,""" & rsRep("user") & """" & vbCrLf 
+			csvBodyLin = csvBodyLin & """,""" & rsRep("user") & ""","
 		Else
-			csvBodyLin = csvBodyLin & """" & vbCrLf 
+			csvBodyLin = csvBodyLin & """,," 
 		End If
-
+		csvBodyLin = csvBodyLin & """" & IsTeleHealth(rsRep) & """" & vbCrLf
+		
 		CSVBody = CSVBody & csvBodyLin
 		
 		mycode = Progcode(hmoused)
@@ -500,6 +517,12 @@ tbody td { border-bottom: 1px dotted #bbb; }
 						</td></tr>
 </tfoot>						
 </table>
+<div id="secDebug" style="display: none;">
+<p id="pDebug">Debug:</p>
+<code id="dDebug">
+<%= sqlRep %>
+</code>
+</div>
 </form>
 </body>
 </html>

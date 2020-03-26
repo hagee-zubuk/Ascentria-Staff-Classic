@@ -53,6 +53,7 @@ selIntrP2 = ""
 selIntrP1 = ""
 selIntrEmail = ""
 AHMemId = ""
+chkteleh = ""
 tmpTS = Now
 tmpDept = 0
 tmpReqP = 0
@@ -92,6 +93,7 @@ on error resume next
 	If tmpEntry(30) <> "" Then chkcall = "CHECKED"
 	chkleave = ""
 	If tmpEntry(31) <> "" Then chkleave = "CHECKED"
+	If tmpEntry(32) <> "" Then chkteleh = "CHECKED"
 	tmpGender	= tmpEntry(23)
 	tmpMale = ""
 	tmpFemale = ""
@@ -498,7 +500,7 @@ End If
 							var strAHMid = Trim(document.frmMain.AHMemId.value);
 							if (strAHMid == "") {
 								alert("Please input client's AmeriHealth member ID.")
-							} else if ((strAHMid.length < 8) || (strAHMid.length > 9) ) {
+							} else if ((strAHMid.length < 8) || (strAHMid.length > 9) ){
 								alert("Client's AmeriHealth member ID is invalid.");
 								return;
 							}
@@ -1105,6 +1107,14 @@ End If
 							<br>
 
 												<br /></td></tr>
+									<tr style="vertical-align: center;"><td>&nbsp;</td><td colspan="3" >
+										<div style="display: inline-block; background-color: #fef; border-radius: 6px; width: 250px; padding: 5px 10px 8px 24px; border: 1px dotted #cbc; margin-bottom: 10px;">
+											<input type="checkbox" name="chkteleh" id="chkteleh" value="1" <%=chkteleh%> 
+												style="padding-top: 3px;"
+											/>
+											This is a TELEHEALTH appointment
+										</div>
+										</td></tr>
 											<tr>
 												<td>&nbsp;</td>
 												<td colspan="3" align="left">
