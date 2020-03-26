@@ -33,7 +33,7 @@ Set rsApp = Nothing
 %>
 <!-- #include file="_closeSQL.asp" -->
 <%
-HistID = BackupStr & "\Dhist" & Request("ReqID") & ".csv"
+HistID = BackupStr & "Dhist" & Request("ReqID") & ".csv"
 Set fso = CreateObject("Scripting.FileSystemObject")
 Set Prt = fso.CreateTextFile(HistID, True)
 Prt.WriteLine "LANGUAGE BANK - DETAILED HISTORY - " & Request("ReqID")
