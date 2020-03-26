@@ -5123,6 +5123,16 @@ ElseIf tmpReport(0) = 75 Then ' Interpreter Frequency
 ElseIf tmpReport(0) = 76 Then
 	Response.Redirect "rep_courtsumm.asp"
 	Response.End
+ElseIf tmpReport(0) = 77 Then
+	' NCOV surveycalhost
+	Response.Redirect "rep_survey.asp"
+	' move to script file
+	Response.End
+ElseIf tmpReport(0) = 78 Then
+	' Interpreter vacation report
+	Response.Redirect "rep_vacay.asp"
+	' move to script file
+	Response.End
 End If
 tmpBills = Request("Bill")
 If Request("csv") <> 1 Then

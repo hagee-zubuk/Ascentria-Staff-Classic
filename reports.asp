@@ -99,6 +99,8 @@ If Session("MSG") <> "" Then
 	TypeSel74 = ""
 	TypeSel75 = ""
 	TypeSel76 = ""
+	TypeSel77 = ""
+	TypeSel78 = ""
 
 	If tmpReport(0) = 1 Then TypeSel1 = "selected"
 	If tmpReport(0) = 2 Then TypeSel2 = "selected"
@@ -176,6 +178,8 @@ If Session("MSG") <> "" Then
 	If tmpReport(0) = 74 Then TypeSel74 = "selected"
 	If tmpReport(0) = 75 Then TypeSel75 = "selected"
 	If tmpReport(0) = 76 Then TypeSel76 = "selected"
+	If tmpReport(0) = 77 Then TypeSel77 = "selected"
+	If tmpReport(0) = 78 Then TypeSel78 = "selected"
 		
 	tmpRepFrom = tmpReport(1)
 	tmpRepTo = tmpReport(2)
@@ -882,6 +886,8 @@ todaydate = Cdate(date)
 			if (xxx == 74) document.frmReport.tadef.value = "Interpreter responses to appointment availability";
 			if (xxx == 75) document.frmReport.tadef.value = "Interpreter Frequency";
 			if (xxx == 76) document.frmReport.tadef.value = "Summary of court appointments";
+			if (xxx == 77) document.frmReport.tadef.value = "Summary of Intepreter COVID Survey";
+			if (xxx == 78) document.frmReport.tadef.value = "Intepreter Vacation Report";
 		}
 		function CalendarView(strDate)
 		{
@@ -992,6 +998,8 @@ todaydate = Cdate(date)
 											<option value='74' <%=TypeSel74%>>Interpreter Appt Response</option>
 											<option value='75' <%=TypeSel75%>>Interpreter Appt Count</option>
 											<option value='76' <%=TypeSel76%>>Court Summaries</option>
+											<option value='77' <%=TypeSel77%>>Interpreter NCOV Survey</option>
+											<option value='78' <%=TypeSel78%>>Interpreters on Vacation</option>
 											<!--<option value='21' <%=TypeSel21%>>Payroll Report</option>-->
 											<!--<option value='22' <%=TypeSel22%>>Pre-Payroll Report</option>-->
 										</select>
